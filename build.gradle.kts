@@ -141,7 +141,7 @@ subprojects {
         repositories {
             maven {
                 name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/creek-service/${project.name}")
+                url = uri("https://maven.pkg.github.com/creek-service/${rootProject.name}")
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")
                     password = System.getenv("GITHUB_TOKEN")
@@ -153,7 +153,7 @@ subprojects {
                 from(components["java"])
 
                 pom {
-                    url.set("https://github.com/creek-service/${project.name}.git")
+                    url.set("https://github.com/creek-service/${rootProject.name}.git")
                 }
             }
         }
