@@ -5,6 +5,7 @@ plugins {
     id("com.diffplug.spotless") version "6.0.0"                 // https://mvnrepository.com/artifact/com.diffplug.spotless/spotless-plugin-gradle
     id("pl.allegro.tech.build.axion-release") version "1.13.5"  // https://mvnrepository.com/artifact/pl.allegro.tech.build.axion-release/pl.allegro.tech.build.axion-release.gradle.plugin?repo=gradle-plugins
     id("com.github.kt3k.coveralls") version "2.12.0"            // https://plugins.gradle.org/plugin/com.github.kt3k.coveralls
+    `maven-publish`
 }
 
 project.version = scmVersion.version
@@ -120,21 +121,34 @@ subprojects {
         archiveBaseName.set("creek-${project.name}")
     }
 
-    configure<PublishingExtension> {
-        publications {
-            create<MavenPublication>("maven") {
-                from(components["java"])
-                artifactId = "creek-${project.name}"
-            }
-        }
-    }
-
     tasks.register("format") {
         dependsOn("spotlessCheck", "spotlessApply")
     }
 
     tasks.register("static") {
         dependsOn("checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
+    }
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/creek-service/${project.name}")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["java"])
+
+                pom {
+                    url.set("https://github.com/creek-service/${project.name}.git")
+                }
+            }
+        }
     }
 }
 
@@ -179,4 +193,4 @@ tasks.coveralls {
     onlyIf{System.getenv("CI") != null}
 }
 
-defaultTasks("check")
+defaultTasks("format", "static", "check")
