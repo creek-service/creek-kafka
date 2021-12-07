@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package org.creek.example;
-
-public final class Example {
-    private Example() {}
-
-    public static boolean getTrue() {
-        return true;
-    }
+plugins {
+    `java-library`
 }

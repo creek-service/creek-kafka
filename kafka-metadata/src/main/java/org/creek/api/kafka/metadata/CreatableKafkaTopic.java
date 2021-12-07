@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package org.creek.example;
+package org.creek.api.kafka.metadata;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
-import org.junit.jupiter.api.Test;
-
-class ExampleTest {
-
-    @Test
-    void shouldReturnTrue() {
-        assertThat(Example.getTrue(), is(true));
-    }
+/**
+ * A Kafka topic <i>owned</i> by a component.
+ *
+ * <p>Owned topics come with the additional metadata needed to allow the owning service to create
+ * the topics.
+ *
+ * @param <K> key type
+ * @param <V> value type
+ */
+public interface CreatableKafkaTopic<K, V> extends KafkaTopic<K, V> {
+    /** @return the topic's config */
+    KafkaTopicConfig config();
 }
