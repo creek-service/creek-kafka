@@ -30,7 +30,7 @@ class KafkaTopicConfigTest {
     void shouldMatchIfAttributesMatch() {
         assertThat(
                 KafkaTopicConfig.matches(
-                        config, new SecondTopicConfig(config.partitions(), config.config())),
+                        config, new SecondTopicConfig(config.getPartitions(), config.getConfig())),
                 is(true));
     }
 
@@ -38,7 +38,8 @@ class KafkaTopicConfigTest {
     void shouldNotMatchIfPartitionsDiffer() {
         assertThat(
                 KafkaTopicConfig.matches(
-                        config, new SecondTopicConfig(config.partitions() + 1, config.config())),
+                        config,
+                        new SecondTopicConfig(config.getPartitions() + 1, config.getConfig())),
                 is(false));
     }
 
@@ -46,7 +47,8 @@ class KafkaTopicConfigTest {
     void shouldNotMatchIfConfigDiffer() {
         assertThat(
                 KafkaTopicConfig.matches(
-                        config, new SecondTopicConfig(config.partitions(), Map.of("diff", "diff"))),
+                        config,
+                        new SecondTopicConfig(config.getPartitions(), Map.of("diff", "diff"))),
                 is(false));
     }
 
@@ -66,7 +68,7 @@ class KafkaTopicConfigTest {
         }
 
         @Override
-        public int partitions() {
+        public int getPartitions() {
             return partitions;
         }
     }
@@ -82,12 +84,12 @@ class KafkaTopicConfigTest {
         }
 
         @Override
-        public int partitions() {
+        public int getPartitions() {
             return partitions;
         }
 
         @Override
-        public Map<String, String> config() {
+        public Map<String, String> getConfig() {
             return config;
         }
     }

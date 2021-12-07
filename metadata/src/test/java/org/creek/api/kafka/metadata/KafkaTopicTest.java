@@ -131,7 +131,7 @@ class KafkaTopicTest {
                                 owned.getTopicName(),
                                 owned.getKeyType(),
                                 owned.getValueType(),
-                                new TestConfig(owned.getConfig().partitions() + 1))),
+                                new TestConfig(owned.getConfig().getPartitions() + 1))),
                 is(false));
     }
 
@@ -311,7 +311,7 @@ class KafkaTopicTest {
         }
 
         @Override
-        public int partitions() {
+        public int getPartitions() {
             return partitions;
         }
     }
