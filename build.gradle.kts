@@ -126,7 +126,7 @@ subprojects {
     }
 
     tasks.jar {
-        archiveBaseName.set("creek-${project.name}")
+        archiveBaseName.set("${rootProject.name}-${project.name}")
     }
 
     tasks.register("format") {
