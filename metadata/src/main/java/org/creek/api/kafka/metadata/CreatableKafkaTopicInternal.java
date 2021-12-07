@@ -16,13 +16,20 @@
 
 package org.creek.api.kafka.metadata;
 
+
+import org.creek.api.platform.metadata.ComponentInternal;
+
 /**
- * A Kafka topic definition with the additional data required to create the topic.
+ * A creatable internal Kafka topic.
+ *
+ * <p>Normally, internal topics are created by the service outside the service initialization Creek
+ * provides, e.g. kafka Streams automatically creates internal changelog and repartition topics. For
+ * such topics use {@link KafkaTopicInternal}. However, if you have some other internal topic, which
+ * should be created explicitly when deploying, then use this {@link CreatableKafkaTopicInternal}
+ * class.
  *
  * @param <K> key type
  * @param <V> value type
  */
-public interface CreatableKafkaTopic<K, V> extends KafkaTopic<K, V> {
-    /** @return the topic's config */
-    KafkaTopicConfig getConfig();
-}
+public interface CreatableKafkaTopicInternal<K, V>
+        extends ComponentInternal, CreatableKafkaTopic<K, V> {}

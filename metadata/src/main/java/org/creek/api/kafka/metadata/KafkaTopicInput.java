@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.api.kafka.metadata;
 
-dependencies {
-    api("org.creek:creek-platform-metadata:+")
-}
+
+import org.creek.api.platform.metadata.ComponentInput;
+
+/**
+ * An input topic that is not owned.
+ *
+ * <p>i.e. an input topic that was created from an owned output topic via {@link
+ * OwnedKafkaTopicOutput#toInput()}.
+ *
+ * <p>Most input topics are not conceptually owned by the components that use them. However, some
+ * components may have owned input topics, which should be defined using {@link
+ * OwnedKafkaTopicInput}.
+ *
+ * @param <K> key type
+ * @param <V> value type
+ */
+public interface KafkaTopicInput<K, V> extends ComponentInput, KafkaTopic<K, V> {}

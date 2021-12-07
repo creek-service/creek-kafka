@@ -16,13 +16,20 @@
 
 package org.creek.api.kafka.metadata;
 
+
+import org.creek.api.platform.metadata.ComponentOutput;
+
 /**
- * A Kafka topic definition with the additional data required to create the topic.
+ * An output topic that is not owned.
+ *
+ * <p>i.e. an output topic that was created from an owned input topic via {@link
+ * OwnedKafkaTopicInput#toOutput()}.
+ *
+ * <p>Most output topics are conceptually owned by the components that use them. For such topics use
+ * {@link OwnedKafkaTopicOutput} However, some components may have non-owned output topics, which
+ * should be defined using this class.
  *
  * @param <K> key type
  * @param <V> value type
  */
-public interface CreatableKafkaTopic<K, V> extends KafkaTopic<K, V> {
-    /** @return the topic's config */
-    KafkaTopicConfig getConfig();
-}
+public interface KafkaTopicOutput<K, V> extends ComponentOutput, KafkaTopic<K, V> {}
