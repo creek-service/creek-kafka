@@ -23,16 +23,17 @@ import java.util.StringJoiner;
 /** Type for defining a Kafka topic's config */
 public interface KafkaTopicConfig {
     /** @return topics partition count. */
-    int partitions();
+    int getPartitions();
 
     /** @return any specific configs. If not supplied, cluster/env defaults will be used. */
-    default Map<String, String> config() {
+    default Map<String, String> getConfig() {
         return Map.of();
     }
 
     /** @return true if left and right are equivalent. */
     static boolean matches(final KafkaTopicConfig left, final KafkaTopicConfig right) {
-        return left.partitions() == right.partitions() && left.config().equals(right.config());
+        return left.getPartitions() == right.getPartitions()
+                && left.getConfig().equals(right.getConfig());
     }
 
     /**
@@ -46,8 +47,8 @@ public interface KafkaTopicConfig {
      */
     static String asString(final KafkaTopicConfig config) {
         return new StringJoiner(", ", config.getClass().getSimpleName() + "[", "]")
-                .add("partitions=" + config.partitions())
-                .add("config=" + config.config())
+                .add("partitions=" + config.getPartitions())
+                .add("config=" + config.getConfig())
                 .toString();
     }
 }
