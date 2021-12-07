@@ -151,6 +151,7 @@ subprojects {
         publications {
             create<MavenPublication>("maven") {
                 from(components["java"])
+                artifactId = "${rootProject.name}-${project.name}"
 
                 pom {
                     url.set("https://github.com/creek-service/${rootProject.name}.git")
