@@ -6,4 +6,4 @@
 
 Kafka integration for Creek
 
-* [kafka-metadata](kafka-metadata) defines types for defining kafka resources.
+* [metadata](metadata) defines types for defining kafka resources.
