@@ -27,5 +27,5 @@ package org.creek.api.kafka.metadata;
  */
 public interface CreatableKafkaTopic<K, V> extends KafkaTopic<K, V> {
     /** @return the topic's config */
-    KafkaTopicConfig config();
+    KafkaTopicConfig getConfig();
 }

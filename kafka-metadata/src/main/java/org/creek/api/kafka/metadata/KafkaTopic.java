@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 public interface KafkaTopic<K, V> {
 
     /** @return name of the topic as it is in Kafka. */
-    String topicName();
+    String getTopicName();
 
     /**
      * The type serialized in the topic's record keys.
@@ -43,7 +43,7 @@ public interface KafkaTopic<K, V> {
      *
      * @return The type of the key.
      */
-    Class<K> keyType();
+    Class<K> getKeyType();
 
     /**
      * The type serialized in the topic's record values.
@@ -56,14 +56,14 @@ public interface KafkaTopic<K, V> {
      *
      * @return the type of the value.
      */
-    Class<V> valueType();
+    Class<V> getValueType();
 
     /** @return {@code true} if {@code left} and {@code right} are equivalent. */
     static boolean matches(final KafkaTopic<?, ?> left, final KafkaTopic<?, ?> right) {
         final boolean basics =
-                left.topicName().equals(right.topicName())
-                        && left.keyType().equals(right.keyType())
-                        && left.valueType().equals(right.valueType());
+                left.getTopicName().equals(right.getTopicName())
+                        && left.getKeyType().equals(right.getKeyType())
+                        && left.getValueType().equals(right.getValueType());
 
         if (!basics) {
             return false;
@@ -77,8 +77,8 @@ public interface KafkaTopic<K, V> {
 
         return !leftOwned
                 || KafkaTopicConfig.matches(
-                        ((CreatableKafkaTopic<?, ?>) left).config(),
-                        ((CreatableKafkaTopic<?, ?>) right).config());
+                        ((CreatableKafkaTopic<?, ?>) left).getConfig(),
+                        ((CreatableKafkaTopic<?, ?>) right).getConfig());
     }
 
     /**
@@ -94,13 +94,13 @@ public interface KafkaTopic<K, V> {
 
         final StringJoiner joiner =
                 new StringJoiner(", ", topic.getClass().getSimpleName() + "[", "]")
-                        .add("topicName=" + topic.topicName())
-                        .add("keyType=" + topic.keyType().getName())
-                        .add("valueType=" + topic.valueType().getName());
+                        .add("topicName=" + topic.getTopicName())
+                        .add("keyType=" + topic.getKeyType().getName())
+                        .add("valueType=" + topic.getValueType().getName());
 
         if (topic instanceof CreatableKafkaTopic) {
             final CreatableKafkaTopic<?, ?> owned = (CreatableKafkaTopic<?, ?>) topic;
-            joiner.add("config=" + KafkaTopicConfig.asString(owned.config()));
+            joiner.add("config=" + KafkaTopicConfig.asString(owned.getConfig()));
         }
 
         return joiner.toString();

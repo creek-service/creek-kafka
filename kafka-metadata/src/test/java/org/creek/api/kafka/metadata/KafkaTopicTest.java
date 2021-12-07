@@ -34,7 +34,9 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                unowned.topicName(), unowned.keyType(), unowned.valueType())),
+                                unowned.getTopicName(),
+                                unowned.getKeyType(),
+                                unowned.getValueType())),
                 is(true));
     }
 
@@ -44,10 +46,10 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.topicName(),
-                                owned.keyType(),
-                                owned.valueType(),
-                                owned.config())),
+                                owned.getTopicName(),
+                                owned.getKeyType(),
+                                owned.getValueType(),
+                                owned.getConfig())),
                 is(true));
     }
 
@@ -56,7 +58,8 @@ class KafkaTopicTest {
         assertThat(
                 KafkaTopic.matches(
                         unowned,
-                        new SecondKafkaTopic<>("diff", unowned.keyType(), unowned.valueType())),
+                        new SecondKafkaTopic<>(
+                                "diff", unowned.getKeyType(), unowned.getValueType())),
                 is(false));
     }
 
@@ -65,7 +68,8 @@ class KafkaTopicTest {
         assertThat(
                 KafkaTopic.matches(
                         unowned,
-                        new SecondKafkaTopic<>(owned.topicName(), Void.class, unowned.valueType())),
+                        new SecondKafkaTopic<>(
+                                owned.getTopicName(), Void.class, unowned.getValueType())),
                 is(false));
     }
 
@@ -74,7 +78,8 @@ class KafkaTopicTest {
         assertThat(
                 KafkaTopic.matches(
                         unowned,
-                        new SecondKafkaTopic<>(owned.topicName(), unowned.keyType(), Void.class)),
+                        new SecondKafkaTopic<>(
+                                owned.getTopicName(), unowned.getKeyType(), Void.class)),
                 is(false));
     }
 
@@ -84,7 +89,10 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                "Diff", owned.keyType(), owned.valueType(), owned.config())),
+                                "Diff",
+                                owned.getKeyType(),
+                                owned.getValueType(),
+                                owned.getConfig())),
                 is(false));
     }
 
@@ -94,7 +102,10 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.topicName(), Void.class, owned.valueType(), owned.config())),
+                                owned.getTopicName(),
+                                Void.class,
+                                owned.getValueType(),
+                                owned.getConfig())),
                 is(false));
     }
 
@@ -104,7 +115,10 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.topicName(), owned.keyType(), Void.class, owned.config())),
+                                owned.getTopicName(),
+                                owned.getKeyType(),
+                                Void.class,
+                                owned.getConfig())),
                 is(false));
     }
 
@@ -114,10 +128,10 @@ class KafkaTopicTest {
                 KafkaTopic.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.topicName(),
-                                owned.keyType(),
-                                owned.valueType(),
-                                new TestConfig(owned.config().partitions() + 1))),
+                                owned.getTopicName(),
+                                owned.getKeyType(),
+                                owned.getValueType(),
+                                new TestConfig(owned.getConfig().partitions() + 1))),
                 is(false));
     }
 
@@ -166,17 +180,17 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String topicName() {
+        public String getTopicName() {
             return name;
         }
 
         @Override
-        public Class<K> keyType() {
+        public Class<K> getKeyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> valueType() {
+        public Class<V> getValueType() {
             return valueType;
         }
     }
@@ -194,17 +208,17 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String topicName() {
+        public String getTopicName() {
             return name;
         }
 
         @Override
-        public Class<K> keyType() {
+        public Class<K> getKeyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> valueType() {
+        public Class<V> getValueType() {
             return valueType;
         }
     }
@@ -228,22 +242,22 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String topicName() {
+        public String getTopicName() {
             return name;
         }
 
         @Override
-        public Class<K> keyType() {
+        public Class<K> getKeyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> valueType() {
+        public Class<V> getValueType() {
             return valueType;
         }
 
         @Override
-        public KafkaTopicConfig config() {
+        public KafkaTopicConfig getConfig() {
             return config;
         }
     }
@@ -268,22 +282,22 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String topicName() {
+        public String getTopicName() {
             return name;
         }
 
         @Override
-        public Class<K> keyType() {
+        public Class<K> getKeyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> valueType() {
+        public Class<V> getValueType() {
             return valueType;
         }
 
         @Override
-        public KafkaTopicConfig config() {
+        public KafkaTopicConfig getConfig() {
             return config;
         }
     }
