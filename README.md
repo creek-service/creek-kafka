@@ -6,4 +6,5 @@
 
 Kafka integration for Creek
 
-* [metadata](metadata) defines types for defining kafka resources.
+* **[metadata](metadata)**: defines types for defining kafka resources in aggregate and service descriptors.
+* **[extension](extension)**: defines extension to Creek's `CreekContext` to help with writing Kafka based micro-services.
