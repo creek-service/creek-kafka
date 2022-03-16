@@ -6,6 +6,7 @@ plugins {
     id("com.diffplug.spotless") version "6.0.0"                 // https://mvnrepository.com/artifact/com.diffplug.spotless/spotless-plugin-gradle
     id("pl.allegro.tech.build.axion-release") version "1.13.5"  // https://mvnrepository.com/artifact/pl.allegro.tech.build.axion-release/pl.allegro.tech.build.axion-release.gradle.plugin?repo=gradle-plugins
     id("com.github.kt3k.coveralls") version "2.12.0"            // https://plugins.gradle.org/plugin/com.github.kt3k.coveralls
+    id("org.javamodularity.moduleplugin") version "1.8.10"      // https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin
 }
 
 project.version = scmVersion.version
@@ -23,6 +24,7 @@ allprojects {
     java {
         withSourcesJar()
 
+        modularity.inferModulePath.set(false)
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -42,15 +44,16 @@ allprojects {
 
 subprojects {
     apply(plugin = "maven-publish")
+    apply(plugin = "org.javamodularity.moduleplugin")
 
     project.version = project.parent?.version!!
 
     extra.apply {
+        set("creekVersion", "+")
         set("spotBugsVersion", "4.4.2")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
 
         set("guavaVersion", "31.0.1-jre")       // https://mvnrepository.com/artifact/com.google.guava/guava
         set("log4jVersion", "2.14.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-
         set("junitVersion", "5.8.1")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "1.4.2")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
         set("mockitoVersion", "4.0.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
@@ -60,6 +63,7 @@ subprojects {
         set("kafkaVersion", "2.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     }
 
+    val creekVersion : String by extra
     val guavaVersion : String by extra
     val log4jVersion : String by extra
     val junitVersion: String by extra
@@ -68,6 +72,7 @@ subprojects {
     val hamcrestVersion : String by extra
 
     dependencies {
+        testImplementation("org.creek:creek-test-util:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
@@ -81,7 +86,7 @@ subprojects {
     }
 
     tasks.compileJava {
-        options.compilerArgs.add("-Xlint:all,-serial")
+        options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic")
         options.compilerArgs.add("-Werror")
     }
 
