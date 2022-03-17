@@ -59,7 +59,6 @@ subprojects {
         set("mockitoVersion", "4.0.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
 
-        // Todo(ac): How to manage Kafka versions so Creek is not pinned to one...
         set("kafkaVersion", "2.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     }
 

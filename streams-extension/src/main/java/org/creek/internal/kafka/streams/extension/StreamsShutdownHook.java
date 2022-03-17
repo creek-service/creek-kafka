@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.metadata;
+package org.creek.internal.kafka.streams.extension;
 
-/**
- * A Kafka topic definition with the additional data required to create the topic.
- *
- * @param <K> key type
- * @param <V> value type
- */
-public interface CreatableKafkaTopic<K, V> extends KafkaTopicDescriptor<K, V> {
-    /** @return the topic's config */
-    KafkaTopicConfig config();
+
+import java.util.concurrent.CompletableFuture;
+import org.apache.kafka.streams.KafkaStreams;
+
+public interface StreamsShutdownHook {
+
+    void apply(KafkaStreams streams, CompletableFuture<Void> future);
 }

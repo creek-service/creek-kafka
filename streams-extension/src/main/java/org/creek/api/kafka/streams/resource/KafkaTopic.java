@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.metadata;
+package org.creek.api.kafka.streams.resource;
 
 
-import org.creek.api.platform.metadata.ComponentInput;
+import org.apache.kafka.common.serialization.Serde;
 
 /**
- * An input topic that is not owned.
- *
- * <p>i.e. an input topic that was created from an owned output topic via {@link
- * OwnedKafkaTopicOutput#toInput()}.
- *
- * <p>Most input topics are not conceptually owned by the components that use them. However, some
- * components may have owned input topics, which should be defined using {@link
- * OwnedKafkaTopicInput}.
+ * A Kafka topic resource.
  *
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopicInput<K, V> extends ComponentInput, KafkaTopicDescriptor<K, V> {}
+public interface KafkaTopic<K, V> {
+
+    /** @return the name of the topic */
+    String name();
+
+    /** @return the serde used to (de)serialize the keys stored in the topic */
+    Serde<K> keySerde();
+
+    /** @return the serde used to (de)serialize the values stored in the topic */
+    Serde<V> valueSerde();
+}

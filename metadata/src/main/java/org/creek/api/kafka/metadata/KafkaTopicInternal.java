@@ -33,4 +33,4 @@ import org.creek.api.platform.metadata.ComponentInternal;
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopicInternal<K, V> extends ComponentInternal, KafkaTopic<K, V> {}
+public interface KafkaTopicInternal<K, V> extends ComponentInternal, KafkaTopicDescriptor<K, V> {}

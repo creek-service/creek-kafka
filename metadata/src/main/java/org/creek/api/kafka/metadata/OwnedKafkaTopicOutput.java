@@ -42,18 +42,18 @@ public interface OwnedKafkaTopicOutput<K, V> extends ComponentOutput, CreatableK
         final OwnedKafkaTopicOutput<K, V> output = this;
         return new KafkaTopicInput<>() {
             @Override
-            public String getTopicName() {
-                return output.getTopicName();
+            public String name() {
+                return output.name();
             }
 
             @Override
-            public Class<K> getKeyType() {
-                return output.getKeyType();
+            public Class<K> keyType() {
+                return output.keyType();
             }
 
             @Override
-            public Class<V> getValueType() {
-                return output.getValueType();
+            public Class<V> valueType() {
+                return output.valueType();
             }
         };
     }
