@@ -27,6 +27,7 @@ import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode;
 
+/** Executes a {@link KafkaStreams} app. */
 public final class KafkaStreamsExecutor {
 
     private static final Duration LOGGING_STREAMS_CLOSE_DELAY = Duration.ofSeconds(1);

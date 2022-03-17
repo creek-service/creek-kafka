@@ -40,16 +40,14 @@ import org.apache.kafka.streams.kstream.Named;
  *
  *        final KStream<Long, String> things =
  *                 builder.stream(
- *                                 ThingsTopic.topicName(),
- *                                 Consumed.with(
- *                                                 ctx.keySerdeFor(ThingsTopic),
- *                                                 ctx.valueSerdeFor(ThingsTopic))
+ *                                 "things",
+ *                                 Consumed.with(Serdes.Long(), Serdes.String())
  *                                         .withName(name.name("ingest")))
  *                         .transformValues(
  *                                 new ThingTransformer(), name.named("transform"));
  *
- *        new SubTopologyOneBuilder().build(NAME.postfix("sub1"), builder);
- *        new SubTopologyTwoBuilder().build(NAME.postfix("sub2"), builder);
+ *        new SubTopologyOneBuilder().build(NAME.postfix("sub1"), builder, things);
+ *        new SubTopologyTwoBuilder().build(NAME.postfix("sub2"), builder, things);
  *
  *        return builder.build();
  *     }
@@ -62,10 +60,12 @@ public final class Name {
     private final char delim;
     private final String prefix;
 
+    /** @return the name for the root of the topology */
     public static Name root() {
         return root(DEFAULT_DELIM);
     }
 
+    /** @return the name for the root of the topology, using a custom delimiter. */
     public static Name root(final char delimiter) {
         return new Name("", delimiter);
     }
@@ -75,14 +75,39 @@ public final class Name {
         this.prefix = requireNonNull(prefix, "prefix") + (prefix.isEmpty() ? "" : delim);
     }
 
+    /**
+     * Get a text name.
+     *
+     * <p>Useful when creating {@code Consumed}, {@code Produced}, etc instances.
+     *
+     * @param postfix the node name postfix, which must be unique without the sub-topology.
+     * @return the text name.
+     */
     public String name(final String postfix) {
         return prefix + postfix;
     }
 
+    /**
+     * Get a node name.
+     *
+     * <p>Use to create a {@link Named} instance, as required by most Kafka Streams topology
+     * building methods.
+     *
+     * @param postfix the node name postfix, which must be unique without the sub-topology.
+     * @return the {@link Named} instance.
+     */
     public Named named(final String postfix) {
         return Named.as(name(postfix));
     }
 
+    /**
+     * Create a new {@code Name} instance by appending the supplied {@code postfix}.
+     *
+     * <p>Use to pass a {@code Name} instance to sub-topology builders etc.
+     *
+     * @param postfix the node name postfix, used to valid name clashes.
+     * @return the new {@code Name} instance.
+     */
     public Name postfix(final String postfix) {
         return new Name(name(postfix), delim);
     }

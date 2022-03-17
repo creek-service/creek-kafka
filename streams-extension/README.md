@@ -1,4 +1,4 @@
-# Creek Kafka Extension
+# Creek Kafka Streams Extension
 
-Provides an extension to Creek to allow it to work with Kafka resources.
+Provides an extension to Creek to allow it to work with Kafka Streams and Kafka resources.
 
