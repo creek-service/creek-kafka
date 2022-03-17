@@ -1,5 +1,6 @@
 rootProject.name = "creek-kafka"
 
 include(
-    "metadata"
+    "metadata",
+    "streams-extension"
 )

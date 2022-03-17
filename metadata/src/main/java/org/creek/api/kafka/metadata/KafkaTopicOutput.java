@@ -32,4 +32,4 @@ import org.creek.api.platform.metadata.ComponentOutput;
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopicOutput<K, V> extends ComponentOutput, KafkaTopic<K, V> {}
+public interface KafkaTopicOutput<K, V> extends ComponentOutput, KafkaTopicDescriptor<K, V> {}

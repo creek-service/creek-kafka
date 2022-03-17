@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.metadata;
+plugins {
+    `java-library`
+}
 
-/**
- * A Kafka topic definition with the additional data required to create the topic.
- *
- * @param <K> key type
- * @param <V> value type
- */
-public interface CreatableKafkaTopic<K, V> extends KafkaTopicDescriptor<K, V> {
-    /** @return the topic's config */
-    KafkaTopicConfig config();
+val kafkaVersion : String by extra
+val creekVersion : String by extra
+
+dependencies {
+    api(project(":metadata"))
+    api("org.creek:creek-base-annotation:$creekVersion")
+    api("org.creek:creek-service-extension:$creekVersion")
+
+    implementation("org.creek:creek-observability-logging:$creekVersion")
+    implementation("org.creek:creek-base-type:$creekVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 }

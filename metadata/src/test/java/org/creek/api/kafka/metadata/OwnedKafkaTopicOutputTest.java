@@ -31,30 +31,30 @@ class OwnedKafkaTopicOutputTest {
         final KafkaTopicInput<Long, String> input = output.toInput();
 
         // Then:
-        assertThat(input.getTopicName(), is(output.getTopicName()));
-        assertThat(input.getKeyType(), is(output.getKeyType()));
-        assertThat(input.getValueType(), is(output.getValueType()));
+        assertThat(input.name(), is(output.name()));
+        assertThat(input.keyType(), is(output.keyType()));
+        assertThat(input.valueType(), is(output.valueType()));
     }
 
     private static final class TestOutput implements OwnedKafkaTopicOutput<Long, String> {
 
         @Override
-        public KafkaTopicConfig getConfig() {
+        public KafkaTopicConfig config() {
             return null;
         }
 
         @Override
-        public String getTopicName() {
+        public String name() {
             return "bob";
         }
 
         @Override
-        public Class<Long> getKeyType() {
+        public Class<Long> keyType() {
             return Long.class;
         }
 
         @Override
-        public Class<String> getValueType() {
+        public Class<String> valueType() {
             return String.class;
         }
     }

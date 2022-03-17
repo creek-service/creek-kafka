@@ -21,130 +21,114 @@ import static org.hamcrest.Matchers.is;
 
 import org.junit.jupiter.api.Test;
 
-class KafkaTopicTest {
+class KafkaTopicDescriptorTest {
 
     private final KafkaTopicConfig config = new TestConfig(1);
-    private final KafkaTopic<?, ?> unowned = new FirstKafkaTopic<>("bob", long.class, String.class);
+    private final KafkaTopicDescriptor<?, ?> unowned =
+            new FirstKafkaTopic<>("bob", long.class, String.class);
     private final CreatableKafkaTopic<?, ?> owned =
             new FirstCreatableKafkaTopic<>("bob", long.class, String.class, config);
 
     @Test
     void shouldMatchUnownedIfAttributesMatch() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                unowned.getTopicName(),
-                                unowned.getKeyType(),
-                                unowned.getValueType())),
+                                unowned.name(), unowned.keyType(), unowned.valueType())),
                 is(true));
     }
 
     @Test
     void shouldMatchOwnedIfAttributesMatch() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.getTopicName(),
-                                owned.getKeyType(),
-                                owned.getValueType(),
-                                owned.getConfig())),
+                                owned.name(), owned.keyType(), owned.valueType(), owned.config())),
                 is(true));
     }
 
     @Test
     void shouldNotMatchUnownedIfNameDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         unowned,
-                        new SecondKafkaTopic<>(
-                                "diff", unowned.getKeyType(), unowned.getValueType())),
+                        new SecondKafkaTopic<>("diff", unowned.keyType(), unowned.valueType())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchUnownedIfKeyTypeDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         unowned,
-                        new SecondKafkaTopic<>(
-                                owned.getTopicName(), Void.class, unowned.getValueType())),
+                        new SecondKafkaTopic<>(owned.name(), Void.class, unowned.valueType())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchUnownedIfValueTypeDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         unowned,
-                        new SecondKafkaTopic<>(
-                                owned.getTopicName(), unowned.getKeyType(), Void.class)),
+                        new SecondKafkaTopic<>(owned.name(), unowned.keyType(), Void.class)),
                 is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfNameDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                "Diff",
-                                owned.getKeyType(),
-                                owned.getValueType(),
-                                owned.getConfig())),
+                                "Diff", owned.keyType(), owned.valueType(), owned.config())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfKeyTypeDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.getTopicName(),
-                                Void.class,
-                                owned.getValueType(),
-                                owned.getConfig())),
+                                owned.name(), Void.class, owned.valueType(), owned.config())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfValueTypeDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.getTopicName(),
-                                owned.getKeyType(),
-                                Void.class,
-                                owned.getConfig())),
+                                owned.name(), owned.keyType(), Void.class, owned.config())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfConfigDifferent() {
         assertThat(
-                KafkaTopic.matches(
+                KafkaTopicDescriptor.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.getTopicName(),
-                                owned.getKeyType(),
-                                owned.getValueType(),
-                                new TestConfig(owned.getConfig().getPartitions() + 1))),
+                                owned.name(),
+                                owned.keyType(),
+                                owned.valueType(),
+                                new TestConfig(owned.config().getPartitions() + 1))),
                 is(false));
     }
 
     @Test
     void shouldNotMatchIfOnlyOneOwned() {
-        assertThat(KafkaTopic.matches(owned, unowned), is(false));
-        assertThat(KafkaTopic.matches(unowned, owned), is(false));
+        assertThat(KafkaTopicDescriptor.matches(owned, unowned), is(false));
+        assertThat(KafkaTopicDescriptor.matches(unowned, owned), is(false));
     }
 
     @Test
     void shouldImplementUnownedAsString() {
         assertThat(
-                KafkaTopic.asString(unowned),
+                KafkaTopicDescriptor.asString(unowned),
                 is(
                         "FirstKafkaTopic["
                                 + "topicName=bob, "
@@ -156,7 +140,7 @@ class KafkaTopicTest {
     @Test
     void shouldImplementOwnedAsString() {
         assertThat(
-                KafkaTopic.asString(owned),
+                KafkaTopicDescriptor.asString(owned),
                 is(
                         "FirstCreatableKafkaTopic["
                                 + "topicName=bob, "
@@ -167,7 +151,7 @@ class KafkaTopicTest {
                                 + "]"));
     }
 
-    private static final class FirstKafkaTopic<K, V> implements KafkaTopic<K, V> {
+    private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
         private final String name;
         private final Class<K> keyType;
@@ -180,22 +164,22 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String getTopicName() {
+        public String name() {
             return name;
         }
 
         @Override
-        public Class<K> getKeyType() {
+        public Class<K> keyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> getValueType() {
+        public Class<V> valueType() {
             return valueType;
         }
     }
 
-    private static final class SecondKafkaTopic<K, V> implements KafkaTopic<K, V> {
+    private static final class SecondKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
         private final String name;
         private final Class<K> keyType;
@@ -208,17 +192,17 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String getTopicName() {
+        public String name() {
             return name;
         }
 
         @Override
-        public Class<K> getKeyType() {
+        public Class<K> keyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> getValueType() {
+        public Class<V> valueType() {
             return valueType;
         }
     }
@@ -242,22 +226,22 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String getTopicName() {
+        public String name() {
             return name;
         }
 
         @Override
-        public Class<K> getKeyType() {
+        public Class<K> keyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> getValueType() {
+        public Class<V> valueType() {
             return valueType;
         }
 
         @Override
-        public KafkaTopicConfig getConfig() {
+        public KafkaTopicConfig config() {
             return config;
         }
     }
@@ -282,22 +266,22 @@ class KafkaTopicTest {
         }
 
         @Override
-        public String getTopicName() {
+        public String name() {
             return name;
         }
 
         @Override
-        public Class<K> getKeyType() {
+        public Class<K> keyType() {
             return keyType;
         }
 
         @Override
-        public Class<V> getValueType() {
+        public Class<V> valueType() {
             return valueType;
         }
 
         @Override
-        public KafkaTopicConfig getConfig() {
+        public KafkaTopicConfig config() {
             return config;
         }
     }

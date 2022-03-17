@@ -18,17 +18,18 @@ package org.creek.api.kafka.metadata;
 
 
 import java.util.StringJoiner;
+import org.creek.api.platform.metadata.ResourceDescriptor;
 
 /**
- * Represents a Kafka topic.
+ * Metadata defining a Kafka topic.
  *
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopic<K, V> {
+public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
     /** @return name of the topic as it is in Kafka. */
-    String getTopicName();
+    String name();
 
     /**
      * The type serialized in the topic's record keys.
@@ -43,7 +44,7 @@ public interface KafkaTopic<K, V> {
      *
      * @return The type of the key.
      */
-    Class<K> getKeyType();
+    Class<K> keyType();
 
     /**
      * The type serialized in the topic's record values.
@@ -56,14 +57,15 @@ public interface KafkaTopic<K, V> {
      *
      * @return the type of the value.
      */
-    Class<V> getValueType();
+    Class<V> valueType();
 
     /** @return {@code true} if {@code left} and {@code right} are equivalent. */
-    static boolean matches(final KafkaTopic<?, ?> left, final KafkaTopic<?, ?> right) {
+    static boolean matches(
+            final KafkaTopicDescriptor<?, ?> left, final KafkaTopicDescriptor<?, ?> right) {
         final boolean basics =
-                left.getTopicName().equals(right.getTopicName())
-                        && left.getKeyType().equals(right.getKeyType())
-                        && left.getValueType().equals(right.getValueType());
+                left.name().equals(right.name())
+                        && left.keyType().equals(right.keyType())
+                        && left.valueType().equals(right.valueType());
 
         if (!basics) {
             return false;
@@ -77,8 +79,8 @@ public interface KafkaTopic<K, V> {
 
         return !leftOwned
                 || KafkaTopicConfig.matches(
-                        ((CreatableKafkaTopic<?, ?>) left).getConfig(),
-                        ((CreatableKafkaTopic<?, ?>) right).getConfig());
+                        ((CreatableKafkaTopic<?, ?>) left).config(),
+                        ((CreatableKafkaTopic<?, ?>) right).config());
     }
 
     /**
@@ -90,17 +92,17 @@ public interface KafkaTopic<K, V> {
      * @param topic the topic to convert
      * @return string representation
      */
-    static String asString(final KafkaTopic<?, ?> topic) {
+    static String asString(final KafkaTopicDescriptor<?, ?> topic) {
 
         final StringJoiner joiner =
                 new StringJoiner(", ", topic.getClass().getSimpleName() + "[", "]")
-                        .add("topicName=" + topic.getTopicName())
-                        .add("keyType=" + topic.getKeyType().getName())
-                        .add("valueType=" + topic.getValueType().getName());
+                        .add("topicName=" + topic.name())
+                        .add("keyType=" + topic.keyType().getName())
+                        .add("valueType=" + topic.valueType().getName());
 
         if (topic instanceof CreatableKafkaTopic) {
             final CreatableKafkaTopic<?, ?> owned = (CreatableKafkaTopic<?, ?>) topic;
-            joiner.add("config=" + KafkaTopicConfig.asString(owned.getConfig()));
+            joiner.add("config=" + KafkaTopicConfig.asString(owned.config()));
         }
 
         return joiner.toString();
