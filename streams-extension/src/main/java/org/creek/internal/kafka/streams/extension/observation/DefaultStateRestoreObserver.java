@@ -16,10 +16,55 @@
 
 package org.creek.internal.kafka.streams.extension.observation;
 
+import static java.util.Objects.requireNonNull;
 
+import org.creek.api.base.annotation.VisibleForTesting;
 import org.creek.api.kafka.streams.observation.StateRestoreObserver;
+import org.creek.api.observability.logging.structured.LogEntryCustomizer;
+import org.creek.api.observability.logging.structured.StructuredLogger;
+import org.creek.api.observability.logging.structured.StructuredLoggerFactory;
 
 public final class DefaultStateRestoreObserver implements StateRestoreObserver {
+
+    private static final StructuredLogger LOGGER =
+            StructuredLoggerFactory.internalLogger(DefaultStateRestoreObserver.class);
+
+    private final StructuredLogger logger;
+
+    public DefaultStateRestoreObserver() {
+        this(LOGGER);
+    }
+
+    @VisibleForTesting
+    DefaultStateRestoreObserver(final StructuredLogger logger) {
+        this.logger = requireNonNull(logger, "logger");
+    }
+
+    @Override
+    public void restoreStarted(
+            final String topic,
+            final int partition,
+            final String storeName,
+            final long startingOffset,
+            final long endingOffset) {
+        logger.info(
+                "Restore of state store partition starting",
+                log ->
+                        defaults(log, topic, partition, storeName)
+                                .with("startOffset", startingOffset)
+                                .with("endOffset", endingOffset));
+    }
+
+    @Override
+    public void restoreFinished(
+            final String topic,
+            final int partition,
+            final String storeName,
+            final long totalRestored) {
+        logger.info(
+                "Restore of state store partition finished",
+                log -> defaults(log, topic, partition, storeName).with("restored", totalRestored));
+    }
 
     @Override
     public boolean equals(final Object o) {
@@ -37,5 +82,21 @@ public final class DefaultStateRestoreObserver implements StateRestoreObserver {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    private static LogEntryCustomizer defaults(
+            final LogEntryCustomizer log,
+            final String topic,
+            final int partition,
+            final String storeName) {
+        return log.with(Metric.store, storeName)
+                .with(Metric.topic, topic)
+                .with(Metric.partition, partition);
+    }
+
+    private enum Metric {
+        store,
+        topic,
+        partition
     }
 }
