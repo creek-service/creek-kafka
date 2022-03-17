@@ -1,8 +1,11 @@
 --add-modules
-  org.junitpioneer,org.hamcrest
+  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures
 
 --add-reads
   creek.kafka.streams.extension=org.junitpioneer,org.hamcrest
+
+--add-reads
+  creek.kafka.streams.extension=creek.observability.logging.fixtures
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons

@@ -29,4 +29,6 @@ dependencies {
     implementation("org.creek:creek-observability-logging:$creekVersion")
     implementation("org.creek:creek-base-type:$creekVersion")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+
+    testImplementation("org.creek:creek-observability-logging-fixtures:$creekVersion")
 }
