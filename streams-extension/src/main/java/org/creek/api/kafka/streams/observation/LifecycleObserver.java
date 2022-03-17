@@ -47,6 +47,11 @@ public interface LifecycleObserver {
         public int asInt() {
             return code;
         }
+
+        @Override
+        public String toString() {
+            return super.toString() + "(" + code + ")";
+        }
     }
 
     /** The app is starting up. */
