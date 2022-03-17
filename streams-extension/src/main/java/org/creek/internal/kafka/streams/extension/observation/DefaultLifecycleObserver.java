@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.Map;
+import org.creek.api.base.annotation.VisibleForTesting;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.observability.logging.structured.StructuredLogger;
 import org.creek.api.observability.logging.structured.StructuredLoggerFactory;
@@ -35,7 +36,8 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
         this(LOGGER);
     }
 
-    public DefaultLifecycleObserver(final StructuredLogger logger) {
+    @VisibleForTesting
+    DefaultLifecycleObserver(final StructuredLogger logger) {
         this.logger = requireNonNull(logger, "logger");
     }
 
