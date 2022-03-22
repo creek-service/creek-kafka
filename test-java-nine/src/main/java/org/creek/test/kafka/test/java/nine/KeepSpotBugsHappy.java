@@ -16,6 +16,5 @@
 
 package org.creek.test.kafka.test.java.nine;
 
-// Todo: exclude by package...
 @SuppressWarnings("unused") // Spotbugs needs at least one non-test class.
 public final class KeepSpotBugsHappy {}
