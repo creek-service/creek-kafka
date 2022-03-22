@@ -47,13 +47,13 @@ public interface OwnedKafkaTopicInput<K, V> extends ComponentInput, CreatableKaf
             }
 
             @Override
-            public Class<K> keyType() {
-                return input.keyType();
+            public PartDescriptor<K> key() {
+                return input.key();
             }
 
             @Override
-            public Class<V> valueType() {
-                return input.valueType();
+            public PartDescriptor<V> value() {
+                return input.value();
             }
         };
     }

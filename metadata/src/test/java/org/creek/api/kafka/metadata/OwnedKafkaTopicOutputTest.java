@@ -16,8 +16,10 @@
 
 package org.creek.api.kafka.metadata;
 
+import static org.creek.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,11 +34,16 @@ class OwnedKafkaTopicOutputTest {
 
         // Then:
         assertThat(input.name(), is(output.name()));
-        assertThat(input.keyType(), is(output.keyType()));
-        assertThat(input.valueType(), is(output.valueType()));
+        assertThat(input.key(), is(sameInstance(output.key())));
+        assertThat(input.value(), is(sameInstance(output.value())));
     }
 
     private static final class TestOutput implements OwnedKafkaTopicOutput<Long, String> {
+
+        private final TestPart<Long> key =
+                new TestPart<>(Long.class, serializationFormat("keyFormat"));
+        private final TestPart<String> value =
+                new TestPart<>(String.class, serializationFormat("valueFormat"));
 
         @Override
         public KafkaTopicConfig config() {
@@ -49,13 +56,33 @@ class OwnedKafkaTopicOutputTest {
         }
 
         @Override
-        public Class<Long> keyType() {
-            return Long.class;
+        public PartDescriptor<Long> key() {
+            return key;
         }
 
         @Override
-        public Class<String> valueType() {
-            return String.class;
+        public PartDescriptor<String> value() {
+            return value;
+        }
+
+        private static final class TestPart<T> implements PartDescriptor<T> {
+            private final Class<T> type;
+            private final SerializationFormat format;
+
+            TestPart(final Class<T> type, final SerializationFormat format) {
+                this.type = type;
+                this.format = format;
+            }
+
+            @Override
+            public SerializationFormat format() {
+                return format;
+            }
+
+            @Override
+            public Class<T> type() {
+                return type;
+            }
         }
     }
 }
