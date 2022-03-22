@@ -181,6 +181,10 @@ val coverage = tasks.register<JacocoReport>("coverage") {
                 val coverageSubTask = this
                 sourceSets(subproject.sourceSets.main.get())
                 executionData(coverageSubTask)
+
+                classDirectories.setFrom(files(classDirectories.files.map {
+                    fileTree(it).apply { exclude("org/creek/test/**") }
+                }))
             }
 
             subproject.tasks.matching({ it.extensions.findByType<JacocoTaskExtension>() != null }).forEach {
