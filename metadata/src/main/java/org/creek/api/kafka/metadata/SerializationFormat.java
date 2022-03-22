@@ -24,7 +24,7 @@ import java.util.Objects;
  * Type-safe serialization format name.
  *
  * <p>Serialization formats are pluggable. Each format used requires a single implementation of
- * {@code KafkaSerdeProvider} on the class path.
+ * {@code KafkaSerdeProvider} on the class or module path.
  */
 public final class SerializationFormat {
 
