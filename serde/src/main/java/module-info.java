@@ -22,7 +22,11 @@ module creek.kafka.serde {
     requires transitive creek.base.annotation;
     requires transitive kafka.clients;
 
+    exports org.creek.api.kafka.serde;
     exports org.creek.api.kafka.serde.provider;
 
     uses KafkaSerdeProvider;
+
+    provides KafkaSerdeProvider with
+            org.creek.api.kafka.serde.NativeKafkaSerdeProvider;
 }
