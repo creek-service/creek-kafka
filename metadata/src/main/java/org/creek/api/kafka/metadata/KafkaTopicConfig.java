@@ -18,6 +18,7 @@ package org.creek.api.kafka.metadata;
 
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 /** Type for defining a Kafka topic's config */
@@ -33,7 +34,7 @@ public interface KafkaTopicConfig {
     /** @return true if left and right are equivalent. */
     static boolean matches(final KafkaTopicConfig left, final KafkaTopicConfig right) {
         return left.getPartitions() == right.getPartitions()
-                && left.getConfig().equals(right.getConfig());
+                && Objects.equals(left.getConfig(), right.getConfig());
     }
 
     /**

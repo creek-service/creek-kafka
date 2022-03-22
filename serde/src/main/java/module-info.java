@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
 
-val creekVersion : String by extra
+import org.creek.api.kafka.serde.provider.KafkaSerdeProvider;
 
-dependencies {
-    api("org.creek:creek-platform-metadata:$creekVersion")
+module creek.kafka.serde {
+    requires transitive creek.kafka.metadata;
+    requires transitive creek.base.annotation;
+    requires transitive kafka.clients;
 
-    // Avoid new non-test dependencies, as this jar is required by schema jars, i.e. its shared code.
+    exports org.creek.api.kafka.serde.provider;
+
+    uses KafkaSerdeProvider;
 }

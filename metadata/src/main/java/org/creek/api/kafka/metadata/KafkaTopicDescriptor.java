@@ -17,7 +17,6 @@
 package org.creek.api.kafka.metadata;
 
 
-import java.util.StringJoiner;
 import org.creek.api.platform.metadata.ResourceDescriptor;
 
 /**
@@ -31,80 +30,30 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
     /** @return name of the topic as it is in Kafka. */
     String name();
 
-    /**
-     * The type serialized in the topic's record keys.
-     *
-     * <p>Can be:
-     *
-     * <ul>
-     *   <li>{@code Void.class} if the topic does not have a key.
-     *   <li>Built-in types.
-     *   <li>Custom type.
-     * </ul>
-     *
-     * @return The type of the key.
-     */
-    Class<K> keyType();
+    /** @return metadata about the topic's key: */
+    PartDescriptor<K> key();
 
-    /**
-     * The type serialized in the topic's record values.
-     *
-     * <ul>
-     *   <li>{@code Void.class} if the topic does not have a value.
-     *   <li>Built-in types.
-     *   <li>Custom type.
-     * </ul>
-     *
-     * @return the type of the value.
-     */
-    Class<V> valueType();
+    /** @return metadata about the topic's value: */
+    PartDescriptor<V> value();
 
-    /** @return {@code true} if {@code left} and {@code right} are equivalent. */
-    static boolean matches(
-            final KafkaTopicDescriptor<?, ?> left, final KafkaTopicDescriptor<?, ?> right) {
-        final boolean basics =
-                left.name().equals(right.name())
-                        && left.keyType().equals(right.keyType())
-                        && left.valueType().equals(right.valueType());
+    /** Descriptor for part of a topic's record. */
+    interface PartDescriptor<T> {
+        /**
+         * The serialization format used to serialize this part of the record.
+         *
+         * <p>A serde provider with a matching serialization format must be available at runtime.
+         *
+         * @return the part's serialization format.
+         */
+        SerializationFormat format();
 
-        if (!basics) {
-            return false;
-        }
-
-        final boolean leftOwned = left instanceof CreatableKafkaTopic;
-        final boolean rightOwned = right instanceof CreatableKafkaTopic;
-        if (leftOwned != rightOwned) {
-            return false;
-        }
-
-        return !leftOwned
-                || KafkaTopicConfig.matches(
-                        ((CreatableKafkaTopic<?, ?>) left).config(),
-                        ((CreatableKafkaTopic<?, ?>) right).config());
-    }
-
-    /**
-     * Convert topic details to string.
-     *
-     * <p>Used when logging topic details.
-     * Avoids the need for every implementor of this type to define {@code toString).
-     *
-     * @param topic the topic to convert
-     * @return string representation
-     */
-    static String asString(final KafkaTopicDescriptor<?, ?> topic) {
-
-        final StringJoiner joiner =
-                new StringJoiner(", ", topic.getClass().getSimpleName() + "[", "]")
-                        .add("topicName=" + topic.name())
-                        .add("keyType=" + topic.keyType().getName())
-                        .add("valueType=" + topic.valueType().getName());
-
-        if (topic instanceof CreatableKafkaTopic) {
-            final CreatableKafkaTopic<?, ?> owned = (CreatableKafkaTopic<?, ?>) topic;
-            joiner.add("config=" + KafkaTopicConfig.asString(owned.config()));
-        }
-
-        return joiner.toString();
+        /**
+         * The type serialized in this part of the record.
+         *
+         * <p>The types supported will depend on the {@link #format()}.
+         *
+         * @return The part's java type.
+         */
+        Class<T> type();
     }
 }

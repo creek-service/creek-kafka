@@ -47,13 +47,13 @@ public interface OwnedKafkaTopicOutput<K, V> extends ComponentOutput, CreatableK
             }
 
             @Override
-            public Class<K> keyType() {
-                return output.keyType();
+            public PartDescriptor<K> key() {
+                return output.key();
             }
 
             @Override
-            public Class<V> valueType() {
-                return output.valueType();
+            public PartDescriptor<V> value() {
+                return output.value();
             }
         };
     }
