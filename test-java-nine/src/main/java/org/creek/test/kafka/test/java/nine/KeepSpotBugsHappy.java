@@ -14,21 +14,8 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.test.kafka.test.java.nine;
 
-val kafkaVersion : String by extra
-val creekVersion : String by extra
-
-dependencies {
-    api(project(":metadata"))
-    api("org.creek:creek-base-annotation:$creekVersion")
-    api("org.creek:creek-service-extension:$creekVersion")
-    api("org.apache.kafka:kafka-streams:$kafkaVersion")
-
-    implementation("org.creek:creek-observability-logging:$creekVersion")
-    implementation("org.creek:creek-base-type:$creekVersion")
-
-    testImplementation("org.creek:creek-observability-logging-fixtures:$creekVersion")
-}
+// Todo: exclude by package...
+@SuppressWarnings("unused") // Spotbugs needs at least one non-test class.
+public final class KeepSpotBugsHappy {}

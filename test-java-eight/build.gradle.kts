@@ -18,17 +18,6 @@ plugins {
     `java-library`
 }
 
-val kafkaVersion : String by extra
-val creekVersion : String by extra
-
 dependencies {
-    api(project(":metadata"))
-    api("org.creek:creek-base-annotation:$creekVersion")
-    api("org.creek:creek-service-extension:$creekVersion")
-    api("org.apache.kafka:kafka-streams:$kafkaVersion")
-
-    implementation("org.creek:creek-observability-logging:$creekVersion")
-    implementation("org.creek:creek-base-type:$creekVersion")
-
-    testImplementation("org.creek:creek-observability-logging-fixtures:$creekVersion")
+    implementation(project(":streams-extension"))
 }
