@@ -28,8 +28,8 @@ public final class KafkaSerdeProviders {
 
     private final Map<SerializationFormat, KafkaSerdeProvider> providers;
 
-    public KafkaSerdeProviders() {
-        this(new ProviderLoader().load());
+    public KafkaSerdeProviders create() {
+        return new KafkaSerdeProviders(new ProviderLoader().load());
     }
 
     @VisibleForTesting
