@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import org.creek.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.kafka.streams.observation.StateRestoreObserver;
 import org.creek.api.service.extension.CreekExtensionOptions;
@@ -39,6 +40,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     private final Duration streamsCloseTimeout;
     private final LifecycleObserver lifecycleObserver;
     private final StateRestoreObserver restoreObserver;
+    private final KafkaMetricsPublisherOptions metricsPublishing;
 
     public static Builder builder() {
         return new Builder();
@@ -48,11 +50,13 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
             final Map<String, Object> properties,
             final Duration streamsCloseTimeout,
             final LifecycleObserver lifecycleObserver,
-            final StateRestoreObserver restoreObserver) {
+            final StateRestoreObserver restoreObserver,
+            final KafkaMetricsPublisherOptions metricsPublishing) {
         this.properties = Map.copyOf(requireNonNull(properties, "properties"));
         this.streamsCloseTimeout = requireNonNull(streamsCloseTimeout, "streamsCloseTimeout");
         this.lifecycleObserver = requireNonNull(lifecycleObserver, "lifecycleObserver");
         this.restoreObserver = requireNonNull(restoreObserver, "restoreObserver");
+        this.metricsPublishing = requireNonNull(metricsPublishing, "metricsPublishing");
     }
 
     /** @return the Kafka properties. */
@@ -62,19 +66,24 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         return props;
     }
 
-    /** @return the timeout used when closing the streams app. */
+    /** @return the timeout used when closing the stream app. */
     public Duration streamsCloseTimeout() {
         return streamsCloseTimeout;
     }
 
-    /** @return the observer that will be invoked as the steams app changes state. */
+    /** @return the observer that will be invoked as the stream app changes state. */
     public LifecycleObserver lifecycleObserver() {
         return lifecycleObserver;
     }
 
-    /** @return the observer that will be invoked as the steams app restored its state. */
+    /** @return the observer that will be invoked as the stream app restored its state. */
     public StateRestoreObserver restoreObserver() {
         return restoreObserver;
+    }
+
+    /** @return metrics publishing options */
+    public KafkaMetricsPublisherOptions metricsPublishing() {
+        return metricsPublishing;
     }
 
     @Override
@@ -89,12 +98,18 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         return Objects.equals(properties, that.properties)
                 && Objects.equals(streamsCloseTimeout, that.streamsCloseTimeout)
                 && Objects.equals(lifecycleObserver, that.lifecycleObserver)
-                && Objects.equals(restoreObserver, that.restoreObserver);
+                && Objects.equals(restoreObserver, that.restoreObserver)
+                && Objects.equals(metricsPublishing, that.metricsPublishing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(properties, streamsCloseTimeout, lifecycleObserver, restoreObserver);
+        return Objects.hash(
+                properties,
+                streamsCloseTimeout,
+                lifecycleObserver,
+                restoreObserver,
+                metricsPublishing);
     }
 
     @Override
@@ -108,6 +123,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
                 + lifecycleObserver
                 + ", restoreObserver="
                 + restoreObserver
+                + ", metricsPublishing="
+                + metricsPublishing
                 + '}';
     }
 
@@ -118,6 +135,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         private Duration streamsCloseTimeout = DEFAULT_STREAMS_CLOSE_TIMEOUT;
         private Optional<LifecycleObserver> lifecycleObserver = Optional.empty();
         private Optional<StateRestoreObserver> restoreObserver = Optional.empty();
+        private KafkaMetricsPublisherOptions metricsPublishing =
+                KafkaMetricsPublisherOptions.builder().build();
 
         private Builder() {}
 
@@ -160,12 +179,30 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
             return this;
         }
 
+        /**
+         * @param options options around metrics publishing.
+         * @return self.
+         */
+        public Builder withMetricsPublishing(final KafkaMetricsPublisherOptions options) {
+            this.metricsPublishing = requireNonNull(options, "options");
+            return this;
+        }
+
+        /**
+         * @param options options around metrics publishing.
+         * @return self.
+         */
+        public Builder withMetricsPublishing(final KafkaMetricsPublisherOptions.Builder options) {
+            return withMetricsPublishing(options.build());
+        }
+
         public KafkaStreamsExtensionOptions build() {
             return new KafkaStreamsExtensionOptions(
                     properties,
                     streamsCloseTimeout,
                     lifecycleObserver.orElseGet(DefaultLifecycleObserver::new),
-                    restoreObserver.orElseGet(DefaultStateRestoreObserver::new));
+                    restoreObserver.orElseGet(DefaultStateRestoreObserver::new),
+                    metricsPublishing);
         }
     }
 }
