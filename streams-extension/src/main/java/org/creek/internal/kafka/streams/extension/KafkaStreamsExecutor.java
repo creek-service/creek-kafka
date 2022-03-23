@@ -24,8 +24,11 @@ import java.util.concurrent.ExecutionException;
 import org.apache.kafka.streams.KafkaStreams;
 import org.creek.api.base.annotation.VisibleForTesting;
 import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creek.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode;
+import org.creek.internal.kafka.streams.extension.observation.DefaultMetricsPublisher;
+import org.creek.internal.kafka.streams.extension.observation.MetricsPublisher;
 
 /** Executes a {@link KafkaStreams} app. */
 public final class KafkaStreamsExecutor {
@@ -33,6 +36,7 @@ public final class KafkaStreamsExecutor {
     private static final Duration LOGGING_STREAMS_CLOSE_DELAY = Duration.ofSeconds(1);
 
     private final KafkaStreamsExtensionOptions options;
+    private final MetricsPublisherFactory metricsPublisherFactory;
     private final StreamsShutdownHook shutdownHook;
     private final ShutdownMethod shutdownMethod;
     private final CompletableFuture<Void> shutdownFuture;
@@ -41,6 +45,7 @@ public final class KafkaStreamsExecutor {
     public KafkaStreamsExecutor(final KafkaStreamsExtensionOptions options) {
         this(
                 options,
+                DefaultMetricsPublisher::new,
                 new DefaultStreamsShutdownHook(),
                 System::exit,
                 new CompletableFuture<>(),
@@ -51,11 +56,14 @@ public final class KafkaStreamsExecutor {
     @VisibleForTesting
     KafkaStreamsExecutor(
             final KafkaStreamsExtensionOptions options,
+            final MetricsPublisherFactory metricsPublisherFactory,
             final StreamsShutdownHook shutdownHook,
             final ShutdownMethod shutdownMethod,
             final CompletableFuture<Void> shutdownFuture,
             final Runnable loggingCloseDelay) {
         this.options = requireNonNull(options, "options");
+        this.metricsPublisherFactory =
+                requireNonNull(metricsPublisherFactory, "metricsPublisherSupplier");
         this.shutdownHook = requireNonNull(shutdownHook, "shutdownHook");
         this.shutdownMethod = requireNonNull(shutdownMethod, "shutdownHandler");
         this.shutdownFuture = requireNonNull(shutdownFuture, "future");
@@ -68,8 +76,11 @@ public final class KafkaStreamsExecutor {
 
         ExitCode exitCode = ExitCode.EXCEPTION_THROWN_STARTING;
 
-        try {
+        try (MetricsPublisher metricsPublisher =
+                metricsPublisherFactory.create(options.metricsPublishing())) {
             observer.starting();
+
+            metricsPublisher.schedule(streamsApp::metrics);
 
             streamsApp.setStateListener(new LifecycleListener(observer, shutdownFuture));
 
@@ -127,7 +138,13 @@ public final class KafkaStreamsExecutor {
         }
     }
 
+    @VisibleForTesting
     interface ShutdownMethod {
         void shutdownApp(int exitCode);
+    }
+
+    @VisibleForTesting
+    interface MetricsPublisherFactory {
+        MetricsPublisher create(KafkaMetricsPublisherOptions options);
     }
 }

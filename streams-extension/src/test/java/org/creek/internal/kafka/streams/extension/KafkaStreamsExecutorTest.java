@@ -20,20 +20,33 @@ import static org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode
 import static org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode.OK;
 import static org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode.STREAMS_TIMED_OUT_CLOSING;
 import static org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode.STREAM_APP_FAILED;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import org.apache.kafka.common.Metric;
+import org.apache.kafka.common.MetricName;
 import org.apache.kafka.streams.KafkaStreams;
 import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creek.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.kafka.streams.observation.StateRestoreObserver;
+import org.creek.internal.kafka.streams.extension.KafkaStreamsExecutor.MetricsPublisherFactory;
+import org.creek.internal.kafka.streams.extension.observation.MetricsPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -49,10 +62,17 @@ class KafkaStreamsExecutorTest {
 
     @Mock private LifecycleObserver lifecycleObserver;
     @Mock private StateRestoreObserver restoreObserver;
+    @Mock private MetricsPublisherFactory metricsPublisherFactory;
+    @Mock private MetricsPublisher metricsPublisher;
     @Mock private StreamsShutdownHook shutdownHook;
     @Mock private KafkaStreamsExecutor.ShutdownMethod shutdownMethod;
+    @Mock private KafkaMetricsPublisherOptions metricsOptions;
     @Mock private Runnable loggingCloseDelay;
     @Mock private KafkaStreams app;
+
+    @Captor
+    private ArgumentCaptor<Supplier<Map<MetricName, ? extends Metric>>> metricsSupplierCaptor;
+
     private CompletableFuture<Void> shutdownFuture;
     private KafkaStreamsExecutor executor;
 
@@ -65,13 +85,20 @@ class KafkaStreamsExecutorTest {
                         .withStateRestoreObserver(restoreObserver)
                         .withLifecycleObserver(lifecycleObserver)
                         .withStreamsCloseTimeout(CLOSE_TIMEOUT)
+                        .withMetricsPublishing(metricsOptions)
                         .build();
 
         executor =
                 new KafkaStreamsExecutor(
-                        options, shutdownHook, shutdownMethod, shutdownFuture, loggingCloseDelay);
+                        options,
+                        metricsPublisherFactory,
+                        shutdownHook,
+                        shutdownMethod,
+                        shutdownFuture,
+                        loggingCloseDelay);
 
         when(app.close(any())).thenReturn(true);
+        when(metricsPublisherFactory.create(any())).thenReturn(metricsPublisher);
     }
 
     @Test
@@ -89,7 +116,7 @@ class KafkaStreamsExecutorTest {
     }
 
     @Test
-    void shouldAddAppStateListener() {
+    void shouldAddLifecycleStateListener() {
         // Given:
         shutdownFuture.complete(null);
 
@@ -103,7 +130,7 @@ class KafkaStreamsExecutorTest {
     }
 
     @Test
-    void shouldAddAppStateRestoreListener() {
+    void shouldAddStateRestoreListener() {
         // Given:
         shutdownFuture.complete(null);
 
@@ -128,6 +155,73 @@ class KafkaStreamsExecutorTest {
         final InOrder inOrder = Mockito.inOrder(app, shutdownHook);
         inOrder.verify(shutdownHook).apply(app, shutdownFuture);
         inOrder.verify(app).start();
+    }
+
+    @Test
+    void shouldScheduleMetricsPublishing() {
+        // Given:
+        shutdownFuture.complete(null);
+
+        // When:
+        executor.execute(app);
+
+        // Then:
+        final InOrder inOrder = Mockito.inOrder(app, metricsPublisherFactory, metricsPublisher);
+        inOrder.verify(metricsPublisherFactory).create(metricsOptions);
+        inOrder.verify(metricsPublisher).schedule(any());
+        inOrder.verify(app).start();
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldGetFreshMetricsOnEachPublish() {
+        // Given:
+        final Supplier<Map<MetricName, ? extends Metric>> supplier = metricsSupplier();
+
+        final Metric metric = mock(Metric.class);
+        final Map<MetricName, Metric> metrics1 =
+                Map.of(new MetricName("A", "g", "d", Map.of()), metric);
+        final Map<MetricName, Metric> metrics2 =
+                Map.of(new MetricName("B", "g", "d", Map.of()), metric);
+
+        when(app.metrics()).thenReturn((Map) metrics1, (Map) metrics2);
+
+        // When:
+        final Map<MetricName, ? extends Metric> result1 = supplier.get();
+        final Map<MetricName, ? extends Metric> result2 = supplier.get();
+
+        // Then:
+        verify(app, times(2)).metrics();
+        assertThat(result1, is(metrics1));
+        assertThat(result2, is(metrics2));
+    }
+
+    @Test
+    void shouldCloseMetricsPublisher() {
+        // Given:
+        shutdownFuture.complete(null);
+
+        // When:
+        executor.execute(app);
+
+        // Then:
+        final InOrder inOrder = Mockito.inOrder(lifecycleObserver, metricsPublisher);
+        inOrder.verify(lifecycleObserver).stopped(any());
+        inOrder.verify(metricsPublisher).close();
+    }
+
+    @Test
+    void shouldCloseMetricsPublisherOnFailure() {
+        // Given:
+        shutdownFuture.completeExceptionally(new RuntimeException("Big Bada Boom"));
+
+        // When:
+        executor.execute(app);
+
+        // Then:
+        final InOrder inOrder = Mockito.inOrder(lifecycleObserver, metricsPublisher);
+        inOrder.verify(lifecycleObserver).stopped(any());
+        inOrder.verify(metricsPublisher).close();
     }
 
     @Test
@@ -221,5 +315,12 @@ class KafkaStreamsExecutorTest {
 
         // Then:
         verify(loggingCloseDelay).run();
+    }
+
+    private Supplier<Map<MetricName, ? extends Metric>> metricsSupplier() {
+        shutdownFuture.complete(null);
+        executor.execute(app);
+        verify(metricsPublisher).schedule(metricsSupplierCaptor.capture());
+        return metricsSupplierCaptor.getValue();
     }
 }

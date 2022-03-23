@@ -24,9 +24,11 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
 import java.time.Duration;
+import org.creek.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
 import org.creek.api.kafka.streams.observation.LifecycleObserver;
 import org.creek.api.kafka.streams.observation.StateRestoreObserver;
 import org.creek.internal.kafka.streams.extension.observation.DefaultLifecycleObserver;
@@ -67,6 +69,10 @@ class KafkaStreamsExtensionOptionsTest {
                 .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder()
                                 .withStateRestoreObserver(mock(StateRestoreObserver.class))
+                                .build())
+                .addEqualityGroup(
+                        KafkaStreamsExtensionOptions.builder()
+                                .withMetricsPublishing(mock(KafkaMetricsPublisherOptions.class))
                                 .build())
                 .testEquals();
     }
@@ -152,5 +158,41 @@ class KafkaStreamsExtensionOptionsTest {
 
         // Then:
         assertThat(options.restoreObserver(), is(observer));
+    }
+
+    @Test
+    void shouldDefaultMetricsPublishing() {
+        assertThat(
+                builder.build().metricsPublishing(),
+                is(KafkaMetricsPublisherOptions.builder().build()));
+    }
+
+    @Test
+    void shouldCustomizeMetricsPublishing() {
+        // Given:
+        final KafkaMetricsPublisherOptions metrics = mock(KafkaMetricsPublisherOptions.class);
+        builder.withMetricsPublishing(metrics);
+
+        // When:
+        final KafkaStreamsExtensionOptions options = builder.build();
+
+        // Then:
+        assertThat(options.metricsPublishing(), is(metrics));
+    }
+
+    @Test
+    void shouldCustomizeMetricsPublishingWithBuilder() {
+        // Given:
+        final KafkaMetricsPublisherOptions metrics = mock(KafkaMetricsPublisherOptions.class);
+        final KafkaMetricsPublisherOptions.Builder metricsBuilder =
+                mock(KafkaMetricsPublisherOptions.Builder.class);
+        when(metricsBuilder.build()).thenReturn(metrics);
+
+        // When:
+        final KafkaStreamsExtensionOptions options =
+                builder.withMetricsPublishing(metricsBuilder).build();
+
+        // Then:
+        assertThat(options.metricsPublishing(), is(metrics));
     }
 }
