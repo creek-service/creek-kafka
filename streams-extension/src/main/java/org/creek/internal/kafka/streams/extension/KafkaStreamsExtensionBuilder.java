@@ -26,6 +26,8 @@ import org.creek.api.platform.metadata.ComponentDescriptor;
 import org.creek.api.platform.metadata.ResourceDescriptor;
 import org.creek.api.service.extension.CreekExtensionBuilder;
 import org.creek.api.service.extension.CreekExtensionOptions;
+import org.creek.internal.kafka.streams.extension.resource.ResourceRegistry;
+import org.creek.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
 
 /** Builder for the {@link org.creek.api.kafka.streams.extension.KafkaStreamsExtension}. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -34,20 +36,27 @@ public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder
     private final BuilderFactory builderFactory;
     private final ExecutorFactory executorFactory;
     private final ExtensionFactory extensionFactory;
+    private final ResourceRegistryFactory resourcesFactory;
     private Optional<KafkaStreamsExtensionOptions> options = Optional.empty();
 
     public KafkaStreamsExtensionBuilder() {
-        this(KafkaStreamsBuilder::new, KafkaStreamsExecutor::new, StreamsExtension::new);
+        this(
+                KafkaStreamsBuilder::new,
+                KafkaStreamsExecutor::new,
+                StreamsExtension::new,
+                new ResourceRegistryFactory());
     }
 
     @VisibleForTesting
     KafkaStreamsExtensionBuilder(
             final BuilderFactory builderFactory,
             final ExecutorFactory executorFactory,
-            final ExtensionFactory extensionFactory) {
+            final ExtensionFactory extensionFactory,
+            final ResourceRegistryFactory resourcesFactory) {
         this.builderFactory = requireNonNull(builderFactory, "builderFactory");
         this.executorFactory = requireNonNull(executorFactory, "executorFactory");
         this.extensionFactory = requireNonNull(extensionFactory, "extensionFactory");
+        this.resourcesFactory = requireNonNull(resourcesFactory, "resourcesFactory");
     }
 
     @Override
@@ -77,11 +86,14 @@ public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder
 
     @Override
     public StreamsExtension build(final ComponentDescriptor component) {
+
         final KafkaStreamsExtensionOptions opts =
                 options.orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
 
+        final ResourceRegistry resources = resourcesFactory.create(component, opts);
+
         return extensionFactory.create(
-                opts, builderFactory.create(opts), executorFactory.create(opts));
+                opts, resources, builderFactory.create(opts), executorFactory.create(opts));
     }
 
     @VisibleForTesting
@@ -98,6 +110,7 @@ public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder
     interface ExtensionFactory {
         StreamsExtension create(
                 KafkaStreamsExtensionOptions options,
+                ResourceRegistry resources,
                 KafkaStreamsBuilder builder,
                 KafkaStreamsExecutor executor);
     }

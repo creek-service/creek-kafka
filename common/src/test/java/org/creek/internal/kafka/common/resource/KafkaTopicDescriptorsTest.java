@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.metadata;
+package org.creek.internal.kafka.common.resource;
 
 import static org.creek.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import org.creek.api.kafka.metadata.CreatableKafkaTopic;
+import org.creek.api.kafka.metadata.KafkaTopicConfig;
+import org.creek.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creek.api.kafka.metadata.SerializationFormat;
 import org.junit.jupiter.api.Test;
 
 class KafkaTopicDescriptorsTest {

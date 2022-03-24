@@ -20,6 +20,8 @@ package org.creek.api.kafka.streams.extension;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
+import org.creek.api.kafka.common.resource.KafkaTopic;
+import org.creek.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creek.api.service.extension.CreekExtension;
 
 /** Kafka streams extension to Creek. */
@@ -34,6 +36,14 @@ public interface KafkaStreamsExtension extends CreekExtension {
      * @return the properties.
      */
     Properties properties();
+
+    /**
+     * Get a topic resource for the supplied {@code def}.
+     *
+     * @param def the topic descriptor
+     * @return the topic resource.
+     */
+    <K, V> KafkaTopic<K, V> topic(KafkaTopicDescriptor<K, V> def);
 
     /**
      * Build a Kafka Streams app from the supplied {@code topology}.

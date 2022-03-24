@@ -21,4 +21,5 @@ plugins {
 dependencies {
     implementation(project(":serde"))
     implementation(project(":streams-extension"))
+    implementation(project(":test-serde"))
 }
