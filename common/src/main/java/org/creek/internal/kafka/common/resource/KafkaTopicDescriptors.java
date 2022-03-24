@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.metadata;
+package org.creek.internal.kafka.common.resource;
 
 
 import java.util.Objects;
 import java.util.StringJoiner;
+import org.creek.api.kafka.metadata.CreatableKafkaTopic;
+import org.creek.api.kafka.metadata.KafkaTopicConfig;
+import org.creek.api.kafka.metadata.KafkaTopicDescriptor;
 
 public final class KafkaTopicDescriptors {
 
@@ -31,6 +34,10 @@ public final class KafkaTopicDescriptors {
      */
     public static boolean matches(
             final KafkaTopicDescriptor<?, ?> left, final KafkaTopicDescriptor<?, ?> right) {
+        if (left == right) {
+            return true;
+        }
+
         if (!Objects.equals(left.name(), right.name())) {
             return false;
         }
@@ -88,6 +95,10 @@ public final class KafkaTopicDescriptors {
     public static boolean matches(
             final KafkaTopicDescriptor.PartDescriptor<?> left,
             final KafkaTopicDescriptor.PartDescriptor<?> right) {
+        if (left == right) {
+            return true;
+        }
+
         return Objects.equals(left.format(), right.format())
                 && Objects.equals(left.type(), right.type());
     }

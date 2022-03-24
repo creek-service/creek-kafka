@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package org.creek.api.kafka.streams.resource;
+package org.creek.test.internal.kafka.serde.test;
 
 
 import org.apache.kafka.common.serialization.Serde;
+import org.creek.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creek.api.kafka.metadata.SerializationFormat;
+import org.creek.api.kafka.serde.provider.KafkaSerdeProvider;
 
-/**
- * A Kafka topic resource.
- *
- * @param <K> key type
- * @param <V> value type
- */
-public interface KafkaTopic<K, V> {
+public final class PrivateTestSerdeProvider implements KafkaSerdeProvider {
 
-    /** @return the name of the topic */
-    String name();
+    public static final SerializationFormat FORMAT =
+            SerializationFormat.serializationFormat("test-private");
 
-    /** @return the serde used to (de)serialize the keys stored in the topic */
-    Serde<K> keySerde();
+    @Override
+    public SerializationFormat format() {
+        return FORMAT;
+    }
 
-    /** @return the serde used to (de)serialize the values stored in the topic */
-    Serde<V> valueSerde();
+    @Override
+    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+        return null;
+    }
 }

@@ -17,4 +17,4 @@
 package org.creek.test.kafka.test.java.nine;
 
 @SuppressWarnings("unused") // Spotbugs needs at least one non-test class.
-public final class KeepSpotBugsHappy {}
+interface KeepSpotBugsHappy {}

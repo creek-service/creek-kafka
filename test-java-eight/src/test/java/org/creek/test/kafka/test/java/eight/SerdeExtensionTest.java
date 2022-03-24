@@ -22,6 +22,8 @@ import static org.hamcrest.Matchers.is;
 
 import org.creek.api.kafka.serde.NativeKafkaSerdeProvider;
 import org.creek.api.kafka.serde.provider.KafkaSerdeProviders;
+import org.creek.test.api.kafka.serde.test.PublicTestSerdeProvider;
+import org.creek.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,5 +41,19 @@ class SerdeExtensionTest {
         assertThat(
                 providers.get(NativeKafkaSerdeProvider.FORMAT),
                 is(instanceOf(NativeKafkaSerdeProvider.class)));
+    }
+
+    @Test
+    void shouldFindPublicTestSerde() {
+        assertThat(
+                providers.get(PublicTestSerdeProvider.FORMAT),
+                is(instanceOf(PublicTestSerdeProvider.class)));
+    }
+
+    @Test
+    void shouldFindPrivateTestSerde() {
+        assertThat(
+                providers.get(PrivateTestSerdeProvider.FORMAT),
+                is(instanceOf(PrivateTestSerdeProvider.class)));
     }
 }

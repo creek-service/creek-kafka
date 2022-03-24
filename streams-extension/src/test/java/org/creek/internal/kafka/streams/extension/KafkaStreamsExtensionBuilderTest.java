@@ -36,6 +36,8 @@ import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creek.api.platform.metadata.ComponentDescriptor;
 import org.creek.api.platform.metadata.ResourceDescriptor;
 import org.creek.api.service.extension.CreekExtensionOptions;
+import org.creek.internal.kafka.streams.extension.resource.ResourceRegistry;
+import org.creek.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,18 +60,22 @@ class KafkaStreamsExtensionBuilderTest {
     @Mock private KafkaStreamsExtensionBuilder.BuilderFactory builderFactory;
     @Mock private KafkaStreamsExtensionBuilder.ExecutorFactory executorFactory;
     @Mock private KafkaStreamsExtensionBuilder.ExtensionFactory extensionFactory;
+    @Mock private ResourceRegistryFactory resourceFactory;
     @Mock private KafkaStreamsBuilder streamsBuilder;
     @Mock private KafkaStreamsExecutor streamsExecutor;
     @Mock private StreamsExtension streamsExtension;
+    @Mock private ResourceRegistry resources;
 
     @BeforeEach
     void setUp() {
         builder =
-                new KafkaStreamsExtensionBuilder(builderFactory, executorFactory, extensionFactory);
+                new KafkaStreamsExtensionBuilder(
+                        builderFactory, executorFactory, extensionFactory, resourceFactory);
 
         when(builderFactory.create(any())).thenReturn(streamsBuilder);
         when(executorFactory.create(any())).thenReturn(streamsExecutor);
-        when(extensionFactory.create(any(), any(), any())).thenReturn(streamsExtension);
+        when(resourceFactory.create(any(), any())).thenReturn(resources);
+        when(extensionFactory.create(any(), any(), any(), any())).thenReturn(streamsExtension);
     }
 
     @Test
@@ -131,6 +137,27 @@ class KafkaStreamsExtensionBuilderTest {
     }
 
     @Test
+    void shouldBuildResourcesWithDefaultOptions() {
+        // When:
+        builder.build(component);
+
+        // Then:
+        verify(resourceFactory).create(component, DEFAULT_OPTIONS);
+    }
+
+    @Test
+    void shouldBuildResourcesWithUserOptions() {
+        // Given:
+        builder.with(userOptions);
+
+        // When:
+        builder.build(component);
+
+        // Then:
+        verify(resourceFactory).create(component, userOptions);
+    }
+
+    @Test
     void shouldBuildExecutorWithDefaultOptions() {
         // When:
         builder.build(component);
@@ -157,7 +184,8 @@ class KafkaStreamsExtensionBuilderTest {
         builder.build(component);
 
         // Then:
-        verify(extensionFactory).create(DEFAULT_OPTIONS, streamsBuilder, streamsExecutor);
+        verify(extensionFactory)
+                .create(DEFAULT_OPTIONS, resources, streamsBuilder, streamsExecutor);
     }
 
     @Test
@@ -169,7 +197,7 @@ class KafkaStreamsExtensionBuilderTest {
         builder.build(component);
 
         // Then:
-        verify(extensionFactory).create(userOptions, streamsBuilder, streamsExecutor);
+        verify(extensionFactory).create(userOptions, resources, streamsBuilder, streamsExecutor);
     }
 
     @Test

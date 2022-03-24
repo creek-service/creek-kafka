@@ -80,6 +80,7 @@ class KafkaStreamsExtensionOptionsTest {
     @Test
     void shouldDefaultToNoKafkaPropertiesForNow() {
         assertThat(builder.build().properties().keySet(), is(empty()));
+        assertThat(builder.build().propertyMap().keySet(), is(empty()));
     }
 
     @Test
@@ -92,6 +93,7 @@ class KafkaStreamsExtensionOptionsTest {
 
         // Then:
         assertThat(options.properties(), hasEntry("name", "value"));
+        assertThat(options.propertyMap(), hasEntry("name", "value"));
     }
 
     @Test

@@ -25,7 +25,11 @@ import static org.mockito.Mockito.when;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
+import org.creek.api.kafka.common.resource.KafkaTopic;
+import org.creek.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creek.internal.kafka.streams.extension.resource.ResourceRegistry;
+import org.creek.internal.kafka.streams.extension.resource.Topic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,16 +43,19 @@ import org.mockito.quality.Strictness;
 class StreamsExtensionTest {
 
     @Mock private KafkaStreamsExtensionOptions options;
+    @Mock private ResourceRegistry resources;
     @Mock private KafkaStreamsBuilder builder;
     @Mock private KafkaStreamsExecutor executor;
     @Mock private Properties properties;
     @Mock private Topology topology;
     @Mock private KafkaStreams app;
+    @Mock private KafkaTopicDescriptor<Long, String> topicDef;
+    @Mock private Topic<Long, String> topic;
     private StreamsExtension extension;
 
     @BeforeEach
     void setUp() {
-        extension = new StreamsExtension(options, builder, executor);
+        extension = new StreamsExtension(options, resources, builder, executor);
 
         when(options.properties()).thenReturn(properties);
         when(builder.build(any())).thenReturn(app);
@@ -91,5 +98,17 @@ class StreamsExtensionTest {
         // Then:
         verify(builder).build(topology);
         verify(executor).execute(app);
+    }
+
+    @Test
+    void shouldGetTopicsFromRegistry() {
+        // Given:
+        when(resources.topic(topicDef)).thenReturn(topic);
+
+        // When:
+        final KafkaTopic<Long, String> result = extension.topic(topicDef);
+
+        // Then:
+        assertThat(result, is(topic));
     }
 }
