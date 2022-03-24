@@ -68,7 +68,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
 
     /** @return the Kafka properties. */
     public Map<String, ?> propertyMap() {
-        return properties;
+        return Map.copyOf(properties);
     }
 
     /** @return the timeout used when closing the stream app. */

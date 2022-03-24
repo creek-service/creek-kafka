@@ -20,6 +20,7 @@ plugins {
 
 val kafkaVersion : String by extra
 val creekVersion : String by extra
+val spotBugsVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
@@ -31,6 +32,7 @@ dependencies {
     implementation(project(":serde"))
     implementation("org.creek:creek-observability-logging:$creekVersion")
     implementation("org.creek:creek-base-type:$creekVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 
     testImplementation("org.creek:creek-observability-logging-fixtures:$creekVersion")
 }
