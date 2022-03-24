@@ -11,6 +11,7 @@ Kafka integration for Creek
 * **[serde](serde)**: defines the base types used to define Kafka Serde (serializers and deserializers), 
                       and a `kafka` serialization format which uses the standard Kafka client serde.
 * **[streams-extension](streams-extension)**: defines extension to Creek's `CreekContext` to help with writing Kafka based micro-services.
+* **[streams-test](streams-test)**: Helpers for writing tests for Kafka streams based micro-services.
 * **[test-java-eight](test-java-eight)**: functional tests *without* Java 9's modularity.
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.
