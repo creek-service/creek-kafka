@@ -25,8 +25,8 @@ val creekVersion : String by extra
 dependencies {
     api(project(":metadata"))
     api("org.creek:creek-service-context:$creekVersion")
-    api("org.creek:creek-test-util:$creekVersion")
     api("org.apache.kafka:kafka-streams-test-utils:${kafkaVersion}")
 
+    implementation("org.creek:creek-test-util:$creekVersion")
     implementation("org.creek:creek-kafka-streams-extension:$creekVersion")
 }
