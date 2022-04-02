@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
-
-val kafkaVersion : String by extra
-val creekVersion : String by extra
+package org.creek;
 
 
-dependencies {
-    api(project(":metadata"))
-    api("org.creek:creek-service-context:$creekVersion")
-    api("org.apache.kafka:kafka-streams-test-utils:${kafkaVersion}")
+import org.creek.api.test.conformity.ConformityTester;
+import org.junit.jupiter.api.Test;
 
-    implementation("org.creek:creek-test-util:$creekVersion")
-    implementation("org.creek:creek-kafka-streams-extension:$creekVersion")
+class ModuleTest {
+
+    @Test
+    void shouldConform() {
+        ConformityTester.test(ModuleTest.class);
+    }
 }

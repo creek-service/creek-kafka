@@ -19,7 +19,7 @@ package org.creek.api.kafka.streams.test;
 
 import org.apache.kafka.streams.StreamsConfig;
 import org.creek.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
-import org.creek.api.test.Temp;
+import org.creek.api.test.util.Temp;
 
 /**
  * Kafka streams extension options builder for test code.
