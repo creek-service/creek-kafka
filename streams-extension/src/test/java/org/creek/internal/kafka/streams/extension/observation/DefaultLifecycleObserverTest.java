@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import com.google.common.testing.EqualsTester;
 import java.time.Duration;
 import org.creek.api.kafka.streams.observation.LifecycleObserver.ExitCode;
-import org.creek.test.observability.logging.structured.TestStructuredLogger;
+import org.creek.api.test.observability.logging.structured.TestStructuredLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
