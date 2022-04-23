@@ -27,8 +27,8 @@ class ModuleTest {
     void shouldConform() {
         ConformityTester.builder(ModuleTest.class)
                 .withDisabled(
-                        CheckModule.builder(),
-                        "kafka-streams-test-utils causes split-package issues")
+                        "kafka-streams-test-utils causes split-package issues",
+                        CheckModule.builder())
                 .check();
     }
 }

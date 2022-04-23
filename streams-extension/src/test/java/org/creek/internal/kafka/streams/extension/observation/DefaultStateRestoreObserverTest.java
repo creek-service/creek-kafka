@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 import com.google.common.testing.EqualsTester;
-import org.creek.test.observability.logging.structured.TestStructuredLogger;
+import org.creek.api.test.observability.logging.structured.TestStructuredLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

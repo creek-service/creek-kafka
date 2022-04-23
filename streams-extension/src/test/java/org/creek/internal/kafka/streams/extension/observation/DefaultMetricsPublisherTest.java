@@ -40,7 +40,7 @@ import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.creek.api.kafka.streams.observation.KafkaMetricsFilter;
 import org.creek.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
-import org.creek.test.observability.logging.structured.TestStructuredLogger;
+import org.creek.api.test.observability.logging.structured.TestStructuredLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

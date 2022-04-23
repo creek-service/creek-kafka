@@ -55,7 +55,7 @@ subprojects {
     project.version = project.parent?.version!!
 
     extra.apply {
-        set("creekVersion", "+")
+        set("creekVersion", "0.+")
         set("spotBugsVersion", "4.6.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
 
         set("log4jVersion", "2.14.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
