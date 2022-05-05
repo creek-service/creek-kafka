@@ -10,5 +10,5 @@ for example `Long`, `UUID`, `String` and others. See `org.apache.kafka.common.se
 This format can be used by having [`KafkaTopicDescriptor`][2]'s return `"kafka"` as the serialization format one of
 more of their message parts.
 
-[1]: src/main/java/org/creek/api/kafka/serde/provider/KafkaSerdeProvider.java
-[2]: ../metadata/src/main/java/org/creek/api/kafka/metadata/KafkaTopicDescriptor.java
+[1]: src/main/java/org/creekservice/api/kafka/serde/provider/KafkaSerdeProvider.java
+[2]: ../metadata/src/main/java/org/creekservice/api/kafka/metadata/KafkaTopicDescriptor.java

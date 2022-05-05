@@ -6,9 +6,9 @@ Provides helpers for testing Kafka Streams based code.
 
 This module provides classes to make it easier to write unit tests for Kafka Streams' topologies:
 
-* [`TestKafkaStreamsExtensionOptions`](src/main/java/org/creek/api/kafka/streams/test/TestKafkaStreamsExtensionOptions.java)
+* [`TestKafkaStreamsExtensionOptions`](src/main/java/org/creekservice/api/kafka/streams/test/TestKafkaStreamsExtensionOptions.java)
   Can be used to configure the [streams extension](../streams-extension) for unit tests. 
-* [`TestTopics`](src/main/java/org/creek/api/kafka/streams/test/TestTopics.java)
+* [`TestTopics`](src/main/java/org/creekservice/api/kafka/streams/test/TestTopics.java)
   Can be used to create input and output topics when using `TopologyTestDriver`.
 
 For example:

@@ -15,18 +15,18 @@
  */
 
 
-import org.creek.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 
 module creek.kafka.serde {
     requires transitive creek.kafka.metadata;
     requires transitive creek.base.annotation;
     requires transitive kafka.clients;
 
-    exports org.creek.api.kafka.serde;
-    exports org.creek.api.kafka.serde.provider;
+    exports org.creekservice.api.kafka.serde;
+    exports org.creekservice.api.kafka.serde.provider;
 
     uses KafkaSerdeProvider;
 
     provides KafkaSerdeProvider with
-            org.creek.api.kafka.serde.NativeKafkaSerdeProvider;
+            org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider;
 }

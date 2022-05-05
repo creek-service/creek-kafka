@@ -18,14 +18,14 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekBaseVersion : String by extra
 val kafkaVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
     api(project(":serde"))
-
     api("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("org.creek:creek-base-type:$creekVersion")
+
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
 }
 

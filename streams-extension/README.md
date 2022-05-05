@@ -30,4 +30,4 @@ public class ServiceMain {
 
 See [`KafkaStreamsExtensionOptions`][1] for more info.
 
-[1]: src/main/java/org/creek/api/kafka/streams/extension/KafkaStreamsExtensionOptions.java
+[1]: src/main/java/org/creekservice/api/kafka/streams/extension/KafkaStreamsExtensionOptions.java

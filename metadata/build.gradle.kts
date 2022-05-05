@@ -18,10 +18,10 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekBaseVersion : String by extra
 
 dependencies {
-    api("org.creek:creek-platform-metadata:$creekVersion")
+    api("org.creekservice:creek-platform-metadata:$creekBaseVersion")
 
     // Avoid new non-test dependencies, as this jar is required by schema jars, i.e. its shared code.
 }
