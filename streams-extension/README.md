@@ -24,10 +24,49 @@ public class ServiceMain {
                                 .build()
                 )
                 .build();
+
+        final KafkaStreamsExtension ext = ctx.extension(KafkaStreamsExtension.class);
+        final Topology topology = new TopologyBuilder(ext).build();
+        ext.execute(topology);
     }
 }
 ```
 
 See [`KafkaStreamsExtensionOptions`][1] for more info.
+
+## Building your topology
+
+The extension provides easy access to topic serde, making writing your topologies more simple:
+
+```java
+public final class TopologyBuilder {
+
+    private final KafkaStreamsExtension ext;
+    private final Name name = Name.root();
+
+    public TopologyBuilder(final KafkaStreamsExtension ext) {
+        this.ext = requireNonNull(ext, "ext");
+    }
+
+    public Topology build() {
+        final StreamsBuilder builder = new StreamsBuilder();
+
+        final KafkaTopic<Long, String> input = ext.topic(YourServiceDescriptor.InputTopic);
+        final KafkaTopic<String, Long> output = ext.topic(YourServiceDescriptor.OutputTopic);
+
+        builder.stream(
+                        input.name(),
+                        Consumed.with(input.keySerde(), input.valueSerde())
+                                .withName(name.name("ingest-" + input.name())))
+                .flatTransform(doStuff(), name.named("work-magic"))
+                .to(
+                        output.name(),
+                        Produced.with(output.keySerde(), output.valueSerde())
+                                .withName(name.name("egress-" + output.name())));
+
+        return builder.build(ext.properties());
+    }
+}
+```
 
 [1]: src/main/java/org/creekservice/api/kafka/streams/extension/KafkaStreamsExtensionOptions.java
