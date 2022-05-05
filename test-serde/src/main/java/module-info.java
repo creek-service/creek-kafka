@@ -15,15 +15,15 @@
  */
 
 
-import org.creek.api.kafka.serde.provider.KafkaSerdeProvider;
-import org.creek.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
 
 module creek.kafka.test.serde {
     requires transitive creek.kafka.serde;
 
-    exports org.creek.test.api.kafka.serde.test;
+    exports org.creekservice.test.api.kafka.serde.test;
 
     provides KafkaSerdeProvider with
-            org.creek.test.api.kafka.serde.test.PublicTestSerdeProvider,
+            org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider,
             PrivateTestSerdeProvider;
 }

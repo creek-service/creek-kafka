@@ -19,20 +19,22 @@ plugins {
 }
 
 val kafkaVersion : String by extra
-val creekVersion : String by extra
+val creekBaseVersion : String by extra
+val creekServiceVersion : String by extra
+val creekObsVersion : String by extra
 val spotBugsVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
     api(project(":common"))
-    api("org.creek:creek-base-annotation:$creekVersion")
-    api("org.creek:creek-service-extension:$creekVersion")
+    api("org.creekservice:creek-base-annotation:$creekBaseVersion")
+    api("org.creekservice:creek-service-extension:$creekServiceVersion")
     api("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     implementation(project(":serde"))
-    implementation("org.creek:creek-observability-logging:$creekVersion")
-    implementation("org.creek:creek-base-type:$creekVersion")
+    implementation("org.creekservice:creek-observability-logging:$creekObsVersion")
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 
-    testImplementation("org.creek:creek-observability-logging-fixtures:$creekVersion")
+    testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekObsVersion")
 }

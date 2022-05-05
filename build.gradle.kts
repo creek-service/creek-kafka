@@ -25,7 +25,7 @@ allprojects {
         apply(plugin = "jacoco")
     }
 
-    group = "org.creek"
+    group = "org.creekservice"
 
     java {
         withSourcesJar()
@@ -55,7 +55,11 @@ subprojects {
     project.version = project.parent?.version!!
 
     extra.apply {
-        set("creekVersion", "0.+")
+        set("creekBaseVersion", "0.2.0-SNAPSHOT")
+        set("creekTestVersion", "0.2.0-SNAPSHOT")
+        set("creekMdVersion", "0.2.0-SNAPSHOT")
+        set("creekServiceVersion", "0.2.0-SNAPSHOT")
+        set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("spotBugsVersion", "4.6.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
 
         set("log4jVersion", "2.17.2")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
@@ -67,7 +71,7 @@ subprojects {
         set("kafkaVersion", "2.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     }
 
-    val creekVersion : String by extra
+    val creekTestVersion : String by extra
     val guavaVersion : String by extra
     val log4jVersion : String by extra
     val junitVersion: String by extra
@@ -76,9 +80,9 @@ subprojects {
     val hamcrestVersion : String by extra
 
     dependencies {
-        testImplementation("org.creek:creek-test-util:$creekVersion")
-        testImplementation("org.creek:creek-test-hamcrest:$creekVersion")
-        testImplementation("org.creek:creek-test-conformity:$creekVersion")
+        testImplementation("org.creekservice:creek-test-util:$creekTestVersion")
+        testImplementation("org.creekservice:creek-test-hamcrest:$creekTestVersion")
+        testImplementation("org.creekservice:creek-test-conformity:$creekTestVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
@@ -151,24 +155,26 @@ subprojects {
         dependsOn("checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
     }
 
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/creek-service/${rootProject.name}")
-                credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
+    if (!project.name.startsWith("test-")) {
+        publishing {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/creek-service/${rootProject.name}")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
                 }
             }
-        }
-        publications {
-            create<MavenPublication>("maven") {
-                from(components["java"])
-                artifactId = "${rootProject.name}-${project.name}"
+            publications {
+                create<MavenPublication>("maven") {
+                    from(components["java"])
+                    artifactId = "${rootProject.name}-${project.name}"
 
-                pom {
-                    url.set("https://github.com/creek-service/${rootProject.name}.git")
+                    pom {
+                        url.set("https://github.com/creek-service/${rootProject.name}.git")
+                    }
                 }
             }
         }

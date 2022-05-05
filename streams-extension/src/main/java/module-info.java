@@ -1,5 +1,5 @@
 
-import org.creek.api.service.extension.CreekExtensionBuilder;
+import org.creekservice.api.service.extension.CreekExtensionBuilder;
 
 module creek.kafka.streams.extension {
     requires transitive creek.kafka.metadata;
@@ -13,10 +13,10 @@ module creek.kafka.streams.extension {
     requires creek.base.type;
     requires com.github.spotbugs.annotations;
 
-    exports org.creek.api.kafka.streams.extension;
-    exports org.creek.api.kafka.streams.observation;
-    exports org.creek.api.kafka.streams.util;
+    exports org.creekservice.api.kafka.streams.extension;
+    exports org.creekservice.api.kafka.streams.observation;
+    exports org.creekservice.api.kafka.streams.util;
 
     provides CreekExtensionBuilder with
-            org.creek.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder;
+            org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder;
 }
