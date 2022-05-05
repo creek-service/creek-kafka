@@ -8,6 +8,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish: true or false?"
+        required: true
+        default: "false"
 
 jobs:
   build:
@@ -28,7 +34,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew check coveralls
       - name: Publish
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event.inputs.publish == 'true'
         run:  |
           git fetch --tags --unshallow
           ./gradlew publish

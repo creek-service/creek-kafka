@@ -21,3 +21,8 @@ updates:
       - creek-github-packages
     schedule:
       interval: weekly
+    ignore:
+      # https://github.com/creek-service/creek-kafka/issues/27
+      - dependency-name: "org.apache.kafka:*"
+        update-types: [ "version-update:semver-patch" ]
+        versions: ["3.+"]
