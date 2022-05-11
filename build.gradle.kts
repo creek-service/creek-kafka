@@ -18,11 +18,10 @@ allprojects {
     apply(plugin = "com.diffplug.spotless")
     apply(plugin = "com.github.spotbugs")
 
-    configure(subprojects
-            // Exclude test modules from code coverage
-            - project(":test-serde")
-    ) {
-        apply(plugin = "jacoco")
+    configure(subprojects) {
+        if (!name.startsWith("test-")) {
+            apply(plugin = "jacoco")
+        }
     }
 
     group = "org.creekservice"
