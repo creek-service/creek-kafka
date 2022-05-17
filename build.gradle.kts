@@ -134,6 +134,7 @@ subprojects {
                 setStylesheet("fancy-hist.xsl")
             }
         }
+        excludeFilter.set(file("${rootProject.projectDir}/config/spotbugs/exclude.xml"))
     }
 
     tasks.withType<JacocoReport>().configureEach{
