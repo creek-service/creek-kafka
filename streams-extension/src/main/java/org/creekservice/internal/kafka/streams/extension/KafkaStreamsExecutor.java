@@ -25,9 +25,9 @@ import java.util.concurrent.ExecutionException;
 import org.apache.kafka.streams.KafkaStreams;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
-import org.creekservice.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode;
+import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultMetricsPublisher;
 import org.creekservice.internal.kafka.streams.extension.observation.MetricsPublisher;
 

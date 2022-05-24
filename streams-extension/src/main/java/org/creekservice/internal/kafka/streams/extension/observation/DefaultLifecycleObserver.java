@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 import java.time.Duration;
 import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 

@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.apache.kafka.streams.KafkaStreams;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

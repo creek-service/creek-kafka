@@ -17,6 +17,8 @@
 package org.creekservice;
 
 
+import org.creekservice.api.kafka.streams.test.TestTopics;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.test.conformity.ConformityTester;
 import org.creekservice.api.test.conformity.check.CheckModule;
 import org.junit.jupiter.api.Test;
@@ -25,10 +27,12 @@ class ModuleTest {
 
     @Test
     void shouldConform() {
-        ConformityTester.builder(ModuleTest.class)
+        ConformityTester.builder(TestTopics.class)
                 .withDisabled(
                         "kafka-streams-test-utils causes split-package issues",
                         CheckModule.builder())
+                .withExcludedClasses(
+                        "Descriptors must have public constructors", true, ServiceDescriptor.class)
                 .check();
     }
 }

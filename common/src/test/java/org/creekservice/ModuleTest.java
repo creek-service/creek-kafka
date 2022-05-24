@@ -17,13 +17,22 @@
 package org.creekservice;
 
 
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.test.conformity.ConformityTester;
+import org.creekservice.api.test.conformity.check.CheckConstructorsPrivate;
 import org.junit.jupiter.api.Test;
 
 class ModuleTest {
 
     @Test
     void shouldConform() {
-        ConformityTester.test(ModuleTest.class);
+        ConformityTester.builder(ModuleTest.class)
+                .withCustom(
+                        CheckConstructorsPrivate.builder()
+                                .withExcludedClasses(
+                                        "Descriptors must have public constructor",
+                                        true,
+                                        ServiceDescriptor.class))
+                .check();
     }
 }

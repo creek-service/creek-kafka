@@ -20,8 +20,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import java.time.Duration;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode;
 import org.junit.jupiter.api.Test;
 
 class LifecycleObserverTest {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.streams.util;
+package org.creekservice.api.kafka.streams.extension.util;
 
 
 import org.apache.kafka.streams.kstream.Named;

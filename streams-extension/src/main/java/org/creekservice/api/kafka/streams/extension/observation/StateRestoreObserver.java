@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.streams.observation;
+package org.creekservice.api.kafka.streams.extension.observation;
 
 public interface StateRestoreObserver {
 

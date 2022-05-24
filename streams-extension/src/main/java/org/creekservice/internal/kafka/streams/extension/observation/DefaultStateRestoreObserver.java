@@ -19,7 +19,7 @@ package org.creekservice.internal.kafka.streams.extension.observation;
 import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.streams.observation.StateRestoreObserver;
+import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
 import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
