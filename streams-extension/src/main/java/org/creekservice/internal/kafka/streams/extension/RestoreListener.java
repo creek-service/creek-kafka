@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.streams.processor.StateRestoreListener;
-import org.creekservice.api.kafka.streams.observation.StateRestoreObserver;
+import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
 
 final class RestoreListener implements StateRestoreListener {
 

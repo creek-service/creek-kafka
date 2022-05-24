@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.apache.kafka.common.TopicPartition;
-import org.creekservice.api.kafka.streams.observation.StateRestoreObserver;
+import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

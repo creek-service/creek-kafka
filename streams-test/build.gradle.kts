@@ -30,3 +30,9 @@ dependencies {
     implementation("org.creekservice:creek-test-util:$creekTestVersion")
     implementation(project(":streams-extension"))
 }
+
+tasks.test {
+    // As not a module, need to compliance check the actual jar:
+    dependsOn("jar")
+    classpath = files(tasks.jar.get().archiveFile, project.sourceSets.test.get().output, configurations.testRuntimeClasspath)
+}

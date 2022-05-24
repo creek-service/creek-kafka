@@ -16,10 +16,10 @@
 
 package org.creekservice.internal.kafka.streams.extension;
 
-import static org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode.EXCEPTION_THROWN_STOPPING;
-import static org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode.OK;
-import static org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode.STREAMS_TIMED_OUT_CLOSING;
-import static org.creekservice.api.kafka.streams.observation.LifecycleObserver.ExitCode.STREAM_APP_FAILED;
+import static org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode.EXCEPTION_THROWN_STOPPING;
+import static org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode.OK;
+import static org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode.STREAMS_TIMED_OUT_CLOSING;
+import static org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver.ExitCode.STREAM_APP_FAILED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,9 +37,9 @@ import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.streams.KafkaStreams;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
-import org.creekservice.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
-import org.creekservice.api.kafka.streams.observation.StateRestoreObserver;
+import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
 import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExecutor.MetricsPublisherFactory;
 import org.creekservice.internal.kafka.streams.extension.observation.MetricsPublisher;
 import org.junit.jupiter.api.BeforeEach;

@@ -28,9 +28,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
 import java.time.Duration;
-import org.creekservice.api.kafka.streams.observation.KafkaMetricsPublisherOptions;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
-import org.creekservice.api.kafka.streams.observation.StateRestoreObserver;
+import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultLifecycleObserver;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultStateRestoreObserver;
 import org.junit.jupiter.api.BeforeEach;

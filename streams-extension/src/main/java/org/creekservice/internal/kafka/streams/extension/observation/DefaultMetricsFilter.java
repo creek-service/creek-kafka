@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.apache.kafka.common.MetricName;
-import org.creekservice.api.kafka.streams.observation.KafkaMetricsFilter;
+import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsFilter;
 
 public final class DefaultMetricsFilter implements KafkaMetricsFilter {
 

@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.kafka.streams.KafkaStreams;
-import org.creekservice.api.kafka.streams.observation.LifecycleObserver;
+import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 
 final class LifecycleListener implements KafkaStreams.StateListener {
 
