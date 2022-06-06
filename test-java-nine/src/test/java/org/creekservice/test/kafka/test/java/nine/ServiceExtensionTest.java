@@ -21,8 +21,8 @@ import static org.hamcrest.Matchers.hasItem;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.creekservice.api.service.extension.CreekExtensionBuilder;
-import org.creekservice.api.service.extension.CreekExtensions;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
+import org.creekservice.api.service.extension.CreekExtensionProviders;
 import org.junit.jupiter.api.Test;
 
 class ServiceExtensionTest {
@@ -30,7 +30,7 @@ class ServiceExtensionTest {
     @Test
     void shouldLoadStreamsExtension() {
         // When:
-        final List<CreekExtensionBuilder> found = CreekExtensions.load();
+        final List<CreekExtensionProvider> found = CreekExtensionProviders.load();
 
         // Then:
         final List<String> classNames =
@@ -41,6 +41,6 @@ class ServiceExtensionTest {
         assertThat(
                 classNames,
                 hasItem(
-                        "org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder"));
+                        "org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider"));
     }
 }

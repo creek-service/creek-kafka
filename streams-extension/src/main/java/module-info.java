@@ -1,5 +1,6 @@
 
-import org.creekservice.api.service.extension.CreekExtensionBuilder;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
+import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 
 module creek.kafka.streams.extension {
     requires transitive creek.kafka.metadata;
@@ -17,6 +18,6 @@ module creek.kafka.streams.extension {
     exports org.creekservice.api.kafka.streams.extension.observation;
     exports org.creekservice.api.kafka.streams.extension.util;
 
-    provides CreekExtensionBuilder with
-            org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder;
+    provides CreekExtensionProvider with
+            KafkaStreamsExtensionProvider;
 }
