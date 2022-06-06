@@ -22,16 +22,16 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import java.util.List;
-import org.creekservice.api.service.extension.CreekExtensionBuilder;
-import org.creekservice.api.service.extension.CreekExtensions;
-import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
+import org.creekservice.api.service.extension.CreekExtensionProviders;
+import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.junit.jupiter.api.Test;
 
 class ServiceExtensionTest {
 
     @Test
     void shouldLoadStreamsExtension() {
-        final List<CreekExtensionBuilder> found = CreekExtensions.load();
-        assertThat(found, hasItem(is(instanceOf(KafkaStreamsExtensionBuilder.class))));
+        final List<CreekExtensionProvider> found = CreekExtensionProviders.load();
+        assertThat(found, hasItem(is(instanceOf(KafkaStreamsExtensionProvider.class))));
     }
 }

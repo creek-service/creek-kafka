@@ -18,28 +18,24 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Optional;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
-import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.ResourceDescriptor;
-import org.creekservice.api.service.extension.CreekExtensionBuilder;
-import org.creekservice.api.service.extension.CreekExtensionOptions;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
+import org.creekservice.api.service.extension.CreekService;
+import org.creekservice.api.service.extension.model.ResourceHandler;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
 
-/** Builder for the {@link org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension}. */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder {
+/** Provider of {@link org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension}. */
+public final class KafkaStreamsExtensionProvider implements CreekExtensionProvider {
 
     private final BuilderFactory builderFactory;
     private final ExecutorFactory executorFactory;
     private final ExtensionFactory extensionFactory;
     private final ResourceRegistryFactory resourcesFactory;
-    private Optional<KafkaStreamsExtensionOptions> options = Optional.empty();
 
-    public KafkaStreamsExtensionBuilder() {
+    public KafkaStreamsExtensionProvider() {
         this(
                 KafkaStreamsBuilder::new,
                 KafkaStreamsExecutor::new,
@@ -48,7 +44,7 @@ public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder
     }
 
     @VisibleForTesting
-    KafkaStreamsExtensionBuilder(
+    KafkaStreamsExtensionProvider(
             final BuilderFactory builderFactory,
             final ExecutorFactory executorFactory,
             final ExtensionFactory extensionFactory,
@@ -60,40 +56,21 @@ public final class KafkaStreamsExtensionBuilder implements CreekExtensionBuilder
     }
 
     @Override
-    public String name() {
-        return StreamsExtension.NAME;
-    }
+    public StreamsExtension initialize(final CreekService api) {
+        api.model().addResource(KafkaTopicDescriptor.class, new ResourceHandler<>() {});
 
-    @Override
-    public boolean handles(final ResourceDescriptor resourceDef) {
-        return resourceDef instanceof KafkaTopicDescriptor;
-    }
+        final KafkaStreamsExtensionOptions options =
+                api.options()
+                        .get(KafkaStreamsExtensionOptions.class)
+                        .orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
 
-    @Override
-    public boolean with(final CreekExtensionOptions options) {
-        if (!(options instanceof KafkaStreamsExtensionOptions)) {
-            return false;
-        }
-
-        if (this.options.isPresent()) {
-            throw new IllegalStateException(
-                    KafkaStreamsExtensionOptions.class.getSimpleName() + " can only be set once");
-        }
-
-        this.options = Optional.of((KafkaStreamsExtensionOptions) options);
-        return true;
-    }
-
-    @Override
-    public StreamsExtension build(final ComponentDescriptor component) {
-
-        final KafkaStreamsExtensionOptions opts =
-                options.orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
-
-        final ResourceRegistry resources = resourcesFactory.create(component, opts);
+        final ResourceRegistry resources = resourcesFactory.create(api.service(), options);
 
         return extensionFactory.create(
-                opts, resources, builderFactory.create(opts), executorFactory.create(opts));
+                options,
+                resources,
+                builderFactory.create(options),
+                executorFactory.create(options));
     }
 
     @VisibleForTesting
