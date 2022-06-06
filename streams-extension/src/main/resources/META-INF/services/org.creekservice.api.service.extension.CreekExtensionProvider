@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionBuilder
+org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider
