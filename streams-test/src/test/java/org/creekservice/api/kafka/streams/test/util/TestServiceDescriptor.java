@@ -41,6 +41,11 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
             register(outputTopic("output", String.class, long.class, withPartitions(1)));
 
     @Override
+    public String dockerImage() {
+        return "test-service";
+    }
+
+    @Override
     public Collection<ComponentInput> inputs() {
         return List.copyOf(INPUTS);
     }
