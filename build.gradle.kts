@@ -39,6 +39,10 @@ allprojects {
             }
         }
     }
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor(10, TimeUnit.MINUTES)
+    }
 }
 
 subprojects {
@@ -66,6 +70,7 @@ subprojects {
         set("mockitoVersion", "4.6.1")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         set("kafkaVersion", "2.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+        set("testContainersVersion", "1.17.2")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val creekTestVersion : String by extra
