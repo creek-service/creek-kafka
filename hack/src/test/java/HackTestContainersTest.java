@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.streams.test.extension.testsuite;
-
-import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
-
 import com.github.dockerjava.api.DockerClient;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -44,67 +29,76 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ServiceDescriptor;
-import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
-import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.utility.DockerImageName;
 
-@ExtendWith(MockitoExtension.class)
-class StreamsTestLifecycleListenerFunctionalTest {
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-    public static final CreekSystemTestExtensionTester EXT_TESTER = extensionTester();
-    private static StreamsTestLifecycleListener listener;
-    private final DockerClient dockerClient = DockerClientFactory.lazyClient(); // Todo: use
-    private Map<String, Object> baseProps = Map.of();
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+
+// Todo: remove after trying on Apple silicon
+class HackTestContainersTest {
+
+    private static final Network network = Network.newNetwork();
+    private static final KafkaContainer kafka =
+            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.1.2"))
+                    .withNetwork(network)
+                    .withNetworkAliases("kafka")
+                    .withStartupAttempts(3)
+                    .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false")
+                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1")
+                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1")
+                    .withStartupTimeout(Duration.ofSeconds(90));
+
+    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
+    private Map<String, Object> baseProps;
 
     @BeforeAll
     static void beforeAll() {
-        final KafkaTopicDescriptor<?, ?> kafkaResource = mock(KafkaTopicDescriptor.class);
-        when(kafkaResource.cluster()).thenReturn("default");
-        final ServiceDescriptor serviceDescriptor = mock(ServiceDescriptor.class);
-        when(serviceDescriptor.resources()).thenReturn(Stream.of(kafkaResource));
-
-        final CreekSystemTest api =
-                mock(CreekSystemTest.class, withSettings().defaultAnswer(new ReturnsDeepStubs()));
-
-        when(api.testSuite().services().add(any()))
-                .thenAnswer(inv -> EXT_TESTER.dockerServicesContainer().add(inv.getArgument(0)));
-
-        final ServiceInstance kafkaServiceUnderTest = mock(ServiceInstance.class);
-        when(kafkaServiceUnderTest.descriptor()).thenReturn(Optional.of(serviceDescriptor));
-
-        when(api.testSuite().services().stream()).thenReturn(Stream.of(kafkaServiceUnderTest));
-
-        listener = new StreamsTestLifecycleListener(api);
-        listener.beforeSuite(null);
+        kafka.start();
     }
 
     @AfterAll
     static void afterAll() {
-        EXT_TESTER.dockerServicesContainer().forEach(ServiceInstance::stop);
-        EXT_TESTER.clearServices();
+        kafka.stop();
     }
 
     @BeforeEach
     void setUp() {
         baseProps = Map.of(
-                CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, listener.hostEndpoint()
+                CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafka.getHost() + ":" + kafka.getMappedPort(9093)
         );
     }
 
     @Test
+    @Order(1)
+    void shouldBringUpKafka() throws Exception {
+        assertThat(kafka.getContainerId(), is(running()));
+        assertThat(topics(), is(empty()));
+    }
+
+    @Test
+    @Order(2)
     void shouldBeAbleToProduceAndConsumeFromKafka() throws Exception {
+        // Given:
         try(Admin adminClient = Admin.create(baseProps)) {
 
             adminClient
@@ -122,8 +116,8 @@ class StreamsTestLifecycleListenerFunctionalTest {
                 StringDeserializer.class.getName());
 
         try (KafkaConsumer<String, String> consumer =
-                     new KafkaConsumer<>(
-                             consumerProps)) {
+                new KafkaConsumer<>(
+                        consumerProps)) {
 
             consumer.subscribe(List.of("test-topic"));
             consumer.poll(Duration.ofSeconds(1));
@@ -155,19 +149,33 @@ class StreamsTestLifecycleListenerFunctionalTest {
         // consume.
     }
 
-    @Test
-    void shouldSupportMultipleClusters() {
-        // Todo:
+    private Set<String> topics() throws Exception {
+        try (Admin admin = Admin.create(baseProps)) {
+            return admin.listTopics().names().get(30, TimeUnit.SECONDS);
+        }
     }
 
-    private Matcher<? super ServiceInstance> serviceWithName(final String instanceName) {
-        return new FeatureMatcher<>(is(instanceName), "service instance name", "instance-name") {
+    private Matcher<String> running() {
+        return new TypeSafeDiagnosingMatcher<>() {
             @Override
-            protected String featureValueOf(final ServiceInstance actual) {
-                return actual.name();
+            protected boolean matchesSafely(final String containerId, final Description mismatchDescription) {
+                try {
+                    final InspectContainerResponse response = dockerClient.inspectContainerCmd(containerId).exec();
+                    if (Boolean.FALSE.equals(response.getState().getRunning())) {
+                        mismatchDescription.appendText("Container with id ").appendValue(containerId).appendText(" is not running");
+                        return false;
+                    }
+                    return true;
+                } catch (final NotFoundException e) {
+                    mismatchDescription.appendText("Container with id ").appendValue(containerId).appendText(" no longer exists");
+                    return false;
+                }
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendText("a running container");
             }
         };
     }
 }
-
-// Todo: issues with docker image pull rate  - can we login to docker hub?

@@ -67,7 +67,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
                 service.descriptor()
                         .get()
                         .resources()
-                        .filter(r -> r instanceof KafkaTopicDescriptor)
+                        .filter(KafkaTopicDescriptor.class::isInstance)
                         .map(r -> (KafkaTopicDescriptor<?, ?>) r)
                         .map(KafkaTopicDescriptor::cluster)
                         .collect(toSet());
@@ -78,12 +78,11 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
     private void createCluster(
             final String clusterName, final Collection<ServiceInstance> clusterUsers) {
 
-        final ServiceInstance kafka = KafkaContainer.add(clusterName, api.testSuite().services());
+        final ServiceInstance kafka = api.testSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
-        // Todo: Move into KafkaContainer - have KafkaContainer.add( return something other than
-        // ServiceInstance?
-        mappedPort = kafka.mappedPort(KafkaContainer.KAFKA_PORT);
+        // Todo: Move into KafkaContainer?
+        mappedPort = kafka.mappedPort(KafkaContainerDef.KAFKA_PORT);
         // Todo: kafka.getHost() -> returns 'localhost'
 
         // Todo: Set env vars on clsuterUsers.

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.streams.test.extension;
+plugins {
+    `java-library`
+}
 
-import org.junit.jupiter.api.Test;
+val creekServiceVersion : String by extra
+val testContainersVersion : String by extra
+val kafkaVersion : String by extra
 
-import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.instanceOf;
+dependencies {
+    api(project(":metadata"))
+    api("org.creekservice:creek-system-test-extension:$creekServiceVersion")
 
-class KafkaStreamsTestExtensionTest {
-
-    @Test
-    void shouldExposeExtension() {
-        assertThat(extensionTester().accessibleExtensions(), hasItem(instanceOf(KafkaStreamsTestExtension.class)));
-    }
+    implementation("org.testcontainers:testcontainers:$testContainersVersion")
+    implementation("org.testcontainers:kafka:${testContainersVersion}")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 }

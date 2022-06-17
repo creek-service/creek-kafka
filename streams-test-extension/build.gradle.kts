@@ -32,7 +32,7 @@ dependencies {
     api(project(":metadata"))
     api("org.creekservice:creek-system-test-extension:$creekServiceVersion")
 
-    testImplementation("org.creekservice:creek-system-test-executor:$creekServiceVersion")
+    testImplementation("org.creekservice:creek-system-test-test-util:$creekServiceVersion") // todo: version var
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 

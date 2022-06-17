@@ -1,5 +1,7 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
+        mavenCentral()
         maven {
             url = uri("https://maven.pkg.github.com/creek-service/*")
             credentials {
@@ -22,5 +24,6 @@ include(
     "test-java-eight",
     "test-java-nine",
     "test-serde",
-    "test-system-test"
+    "test-system-test",
+    "hack" // Todo: rremove
 )

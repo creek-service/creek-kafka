@@ -17,6 +17,7 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,7 +37,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(MockitoExtension.class)
 class StreamsTestLifecycleListenerTest {
 
@@ -71,7 +71,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services(), never()).add(any(), any());
+        verify(api.testSuite().services(), never()).add(any());
     }
 
     @Test
@@ -85,7 +85,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services(), never()).add(any(), any());
+        verify(api.testSuite().services(), never()).add(any());
     }
 
     @Test
@@ -100,7 +100,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services()).add("kafka-bob", "confluentinc/cp-kafka/2.1.4");
+        verify(api.testSuite().services()).add(isA(KafkaContainerDef.class));
     }
 
     @Test

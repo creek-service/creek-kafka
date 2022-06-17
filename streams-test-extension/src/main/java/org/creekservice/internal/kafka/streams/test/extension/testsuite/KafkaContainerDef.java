@@ -17,29 +17,47 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static java.lang.System.lineSeparator;
+import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.creekservice.api.system.test.extension.service.ServiceContainer;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
 
-public final class KafkaContainer {
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
+import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.service.ServiceInstance.ExecResult;
+
+final class KafkaContainerDef implements ServiceDefinition {
 
     public static final int KAFKA_PORT = 9093;
+    public static final int INTERNAL_PORT = 9092;
     private static final int ZOOKEEPER_PORT = 2181;
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
-    // Todo: Support Kafka without ZK
-    public static ServiceInstance add(final String clusterName, final ServiceContainer services) {
+    private final String name;
+
+    KafkaContainerDef(final String clusterName) {
+        this.name = "kafka-" + requireNonNull(clusterName, "clusterName");
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String dockerImage() {
         // Todo: make version & image of Kafka configurable.
-        final ServiceInstance instance =
-                services.add("kafka-" + clusterName, "confluentinc/cp-kafka:6.2.4");
-        final ServiceInstance.Modifier container = instance.modify();
+        return "confluentinc/cp-kafka:6.2.4";
+    }
+
+    @Override
+    public void configure(final ServiceInstance instance) {
+        final ServiceInstance.Configure container = instance.configure();
 
         final List<String> commandLines = new ArrayList<>();
         commandLines.add("#!/bin/bash");
 
-        setEnv(container, instance.name());
+        setUpKafka(container);
 
         commandLines.addAll(setUpZooKeeper(container));
 
@@ -50,10 +68,30 @@ public final class KafkaContainer {
         commandLines.add("/etc/confluent/docker/run");
 
         container.withCommand("sh", "-c", String.join(lineSeparator(), commandLines));
-        return instance;
     }
 
-    private static void setEnv(final ServiceInstance.Modifier container, final String hostName) {
+    @Override
+    public void started(final ServiceInstance instance) {
+        // Now that the instance is started the _actual_ internal host name is available to set in listeners:
+        final String internalBootstrap = internalListener(instance);
+        final String externalBootstrap = bootstrapServers(instance);
+
+        final ExecResult result = instance.execInContainer(
+                    "kafka-configs",
+                    "--alter",
+                    "--bootstrap-server", internalBootstrap,
+                    "--entity-type", "brokers",
+                    "--entity-name", "1",
+                    "--add-config",
+                    "advertised.listeners=[" + String.join(",", externalBootstrap, internalBootstrap) + "]"
+            );
+
+        if (result.exitCode() != 0) {
+            throw new IllegalStateException(result.toString());
+        }
+    }
+
+    private static void setUpKafka(final ServiceInstance.Configure container) {
         container
                 .withExposedPorts(KAFKA_PORT)
 
@@ -63,12 +101,12 @@ public final class KafkaContainer {
                 // to use the advertised listener
                 .withEnv(
                         "KAFKA_LISTENERS",
-                        "BROKER://0.0.0.0:9092,PLAINTEXT://0.0.0.0:" + KAFKA_PORT)
+                        "BROKER://0.0.0.0:" + INTERNAL_PORT + ",PLAINTEXT://0.0.0.0:" + KAFKA_PORT)
                 .withEnv(
                         "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
                         "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT")
                 .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
-                .withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://" + hostName + ":" + KAFKA_PORT)
+                .withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://localhost:" + KAFKA_PORT)
                 .withEnv("KAFKA_BROKER_ID", "1")
                 .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
                 .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF)
@@ -83,9 +121,17 @@ public final class KafkaContainer {
                 .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
     }
 
-    private static List<String> setUpZooKeeper(final ServiceInstance.Modifier container) {
+    // Todo: use to get bootstrap for clients?
+    private String bootstrapServers(final ServiceInstance instance) {
+        return "PLAINTEXT://" + instance.externalHostName() + ":" + instance.mappedPort(KAFKA_PORT);
+    }
+
+    private String internalListener(final ServiceInstance instance) {
+        return "BROKER://" + instance.internalHostName() + ":" + INTERNAL_PORT;
+    }
+
+    private static List<String> setUpZooKeeper(final ServiceInstance.Configure container) {
         container
-                .withExposedPorts(ZOOKEEPER_PORT) // Todo: Should not be needed.
                 .withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
 
         return List.of(
