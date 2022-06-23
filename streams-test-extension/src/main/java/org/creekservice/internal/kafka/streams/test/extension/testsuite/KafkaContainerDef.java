@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.service.ServiceInstance.ConfigureInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance.ExecResult;
 
 final class KafkaContainerDef implements ServiceDefinition {
@@ -51,8 +52,8 @@ final class KafkaContainerDef implements ServiceDefinition {
     }
 
     @Override
-    public void configure(final ServiceInstance instance) {
-        final ServiceInstance.Configure container = instance.configure();
+    public void configureInstance(final ServiceInstance instance) {
+        final ConfigureInstance container = instance.configure();
 
         final List<String> commandLines = new ArrayList<>();
         commandLines.add("#!/bin/bash");
@@ -67,16 +68,16 @@ final class KafkaContainerDef implements ServiceDefinition {
         // Run the original command
         commandLines.add("/etc/confluent/docker/run");
 
-        container.withCommand("sh", "-c", String.join(lineSeparator(), commandLines));
+        container.setCommand("sh", "-c", String.join(lineSeparator(), commandLines));
     }
 
     @Override
-    public void started(final ServiceInstance instance) {
+    public void instanceStarted(final ServiceInstance instance) {
         // Now that the instance is started the _actual_ internal host name is available to set in listeners:
         final String internalBootstrap = internalListener(instance);
         final String externalBootstrap = bootstrapServers(instance);
 
-        final ExecResult result = instance.execInContainer(
+        final ExecResult result = instance.execOnInstance(
                     "kafka-configs",
                     "--alter",
                     "--bootstrap-server", internalBootstrap,
@@ -91,34 +92,34 @@ final class KafkaContainerDef implements ServiceDefinition {
         }
     }
 
-    private static void setUpKafka(final ServiceInstance.Configure container) {
+    private static void setUpKafka(final ConfigureInstance container) {
         container
-                .withExposedPorts(KAFKA_PORT)
+                .addExposedPorts(KAFKA_PORT)
 
                 // Use two listeners with different names, it will force Kafka to communicate with
                 // itself via internal
                 // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try
                 // to use the advertised listener
-                .withEnv(
+                .addEnv(
                         "KAFKA_LISTENERS",
                         "BROKER://0.0.0.0:" + INTERNAL_PORT + ",PLAINTEXT://0.0.0.0:" + KAFKA_PORT)
-                .withEnv(
+                .addEnv(
                         "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
                         "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT")
-                .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
-                .withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://localhost:" + KAFKA_PORT)
-                .withEnv("KAFKA_BROKER_ID", "1")
-                .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv(
+                .addEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
+                .addEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://localhost:" + KAFKA_PORT)
+                .addEnv("KAFKA_BROKER_ID", "1")
+                .addEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv(
                         "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv(
+                .addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv(
                         "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
-                .withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "")
-                .withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0")
-                .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
+                .addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "")
+                .addEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0")
+                .addEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
     }
 
     // Todo: use to get bootstrap for clients?
@@ -130,9 +131,9 @@ final class KafkaContainerDef implements ServiceDefinition {
         return "BROKER://" + instance.internalHostName() + ":" + INTERNAL_PORT;
     }
 
-    private static List<String> setUpZooKeeper(final ServiceInstance.Configure container) {
+    private static List<String> setUpZooKeeper(final ConfigureInstance container) {
         container
-                .withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
+                .addEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
 
         return List.of(
                 "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties",

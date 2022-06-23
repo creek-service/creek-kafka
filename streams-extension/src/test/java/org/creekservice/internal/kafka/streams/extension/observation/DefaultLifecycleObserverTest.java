@@ -62,7 +62,7 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=starting, message=Kafka streams app state change}"));
+                contains("INFO: {lifecycle=creek.lifecycle.service.starting, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -73,7 +73,7 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=rebalancing, message=Kafka streams app state change}"));
+                contains("INFO: {lifecycle=creek.lifecycle.service.rebalancing, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -84,7 +84,7 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=running, message=Kafka streams app state change}"));
+                contains("INFO: {lifecycle=creek.lifecycle.service.running, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -95,7 +95,7 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=started, message=Kafka streams app state change}"));
+                contains("INFO: {lifecycle=creek.lifecycle.service.started, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -118,7 +118,7 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {exitCode=OK(0), lifecycle=stopping, message=Kafka streams app state change}"));
+                        "INFO: {exitCode=OK(0), lifecycle=creek.lifecycle.service.stopping, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -156,6 +156,6 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {exitCode=EXCEPTION_THROWN_STOPPING(-4), lifecycle=stopped, message=Kafka streams app state change}"));
+                        "INFO: {exitCode=EXCEPTION_THROWN_STOPPING(-4), lifecycle=creek.lifecycle.service.stopped, message=Kafka streams app state change}"));
     }
 }

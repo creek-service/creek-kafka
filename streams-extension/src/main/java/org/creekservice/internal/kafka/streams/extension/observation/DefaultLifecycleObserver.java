@@ -17,11 +17,16 @@
 package org.creekservice.internal.kafka.streams.extension.observation;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.observability.lifecycle.LifecycleLogging.lifecycleLogMessage;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
+
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
+import org.creekservice.api.observability.lifecycle.BasicLifecycle;
+import org.creekservice.api.observability.lifecycle.LoggableLifecycle;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
@@ -112,18 +117,32 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
         logger.info(
                 "Kafka streams app state change",
                 log -> {
-                    log.with(Metric.lifecycle, lifecycle);
+                    log.with(Metric.lifecycle, lifecycle.logMessage(LoggableLifecycle.SERVICE_TYPE));
                     additional.forEach(log::with);
                 });
     }
 
-    private enum Lifecycle {
-        starting,
-        started,
-        stopped,
-        stopping,
-        rebalancing,
-        running
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private enum Lifecycle implements LoggableLifecycle {
+        starting(BasicLifecycle.starting),
+        started(BasicLifecycle.started),
+        stopping(BasicLifecycle.stopping),
+        stopped(BasicLifecycle.stopped),
+        rebalancing(null),
+        running(null);
+
+        private final Optional<BasicLifecycle> basic;
+
+        Lifecycle(final BasicLifecycle basic) {
+            this.basic = Optional.ofNullable(basic);
+        }
+
+        @Override
+        public String logMessage(final String targetType) {
+            return basic
+                    .map(b -> b.logMessage(targetType))
+                    .orElseGet(() -> lifecycleLogMessage(targetType, this));
+        }
     }
 
     private enum Metric {
