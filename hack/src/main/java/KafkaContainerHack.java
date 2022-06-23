@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.testcontainers.containers.GenericContainer;
+import static java.lang.System.lineSeparator;
 
-import java.io.IOException;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.System.lineSeparator;
+import org.testcontainers.containers.GenericContainer;
 
 public class KafkaContainerHack extends GenericContainer<KafkaContainerHack> {
 
@@ -36,7 +32,6 @@ public class KafkaContainerHack extends GenericContainer<KafkaContainerHack> {
 
         modify(this);
     }
-
 
     public void modify(final GenericContainer<?> container) {
         final List<String> commandLines = new ArrayList<>();
@@ -56,8 +51,7 @@ public class KafkaContainerHack extends GenericContainer<KafkaContainerHack> {
     }
 
     private static void setEnv(final GenericContainer<?> container) {
-        container
-                .addExposedPorts(KAFKA_PORT);
+        container.addExposedPorts(KAFKA_PORT);
 
         final String hostName = container.getNetworkAliases().get(0);
 
@@ -89,11 +83,9 @@ public class KafkaContainerHack extends GenericContainer<KafkaContainerHack> {
     }
 
     private static List<String> setUpZooKeeper(final GenericContainer<?> container) {
-        container
-                .addExposedPorts(ZOOKEEPER_PORT); // Todo: Should not be needed.
+        container.addExposedPorts(ZOOKEEPER_PORT); // Todo: Should not be needed.
 
-        container
-                .withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
+        container.withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
 
         return List.of(
                 "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties",
@@ -107,15 +99,21 @@ public class KafkaContainerHack extends GenericContainer<KafkaContainerHack> {
         String brokerAdvertisedListener = brokerAdvertisedListener(containerInfo);
         ExecResult result;
         try {
-            result = execInContainer(
-                    "kafka-configs",
-                    "--alter",
-                    "--bootstrap-server", brokerAdvertisedListener,
-                    "--entity-type", "brokers",
-                    "--entity-name", getEnvMap().get("KAFKA_BROKER_ID"),
-                    "--add-config",
-                    "advertised.listeners=[" + String.join(",", getBootstrapServers(), brokerAdvertisedListener) + "]"
-            );
+            result =
+                    execInContainer(
+                            "kafka-configs",
+                            "--alter",
+                            "--bootstrap-server",
+                            brokerAdvertisedListener,
+                            "--entity-type",
+                            "brokers",
+                            "--entity-name",
+                            getEnvMap().get("KAFKA_BROKER_ID"),
+                            "--add-config",
+                            "advertised.listeners=["
+                                    + String.join(
+                                            ",", getBootstrapServers(), brokerAdvertisedListener)
+                                    + "]");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

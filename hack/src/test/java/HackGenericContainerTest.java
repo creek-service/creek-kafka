@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -39,28 +49,15 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
 
 // Todo: remove after trying on Apple silicon
 class HackGenericContainerTest {
 
     private static final Network network = Network.newNetwork();
     private static final GenericContainer<?> kafka =
-            //new GenericContainer<>(DockerImageName.parse("confluentinc/cp-kafka:6.1.2"))
-    new KafkaContainerHack()
+            // new GenericContainer<>(DockerImageName.parse("confluentinc/cp-kafka:6.1.2"))
+            new KafkaContainerHack()
                     .withNetwork(network)
                     .withNetworkAliases("kafka")
                     .withStartupAttempts(3)
@@ -85,9 +82,10 @@ class HackGenericContainerTest {
 
     @BeforeEach
     void setUp() {
-        baseProps = Map.of(
-                CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafka.getHost() + ":" + kafka.getMappedPort(9093)
-        );
+        baseProps =
+                Map.of(
+                        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,
+                        kafka.getHost() + ":" + kafka.getMappedPort(9093));
     }
 
     @Test
@@ -101,7 +99,7 @@ class HackGenericContainerTest {
     @Order(2)
     void shouldBeAbleToProduceAndConsumeFromKafka() throws Exception {
         // Given:
-        try(Admin adminClient = Admin.create(baseProps)) {
+        try (Admin adminClient = Admin.create(baseProps)) {
 
             adminClient
                     .createTopics(List.of(new NewTopic("test-topic", 1, (short) 1)))
@@ -110,32 +108,28 @@ class HackGenericContainerTest {
         }
 
         final Map<String, Object> consumerProps = new HashMap<>(baseProps);
-        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG,
-                "Bob");
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
+        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "Bob");
+        consumerProps.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        consumerProps.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
-        try (KafkaConsumer<String, String> consumer =
-                new KafkaConsumer<>(
-                        consumerProps)) {
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps)) {
 
             consumer.subscribe(List.of("test-topic"));
             consumer.poll(Duration.ofSeconds(1));
 
             final HashMap<String, Object> producerProps = new HashMap<>(baseProps);
-            producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                    StringSerializer.class.getName());
-            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    StringSerializer.class.getName());
+            producerProps.put(
+                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(
+                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-            try (KafkaProducer<String, String> producer =
-                         new KafkaProducer<>(producerProps)) {
+            try (KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps)) {
 
-                producer.send(new ProducerRecord<>("test-topic", "key", "value")).get(1, TimeUnit.HOURS);
+                producer.send(new ProducerRecord<>("test-topic", "key", "value"))
+                        .get(1, TimeUnit.HOURS);
             }
-
 
             final ConsumerRecords<String, String> records = consumer.poll(Duration.ofMinutes(1));
 
@@ -160,16 +154,24 @@ class HackGenericContainerTest {
     private Matcher<String> running() {
         return new TypeSafeDiagnosingMatcher<>() {
             @Override
-            protected boolean matchesSafely(final String containerId, final Description mismatchDescription) {
+            protected boolean matchesSafely(
+                    final String containerId, final Description mismatchDescription) {
                 try {
-                    final InspectContainerResponse response = dockerClient.inspectContainerCmd(containerId).exec();
+                    final InspectContainerResponse response =
+                            dockerClient.inspectContainerCmd(containerId).exec();
                     if (Boolean.FALSE.equals(response.getState().getRunning())) {
-                        mismatchDescription.appendText("Container with id ").appendValue(containerId).appendText(" is not running");
+                        mismatchDescription
+                                .appendText("Container with id ")
+                                .appendValue(containerId)
+                                .appendText(" is not running");
                         return false;
                     }
                     return true;
                 } catch (final NotFoundException e) {
-                    mismatchDescription.appendText("Container with id ").appendValue(containerId).appendText(" no longer exists");
+                    mismatchDescription
+                            .appendText("Container with id ")
+                            .appendValue(containerId)
+                            .appendText(" no longer exists");
                     return false;
                 }
             }

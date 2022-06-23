@@ -21,7 +21,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance.ConfigureInstance;
@@ -73,19 +72,26 @@ final class KafkaContainerDef implements ServiceDefinition {
 
     @Override
     public void instanceStarted(final ServiceInstance instance) {
-        // Now that the instance is started the _actual_ internal host name is available to set in listeners:
+        // Now that the instance is started the _actual_ internal host name is available to set in
+        // listeners:
         final String internalBootstrap = internalListener(instance);
         final String externalBootstrap = bootstrapServers(instance);
 
-        final ExecResult result = instance.execOnInstance(
-                    "kafka-configs",
-                    "--alter",
-                    "--bootstrap-server", internalBootstrap,
-                    "--entity-type", "brokers",
-                    "--entity-name", "1",
-                    "--add-config",
-                    "advertised.listeners=[" + String.join(",", externalBootstrap, internalBootstrap) + "]"
-            );
+        // Todo: don't think this is needed. Just set in configure using netwrok alias for internal.
+        final ExecResult result =
+                instance.execOnInstance(
+                        "kafka-configs",
+                        "--alter",
+                        "--bootstrap-server",
+                        internalBootstrap,
+                        "--entity-type",
+                        "brokers",
+                        "--entity-name",
+                        "1",
+                        "--add-config",
+                        "advertised.listeners=["
+                                + String.join(",", externalBootstrap, internalBootstrap)
+                                + "]");
 
         if (result.exitCode() != 0) {
             throw new IllegalStateException(result.toString());
@@ -111,11 +117,9 @@ final class KafkaContainerDef implements ServiceDefinition {
                 .addEnv("KAFKA_BROKER_ID", "1")
                 .addEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF)
-                .addEnv(
-                        "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
-                .addEnv(
-                        "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "")
                 .addEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0")
@@ -132,8 +136,7 @@ final class KafkaContainerDef implements ServiceDefinition {
     }
 
     private static List<String> setUpZooKeeper(final ConfigureInstance container) {
-        container
-                .addEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
+        container.addEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
 
         return List.of(
                 "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties",

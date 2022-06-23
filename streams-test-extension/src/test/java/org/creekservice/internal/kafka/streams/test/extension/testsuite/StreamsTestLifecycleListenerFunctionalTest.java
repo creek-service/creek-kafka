@@ -98,14 +98,12 @@ class StreamsTestLifecycleListenerFunctionalTest {
 
     @BeforeEach
     void setUp() {
-        baseProps = Map.of(
-                CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, listener.hostEndpoint()
-        );
+        baseProps = Map.of(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, listener.hostEndpoint());
     }
 
     @Test
     void shouldBeAbleToProduceAndConsumeFromKafka() throws Exception {
-        try(Admin adminClient = Admin.create(baseProps)) {
+        try (Admin adminClient = Admin.create(baseProps)) {
 
             adminClient
                     .createTopics(List.of(new NewTopic("test-topic", 1, (short) 1)))
@@ -114,32 +112,28 @@ class StreamsTestLifecycleListenerFunctionalTest {
         }
 
         final Map<String, Object> consumerProps = new HashMap<>(baseProps);
-        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG,
-                "Bob");
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
+        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "Bob");
+        consumerProps.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        consumerProps.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
-        try (KafkaConsumer<String, String> consumer =
-                     new KafkaConsumer<>(
-                             consumerProps)) {
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps)) {
 
             consumer.subscribe(List.of("test-topic"));
             consumer.poll(Duration.ofSeconds(1));
 
             final HashMap<String, Object> producerProps = new HashMap<>(baseProps);
-            producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                    StringSerializer.class.getName());
-            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    StringSerializer.class.getName());
+            producerProps.put(
+                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(
+                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-            try (KafkaProducer<String, String> producer =
-                         new KafkaProducer<>(producerProps)) {
+            try (KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps)) {
 
-                producer.send(new ProducerRecord<>("test-topic", "key", "value")).get(1, TimeUnit.HOURS);
+                producer.send(new ProducerRecord<>("test-topic", "key", "value"))
+                        .get(1, TimeUnit.HOURS);
             }
-
 
             final ConsumerRecords<String, String> records = consumer.poll(Duration.ofMinutes(1));
 

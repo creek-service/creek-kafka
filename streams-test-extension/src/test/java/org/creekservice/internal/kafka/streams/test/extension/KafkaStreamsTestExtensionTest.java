@@ -16,17 +16,19 @@
 
 package org.creekservice.internal.kafka.streams.test.extension;
 
-import org.junit.jupiter.api.Test;
-
 import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 
+import org.junit.jupiter.api.Test;
+
 class KafkaStreamsTestExtensionTest {
 
     @Test
     void shouldExposeExtension() {
-        assertThat(extensionTester().accessibleExtensions(), hasItem(instanceOf(KafkaStreamsTestExtension.class)));
+        assertThat(
+                extensionTester().accessibleExtensions(),
+                hasItem(instanceOf(KafkaStreamsTestExtension.class)));
     }
 }

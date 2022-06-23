@@ -78,7 +78,8 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
     private void createCluster(
             final String clusterName, final Collection<ServiceInstance> clusterUsers) {
 
-        final ServiceInstance kafka = api.testSuite().services().add(new KafkaContainerDef(clusterName));
+        final ServiceInstance kafka =
+                api.testSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
         // Todo: Move into KafkaContainer?

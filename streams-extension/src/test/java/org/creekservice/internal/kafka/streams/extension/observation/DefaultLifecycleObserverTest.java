@@ -62,7 +62,8 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=creek.lifecycle.service.starting, message=Kafka streams app state change}"));
+                contains(
+                        "INFO: {lifecycle=creek.lifecycle.service.starting, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -73,7 +74,8 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=creek.lifecycle.service.rebalancing, message=Kafka streams app state change}"));
+                contains(
+                        "INFO: {lifecycle=creek.lifecycle.service.rebalancing, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -84,7 +86,8 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=creek.lifecycle.service.running, message=Kafka streams app state change}"));
+                contains(
+                        "INFO: {lifecycle=creek.lifecycle.service.running, message=Kafka streams app state change}"));
     }
 
     @Test
@@ -95,7 +98,8 @@ class DefaultLifecycleObserverTest {
         // Then:
         assertThat(
                 testLogger.textEntries(),
-                contains("INFO: {lifecycle=creek.lifecycle.service.started, message=Kafka streams app state change}"));
+                contains(
+                        "INFO: {lifecycle=creek.lifecycle.service.started, message=Kafka streams app state change}"));
     }
 
     @Test

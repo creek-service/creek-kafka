@@ -22,7 +22,6 @@ import static org.creekservice.api.observability.lifecycle.LifecycleLogging.life
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
@@ -117,7 +116,8 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
         logger.info(
                 "Kafka streams app state change",
                 log -> {
-                    log.with(Metric.lifecycle, lifecycle.logMessage(LoggableLifecycle.SERVICE_TYPE));
+                    log.with(
+                            Metric.lifecycle, lifecycle.logMessage(LoggableLifecycle.SERVICE_TYPE));
                     additional.forEach(log::with);
                 });
     }
@@ -139,8 +139,7 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
 
         @Override
         public String logMessage(final String targetType) {
-            return basic
-                    .map(b -> b.logMessage(targetType))
+            return basic.map(b -> b.logMessage(targetType))
                     .orElseGet(() -> lifecycleLogMessage(targetType, this));
         }
     }
