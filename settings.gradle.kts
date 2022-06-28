@@ -24,6 +24,5 @@ include(
     "test-java-eight",
     "test-java-nine",
     "test-serde",
-    "test-system-test",
-    "hack" // Todo: rremove
+    "test-system-test"
 )
