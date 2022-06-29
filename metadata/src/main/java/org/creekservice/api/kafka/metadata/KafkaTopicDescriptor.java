@@ -30,6 +30,17 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
     /** @return name of the topic as it is in Kafka. */
     String name();
 
+    /**
+     * The logical name of the Kafka cluster the topic resides in.
+     *
+     * <p>This name is used to look up connection details for the cluster.
+     *
+     * @return the logical Kafka cluster name.
+     */
+    default String cluster() {
+        return "default";
+    }
+
     /** @return metadata about the topic's key: */
     PartDescriptor<K> key();
 

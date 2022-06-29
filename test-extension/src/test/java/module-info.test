@@ -1,0 +1,8 @@
+--add-modules
+  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,docker.java.api
+
+--add-reads
+  creek.kafka.streams.test.extension=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,docker.java.api
+
+--add-opens
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons

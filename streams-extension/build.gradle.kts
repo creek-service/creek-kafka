@@ -33,6 +33,7 @@ dependencies {
 
     implementation(project(":serde"))
     implementation("org.creekservice:creek-observability-logging:$creekObsVersion")
+    implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 
