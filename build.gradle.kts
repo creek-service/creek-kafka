@@ -49,7 +49,8 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "org.javamodularity.moduleplugin")
 
-    if (!name.startsWith("test-")) {
+    val shouldPublish = !name.startsWith("test-") || name == "test-extension"
+    if (shouldPublish) {
         apply(plugin = "jacoco")
     }
 
@@ -60,6 +61,7 @@ subprojects {
         set("creekTestVersion", "0.2.0-SNAPSHOT")
         set("creekMdVersion", "0.2.0-SNAPSHOT")
         set("creekServiceVersion", "0.2.0-SNAPSHOT")
+        set("creekSystemTestVersion", "0.2.0-SNAPSHOT")
         set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("spotBugsVersion", "4.7.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
 
@@ -157,7 +159,7 @@ subprojects {
         dependsOn("checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
     }
 
-    if (!project.name.startsWith("test-")) {
+    if (shouldPublish) {
         publishing {
             repositories {
                 maven {

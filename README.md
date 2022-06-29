@@ -18,6 +18,7 @@ aptly named [Example Kafka Streams Aggregate][1].
                       and a `kafka` serialization format which uses the standard Kafka client serde.
 * **[streams-extension](streams-extension)**: defines a Creek extension to help with writing Kafka Streams based microservices.
 * **[streams-test](streams-test)**: Helpers for writing tests for Kafka streams based microservices.
+* **[test-extension](test-extension)**: Creek system-test extension to allow system testing of Kafka based microservices.
 * **[test-java-eight](test-java-eight)**: functional tests *without* Java 9's modularity.
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.

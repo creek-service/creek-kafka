@@ -160,6 +160,10 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {exitCode=EXCEPTION_THROWN_STOPPING(-4), lifecycle=creek.lifecycle.service.stopped, message=Kafka streams app state change}"));
+                        "INFO: {"
+                                + "exitCode=EXCEPTION_THROWN_STOPPING(-4), "
+                                + "lifecycle=creek.lifecycle.service.stopped, "
+                                + "message=Kafka streams app state change"
+                                + "}"));
     }
 }
