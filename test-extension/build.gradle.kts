@@ -30,5 +30,3 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 }
-
-// Todo: later: depend on the kafka service extension?

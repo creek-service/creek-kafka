@@ -67,8 +67,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
 import org.testcontainers.DockerClientFactory;
 
@@ -84,12 +82,8 @@ class StreamsTestLifecycleListenerFunctionalTest {
     static void beforeAll() {
         final KafkaTopicDescriptor<?, ?> kafkaResource0 = mock(KafkaTopicDescriptor.class);
         when(kafkaResource0.cluster()).thenReturn("default");
-        //        final KafkaTopicDescriptor<?, ?> kafkaResource1 =
-        // mock(KafkaTopicDescriptor.class);
-        //        when(kafkaResource1.cluster()).thenReturn("other");
+
         final ServiceDescriptor serviceDescriptor = mock(ServiceDescriptor.class);
-        // todo: when(serviceDescriptor.resources()).thenReturn(Stream.of(kafkaResource0,
-        // kafkaResource1));
         when(serviceDescriptor.resources()).thenReturn(Stream.of(kafkaResource0));
 
         final CreekSystemTest api =
@@ -120,27 +114,21 @@ class StreamsTestLifecycleListenerFunctionalTest {
         listener.beforeSuite(null);
 
         // Then:
-        // Todo:   assertThat(instances, containsInAnyOrder(instanceCalled("kafka-default-0"),
-        // instanceCalled("kafka-other-0")));
         assertThat(serviceInstance("kafka-default-0").running(), is(true));
         assertThat(EXT_TESTER.runningContainerIds().get("kafka-default-0"), is(running()));
-        // Todo:    assertThat(EXT_TESTER.runningContainerIds().get("kafka-other-0"),
-        // is(running()));
     }
 
-    @ParameterizedTest
-    // Todo:  @ValueSource(strings = {"kafka-default-0", "kafka-other-0"})
-    @ValueSource(strings = {"kafka-default-0"})
-    void shouldBeAbleToProduceAndConsumeFromTestNetwork(final String brokerName) throws Exception {
+    @Test
+    void shouldBeAbleToProduceAndConsumeFromTestNetwork() throws Exception {
         // Given:
-        givenTopic(brokerName);
+        givenTopic();
 
-        try (KafkaConsumer<String, String> consumer = kafkaConsumer(brokerName)) {
+        try (KafkaConsumer<String, String> consumer = kafkaConsumer()) {
 
             consumer.subscribe(List.of("test-topic"));
             consumer.poll(Duration.ofSeconds(5));
 
-            try (KafkaProducer<String, String> producer = kafkaProducer(brokerName)) {
+            try (KafkaProducer<String, String> producer = kafkaProducer()) {
 
                 // When:
                 producer.send(new ProducerRecord<>("test-topic", "key", "value"))
@@ -158,18 +146,8 @@ class StreamsTestLifecycleListenerFunctionalTest {
     }
 
     @Test
-    void shouldBeAbleToProduceAndConsumeFromServiceNetwork() {
-        // Todo: test a test-service has its env set accordingly and can connnect, produce &
-        // consume.
-
-        // Todo: need a test-service for this...
-    }
-
-    @ParameterizedTest
     @Order(Integer.MAX_VALUE)
-    // Todo:  @ValueSource(strings = {"kafka-default-0", "kafka-other-0"})
-    @ValueSource(strings = {"kafka-default-0"})
-    void shouldShutdownKafkaAfterSuite(final String brokerName) {
+    void shouldShutdownKafkaAfterSuite() {
         // Given:
         final String kafkaContainerId = EXT_TESTER.runningContainerIds().get("kafka-default-0");
 
@@ -181,8 +159,9 @@ class StreamsTestLifecycleListenerFunctionalTest {
         assertThat(kafkaContainerId, is(not(running())));
     }
 
-    private Map<String, Object> baseProps(final String brokerName) {
-        final ServiceInstance instance = EXT_TESTER.dockerServicesContainer().get(brokerName);
+    private Map<String, Object> baseProps() {
+        final ServiceInstance instance =
+                EXT_TESTER.dockerServicesContainer().get("kafka-default-0");
         final String testNetworkBootstrap =
                 instance.testNetworkHostname()
                         + ":"
@@ -196,19 +175,19 @@ class StreamsTestLifecycleListenerFunctionalTest {
     @SuppressFBWarnings(
             value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "https://github.com/spotbugs/spotbugs/issues/756")
-    private void givenTopic(final String brokerName) {
-        try (Admin adminClient = Admin.create(baseProps(brokerName))) {
+    private void givenTopic() {
+        try (Admin adminClient = Admin.create(baseProps())) {
             adminClient
                     .createTopics(List.of(new NewTopic("test-topic", 1, (short) 1)))
                     .all()
                     .get(1, TimeUnit.HOURS);
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
-            throw new AssertionError("Failed to create topic on " + brokerName);
+            throw new AssertionError("Failed to create topic");
         }
     }
 
-    private KafkaProducer<String, String> kafkaProducer(final String brokerName) {
-        final Map<String, Object> producerProps = baseProps(brokerName);
+    private KafkaProducer<String, String> kafkaProducer() {
+        final Map<String, Object> producerProps = baseProps();
         producerProps.put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         producerProps.put(
@@ -217,8 +196,8 @@ class StreamsTestLifecycleListenerFunctionalTest {
         return new KafkaProducer<>(producerProps);
     }
 
-    private KafkaConsumer<String, String> kafkaConsumer(final String brokerName) {
-        final Map<String, Object> consumerProps = baseProps(brokerName);
+    private KafkaConsumer<String, String> kafkaConsumer() {
+        final Map<String, Object> consumerProps = baseProps();
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "Bob");
         consumerProps.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -275,5 +254,3 @@ class StreamsTestLifecycleListenerFunctionalTest {
         };
     }
 }
-
-// Todo: issues with docker image pull rate  - can we login to docker hub?

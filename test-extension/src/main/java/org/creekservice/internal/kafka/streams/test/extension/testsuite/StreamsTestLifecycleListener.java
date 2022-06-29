@@ -84,9 +84,6 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
         kafka.start();
 
         kafkaInstances.add(kafka);
-
-        // Todo: Set env vars on services using each cluster.
-        // Todo: Wire up env vars in the service context.
     }
 
     private static final class ClusterInstance {

@@ -35,9 +35,6 @@ public final class KafkaStreamsTestExtension implements CreekTestExtension {
 
     @Override
     public void initialize(final CreekSystemTest systemTest) {
-        // Todo:     systemTest.model().addInput(TopicInput.class, handler);
-        // Todo:     systemTest.model().addExpectation(TopicExpectation.class, handler);
-
         systemTest.testSuite().listener().append(new StreamsTestLifecycleListener(systemTest));
     }
 }

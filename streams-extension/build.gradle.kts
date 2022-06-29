@@ -39,5 +39,3 @@ dependencies {
 
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekObsVersion")
 }
-
-// Todo: later: split into pure Kafka extension and streams extension. (Streams extension should apply Kafka extension)
