@@ -42,6 +42,10 @@ public final class KafkaTopicDescriptors {
             return false;
         }
 
+        if (!Objects.equals(left.cluster(), right.cluster())) {
+            return false;
+        }
+
         if (!matches(left.key(), right.key())) {
             return false;
         }
@@ -75,6 +79,7 @@ public final class KafkaTopicDescriptors {
         final StringJoiner joiner =
                 new StringJoiner(", ", topic.getClass().getSimpleName() + "[", "]")
                         .add("name=" + topic.name())
+                        .add("cluster=" + topic.cluster())
                         .add("key=" + asString(topic.key()))
                         .add("value=" + asString(topic.value()));
 
