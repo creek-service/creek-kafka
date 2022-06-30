@@ -30,3 +30,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 }
+
+tasks.test {
+    dependsOn(":test-service:buildAppImage")
+}
