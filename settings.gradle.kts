@@ -24,5 +24,5 @@ include(
     "test-java-eight",
     "test-java-nine",
     "test-serde",
-    "test-system-test"
+    "test-service"
 )
