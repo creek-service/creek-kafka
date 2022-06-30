@@ -33,10 +33,10 @@ class KafkaTopicDescriptorsTest {
 
     private final KafkaTopicConfig config = new TestConfig(1);
     private final KafkaTopicDescriptor<?, ?> unowned =
-            new FirstKafkaTopic<>("bob", FORMAT_A, FORMAT_B, long.class, String.class);
+            new FirstKafkaTopic<>("bob", "c1", FORMAT_A, FORMAT_B, long.class, String.class);
     private final CreatableKafkaTopic<?, ?> owned =
             new FirstCreatableKafkaTopic<>(
-                    "peter", FORMAT_B, FORMAT_A, String.class, long.class, config);
+                    "peter", "c1", FORMAT_B, FORMAT_A, String.class, long.class, config);
 
     @Test
     void shouldMatchUnownedIfAttributesMatch() {
@@ -45,6 +45,7 @@ class KafkaTopicDescriptorsTest {
                         unowned,
                         new SecondKafkaTopic<>(
                                 unowned.name(),
+                                unowned.cluster(),
                                 unowned.key().format(),
                                 unowned.value().format(),
                                 unowned.key().type(),
@@ -59,6 +60,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 owned.key().format(),
                                 owned.value().format(),
                                 owned.key().type(),
@@ -74,6 +76,22 @@ class KafkaTopicDescriptorsTest {
                         unowned,
                         new SecondKafkaTopic<>(
                                 "diff",
+                                unowned.cluster(),
+                                unowned.key().format(),
+                                unowned.value().format(),
+                                unowned.key().type(),
+                                unowned.value().type())),
+                is(false));
+    }
+
+    @Test
+    void shouldNotMatchUnownedIfClusterDifferent() {
+        assertThat(
+                KafkaTopicDescriptors.matches(
+                        unowned,
+                        new SecondKafkaTopic<>(
+                                unowned.name(),
+                                "diff",
                                 unowned.key().format(),
                                 unowned.value().format(),
                                 unowned.key().type(),
@@ -88,6 +106,7 @@ class KafkaTopicDescriptorsTest {
                         unowned,
                         new SecondKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 FORMAT_B,
                                 unowned.value().format(),
                                 unowned.key().type(),
@@ -101,7 +120,8 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                owned.name(),
+                                unowned.name(),
+                                unowned.cluster(),
                                 unowned.key().format(),
                                 FORMAT_A,
                                 unowned.key().type(),
@@ -115,7 +135,8 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                owned.name(),
+                                unowned.name(),
+                                unowned.cluster(),
                                 unowned.key().format(),
                                 unowned.value().format(),
                                 Void.class,
@@ -129,7 +150,8 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                owned.name(),
+                                unowned.name(),
+                                unowned.cluster(),
                                 unowned.key().format(),
                                 unowned.value().format(),
                                 unowned.key().type(),
@@ -143,6 +165,23 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
+                                "Diff",
+                                owned.cluster(),
+                                owned.key().format(),
+                                owned.value().format(),
+                                owned.key().type(),
+                                owned.value().type(),
+                                owned.config())),
+                is(false));
+    }
+
+    @Test
+    void shouldNotMatchOwnedIfClusterDifferent() {
+        assertThat(
+                KafkaTopicDescriptors.matches(
+                        owned,
+                        new SecondCreatableKafkaTopic<>(
+                                owned.name(),
                                 "Diff",
                                 owned.key().format(),
                                 owned.value().format(),
@@ -159,6 +198,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 serializationFormat("diff"),
                                 owned.value().format(),
                                 owned.key().type(),
@@ -174,6 +214,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 owned.key().format(),
                                 serializationFormat("diff"),
                                 owned.key().type(),
@@ -189,6 +230,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 owned.key().format(),
                                 owned.value().format(),
                                 Void.class,
@@ -204,6 +246,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 owned.key().format(),
                                 owned.value().format(),
                                 owned.key().type(),
@@ -219,6 +262,7 @@ class KafkaTopicDescriptorsTest {
                         owned,
                         new SecondCreatableKafkaTopic<>(
                                 owned.name(),
+                                owned.cluster(),
                                 owned.key().format(),
                                 owned.value().format(),
                                 owned.key().type(),
@@ -233,6 +277,7 @@ class KafkaTopicDescriptorsTest {
         final SecondKafkaTopic<?, ?> unowned =
                 new SecondKafkaTopic<>(
                         owned.name(),
+                        owned.cluster(),
                         owned.key().format(),
                         owned.value().format(),
                         owned.key().type(),
@@ -250,6 +295,7 @@ class KafkaTopicDescriptorsTest {
                 is(
                         "FirstKafkaTopic["
                                 + "name=bob, "
+                                + "cluster=c1, "
                                 + "key=TestPart[format=A, type=long], "
                                 + "value=TestPart[format=B, type=java.lang.String]"
                                 + "]"));
@@ -262,6 +308,7 @@ class KafkaTopicDescriptorsTest {
                 is(
                         "FirstCreatableKafkaTopic["
                                 + "name=peter, "
+                                + "cluster=c1, "
                                 + "key=TestPart[format=B, type=java.lang.String], "
                                 + "value=TestPart[format=A, type=long], "
                                 + "config="
@@ -269,19 +316,47 @@ class KafkaTopicDescriptorsTest {
                                 + "]"));
     }
 
+    @Test
+    void shouldDefaultToDefaultCluster() {
+        // Given:
+        final KafkaTopicDescriptor<?, ?> defaultDescriptor =
+                new KafkaTopicDescriptor<>() {
+                    @Override
+                    public String name() {
+                        return null;
+                    }
+
+                    @Override
+                    public PartDescriptor<Object> key() {
+                        return null;
+                    }
+
+                    @Override
+                    public PartDescriptor<Object> value() {
+                        return null;
+                    }
+                };
+
+        // Then:
+        assertThat(defaultDescriptor.cluster(), is("default"));
+    }
+
     private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
         private final String name;
+        private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
 
         FirstKafkaTopic(
                 final String name,
+                final String cluster,
                 final SerializationFormat keyFormat,
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
             this.name = name;
+            this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
         }
@@ -289,6 +364,11 @@ class KafkaTopicDescriptorsTest {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public String cluster() {
+            return cluster;
         }
 
         @Override
@@ -325,16 +405,19 @@ class KafkaTopicDescriptorsTest {
     private static final class SecondKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
         private final String name;
+        private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
 
         SecondKafkaTopic(
                 final String name,
+                final String cluster,
                 final SerializationFormat keyFormat,
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
             this.name = name;
+            this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
         }
@@ -342,6 +425,11 @@ class KafkaTopicDescriptorsTest {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public String cluster() {
+            return cluster;
         }
 
         @Override
@@ -378,18 +466,21 @@ class KafkaTopicDescriptorsTest {
     private static final class FirstCreatableKafkaTopic<K, V> implements CreatableKafkaTopic<K, V> {
 
         private final String name;
+        private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
         private final KafkaTopicConfig config;
 
         FirstCreatableKafkaTopic(
                 final String name,
+                final String cluster,
                 final SerializationFormat keyFormat,
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
             this.name = name;
+            this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
@@ -398,6 +489,11 @@ class KafkaTopicDescriptorsTest {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public String cluster() {
+            return cluster;
         }
 
         @Override
@@ -440,18 +536,21 @@ class KafkaTopicDescriptorsTest {
             implements CreatableKafkaTopic<K, V> {
 
         private final String name;
+        private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
         private final KafkaTopicConfig config;
 
         SecondCreatableKafkaTopic(
                 final String name,
+                final String cluster,
                 final SerializationFormat keyFormat,
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
             this.name = name;
+            this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
@@ -460,6 +559,11 @@ class KafkaTopicDescriptorsTest {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public String cluster() {
+            return cluster;
         }
 
         @Override
