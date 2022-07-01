@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
+import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
@@ -137,6 +139,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     public static final class Builder {
 
         private final Map<String, Object> properties = new HashMap<>();
+        private Optional<KafkaPropertyOverrides> overridesProvider = Optional.empty();
         private Duration streamsCloseTimeout = DEFAULT_STREAMS_CLOSE_TIMEOUT;
         private Optional<LifecycleObserver> lifecycleObserver = Optional.empty();
         private Optional<StateRestoreObserver> restoreObserver = Optional.empty();
@@ -144,6 +147,31 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
                 KafkaMetricsPublisherOptions.builder().build();
 
         private Builder() {}
+
+        /**
+         * Set an alternate provider of Kafka property overrides.
+         *
+         * <p>The default overrides provider loads them from environment variables. See {@link
+         * SystemEnvPropertyOverrides} for more info.
+         *
+         * <p>It is intended that the provider should return, among other things, properties such as
+         * the bootstrap servers, so that these can be configured per-environment.
+         *
+         * <p>Note: the properties returned by the provider will <i>override</i> any properties set
+         * via {@link #withKafkaProperty}.
+         *
+         * <p>Note: Any custom override provider implementation may want to consider if it needs to
+         * be compatible with the system tests, as the system tests set properties via environment
+         * variables.
+         *
+         * @param overridesProvider a custom provider of Kafka overrides.
+         * @return self
+         */
+        public Builder withKafkaPropertiesOverrides(
+                final KafkaPropertyOverrides overridesProvider) {
+            this.overridesProvider = Optional.of(overridesProvider);
+            return this;
+        }
 
         /**
          * Set/overwrite a property that should be passed to the Kafka clients / streams app.
@@ -162,7 +190,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
          * @return self
          */
         public Builder withLifecycleObserver(final LifecycleObserver observer) {
-            this.lifecycleObserver = Optional.of(requireNonNull(observer, "observer"));
+            this.lifecycleObserver = Optional.of(observer);
             return this;
         }
 
@@ -171,7 +199,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
          * @return self
          */
         public Builder withStateRestoreObserver(final StateRestoreObserver observer) {
-            this.restoreObserver = Optional.of(requireNonNull(observer, "observer"));
+            this.restoreObserver = Optional.of(observer);
             return this;
         }
 
@@ -201,7 +229,16 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
             return withMetricsPublishing(options.build());
         }
 
+        /**
+         * Build the immutable options.
+         *
+         * @return the built options.
+         */
         public KafkaStreamsExtensionOptions build() {
+            properties.putAll(
+                    overridesProvider
+                            .orElseGet(SystemEnvPropertyOverrides::systemEnvPropertyOverrides)
+                            .get());
             return new KafkaStreamsExtensionOptions(
                     properties,
                     streamsCloseTimeout,

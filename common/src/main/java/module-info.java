@@ -4,6 +4,7 @@ module creek.kafka.common {
     requires transitive kafka.clients;
     requires creek.base.type;
 
+    exports org.creekservice.api.kafka.common.config;
     exports org.creekservice.api.kafka.common.resource;
     exports org.creekservice.internal.kafka.common.resource to
             creek.kafka.streams.extension;
