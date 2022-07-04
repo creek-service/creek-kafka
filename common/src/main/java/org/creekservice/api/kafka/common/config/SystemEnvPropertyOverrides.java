@@ -16,13 +16,32 @@
 
 package org.creekservice.api.kafka.common.config;
 
+import static java.util.regex.Pattern.compile;
+import static org.creekservice.api.kafka.common.config.ClustersProperties.propertiesBuilder;
 
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * Loads Kafka client property overrides from environment variables.
+ *
+ * <p>Variable names are made up of three parts:
+ *
+ * <ol>
+ *   <li>A {@code KAFKA_} prefix
+ *   <li>The uppercase cluster name, (as referenced from {@link
+ *       org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#cluster()}).
+ *   <li>The Kafka client property name, in uppercase, with periods replaced with underscores {@code
+ *       _}
+ * </ol>
+ *
+ * <p>For example, config {@code boostrap.servers} for the {@code default} cluster can be set with a
+ * variable name of {@code KAFKA_DEFAULT_BOOTSTRAP_SERVERS}.
+ */
 public final class SystemEnvPropertyOverrides implements KafkaPropertyOverrides {
 
-    public static final String KAFKA_PROPERTY_PREFIX = "KAFKA_";
+    private static final Pattern KAFKA_PROPERTY_PATTERN =
+            compile("KAFKA_(?<cluster>[^_]*)_(?<name>.*)");
 
     public static KafkaPropertyOverrides systemEnvPropertyOverrides() {
         return new SystemEnvPropertyOverrides();
@@ -31,13 +50,24 @@ public final class SystemEnvPropertyOverrides implements KafkaPropertyOverrides 
     private SystemEnvPropertyOverrides() {}
 
     @Override
-    public Map<String, Object> get() {
-        return System.getenv().entrySet().stream()
-                .filter(e -> e.getKey().startsWith(KAFKA_PROPERTY_PREFIX))
-                .collect(Collectors.toMap(e -> varNameToPropName(e.getKey()), Map.Entry::getValue));
-    }
+    public ClustersProperties get() {
+        final ClustersProperties.Builder properties = propertiesBuilder();
 
-    private static String varNameToPropName(final String varName) {
-        return varName.substring(KAFKA_PROPERTY_PREFIX.length()).replaceAll("_", ".").toLowerCase();
+        System.getenv()
+                .forEach(
+                        (k, v) -> {
+                            final Matcher matcher = KAFKA_PROPERTY_PATTERN.matcher(k);
+                            if (!matcher.matches()) {
+                                return;
+                            }
+
+                            final String cluster = matcher.group("cluster").toLowerCase();
+                            final String name =
+                                    matcher.group("name").replaceAll("_", ".").toLowerCase();
+
+                            properties.put(cluster, name, v);
+                        });
+
+        return properties.build();
     }
 }

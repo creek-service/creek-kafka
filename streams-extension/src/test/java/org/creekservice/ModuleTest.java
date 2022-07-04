@@ -17,13 +17,21 @@
 package org.creekservice;
 
 
+import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers.LogAndFailProductionExceptionHandler;
 import org.creekservice.api.test.conformity.ConformityTester;
+import org.creekservice.api.test.conformity.check.CheckConstructorsPrivate;
 import org.junit.jupiter.api.Test;
 
 class ModuleTest {
 
     @Test
     void shouldConform() {
-        ConformityTester.test(ModuleTest.class);
+        ConformityTester.builder(ModuleTest.class)
+                .withCustom(
+                        CheckConstructorsPrivate.builder()
+                                .withExcludedClasses(
+                                        "Created by reflection",
+                                        LogAndFailProductionExceptionHandler.class))
+                .check();
     }
 }

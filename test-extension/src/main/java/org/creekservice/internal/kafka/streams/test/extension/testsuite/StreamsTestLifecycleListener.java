@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
 
@@ -43,7 +45,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
-        final Map<String, List<ServiceInstance>> clusterServices =
+        final Map<String, List<ConfigurableServiceInstance>> clusterServices =
                 api.testSuite().services().stream()
                         .flatMap(this::requiredClusters)
                         .collect(
@@ -60,7 +62,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
         kafkaInstances.clear();
     }
 
-    private Stream<ClusterInstance> requiredClusters(final ServiceInstance service) {
+    private Stream<ClusterInstance> requiredClusters(final ConfigurableServiceInstance service) {
         return service.descriptor()
                 .map(
                         descriptor ->
@@ -77,21 +79,42 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
     }
 
     private void createCluster(
-            final String clusterName, final Collection<ServiceInstance> clusterUsers) {
+            final String clusterName, final Collection<ConfigurableServiceInstance> clusterUsers) {
 
         final ServiceInstance kafka =
                 api.testSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
         kafkaInstances.add(kafka);
+
+        setEnv(clusterUsers, clusterName, kafka);
+    }
+
+    private void setEnv(
+            final Collection<ConfigurableServiceInstance> clusterUsers,
+            final String clusterName,
+            final ServiceInstance kafka) {
+        final String prefix = "KAFKA_" + clusterName.toUpperCase() + "_";
+
+        clusterUsers.forEach(
+                instance ->
+                        instance.addEnv(
+                                prefix + "BOOTSTRAP_SERVERS",
+                                kafka.name() + ":" + KafkaContainerDef.SERVICE_NETWORK_PORT));
+
+        clusterUsers.forEach(
+                instance ->
+                        instance.addEnv(
+                                prefix + "APPLICATION_ID",
+                                instance.descriptor().orElseThrow().name()));
     }
 
     private static final class ClusterInstance {
         private final String clusterName;
-        private final ServiceInstance service;
+        private final ConfigurableServiceInstance service;
 
-        ClusterInstance(final String clusterName, final ServiceInstance service) {
-            this.clusterName = requireNonNull(clusterName, "cluster");
+        ClusterInstance(final String clusterName, final ConfigurableServiceInstance service) {
+            this.clusterName = validate(requireNonBlank(clusterName, "cluster"));
             this.service = requireNonNull(service, "service");
         }
 
@@ -99,8 +122,24 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
             return clusterName;
         }
 
-        public ServiceInstance service() {
+        public ConfigurableServiceInstance service() {
             return service;
+        }
+
+        private static String validate(final String cluster) {
+            cluster.chars()
+                    .filter(c -> !(Character.isDigit(c) || Character.isAlphabetic(c)))
+                    .findFirst()
+                    .ifPresent(
+                            c -> {
+                                throw new IllegalArgumentException(
+                                        "Invalid character: '"
+                                                + (char) c
+                                                + "' found in cluster name: "
+                                                + cluster);
+                            });
+
+            return cluster;
         }
     }
 }

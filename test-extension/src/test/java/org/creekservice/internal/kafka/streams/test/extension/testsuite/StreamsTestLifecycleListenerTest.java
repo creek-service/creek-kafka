@@ -16,8 +16,10 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,8 +37,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class StreamsTestLifecycleListenerTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -52,11 +57,9 @@ class StreamsTestLifecycleListenerTest {
     @Mock private ServiceDescriptor descriptor1;
     @Mock private ResourceDescriptor noneKafkaResource;
 
-    @Mock(strictness = LENIENT)
-    private KafkaTopicDescriptor<?, ?> kafkaResource0;
+    @Mock private KafkaTopicDescriptor<?, ?> kafkaResource0;
 
-    @Mock(strictness = LENIENT)
-    private KafkaTopicDescriptor<?, ?> kafkaResource1;
+    @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
 
     private StreamsTestLifecycleListener listener;
 
@@ -67,8 +70,12 @@ class StreamsTestLifecycleListenerTest {
         when(api.testSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
 
+        when(serviceInstance0.name()).thenReturn("inst0");
+        when(serviceInstance1.name()).thenReturn("inst1");
         when(serviceInstance0.descriptor()).thenReturn(Optional.of(descriptor0));
         when(serviceInstance1.descriptor()).thenReturn(Optional.of(descriptor1));
+        when(descriptor0.name()).thenReturn("service-0");
+        when(descriptor1.name()).thenReturn("service-1");
         when(kafkaResource0.cluster()).thenReturn("bob");
         when(kafkaResource1.cluster()).thenReturn("janet");
     }
@@ -136,5 +143,53 @@ class StreamsTestLifecycleListenerTest {
 
         // Then:
         verify(api.testSuite().services().add(any())).stop();
+    }
+
+    @Test
+    void shouldSetKafkaEndpointOnServicesUnderTest() {
+        // Given:
+        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
+        when(descriptor1.resources()).thenReturn(Stream.of(kafkaResource0, kafkaResource1));
+
+        when(api.testSuite().services().add(new KafkaContainerDef("bob")).name())
+                .thenReturn("kafka-bob-0");
+        when(api.testSuite().services().add(new KafkaContainerDef("janet")).name())
+                .thenReturn("kafka-janet-0");
+
+        // When:
+        listener.beforeSuite(null);
+
+        // Then:
+        verify(serviceInstance0).addEnv("KAFKA_BOB_BOOTSTRAP_SERVERS", "kafka-bob-0:9092");
+        verify(serviceInstance1).addEnv("KAFKA_BOB_BOOTSTRAP_SERVERS", "kafka-bob-0:9092");
+        verify(serviceInstance1).addEnv("KAFKA_JANET_BOOTSTRAP_SERVERS", "kafka-janet-0:9092");
+    }
+
+    @Test
+    void shouldThrowOnInvalidClusterName() {
+        // Given:
+        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
+        when(kafkaResource0.cluster()).thenReturn("in-valid");
+
+        // When:
+        final Exception e =
+                assertThrows(IllegalArgumentException.class, () -> listener.beforeSuite(null));
+
+        // Then:
+        assertThat(e.getMessage(), is("Invalid character: '-' found in cluster name: in-valid"));
+    }
+
+    @Test
+    void shouldSetApplicationIdOnServicesUnderTest() {
+        // Given:
+        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
+        when(descriptor1.resources()).thenReturn(Stream.of(kafkaResource1));
+
+        // When:
+        listener.beforeSuite(null);
+
+        // Then:
+        verify(serviceInstance0).addEnv("KAFKA_BOB_APPLICATION_ID", "service-0");
+        verify(serviceInstance1).addEnv("KAFKA_JANET_APPLICATION_ID", "service-1");
     }
 }

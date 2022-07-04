@@ -17,9 +17,10 @@
 package org.creekservice.api.kafka.streams.extension;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.creekservice.api.kafka.common.config.ClustersProperties.propertiesBuilder;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions.DEFAULT_STREAMS_CLOSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
@@ -29,7 +30,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
 import java.time.Duration;
-import java.util.Map;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
@@ -60,7 +64,16 @@ class KafkaStreamsExtensionOptionsTest {
                                 .build())
                 .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder()
-                                .withKafkaPropertiesOverrides(() -> Map.of("k", "v"))
+                                .withKafkaPropertiesOverrides(
+                                        () -> propertiesBuilder().put("default", "k", "v").build())
+                                .build(),
+                        KafkaStreamsExtensionOptions.builder()
+                                .withKafkaProperty("default", "k", "v")
+                                .build())
+                .addEqualityGroup(
+                        KafkaStreamsExtensionOptions.builder()
+                                .withKafkaPropertiesOverrides(
+                                        () -> propertiesBuilder().putCommon("k", "v").build())
                                 .build(),
                         KafkaStreamsExtensionOptions.builder().withKafkaProperty("k", "v").build())
                 .addEqualityGroup(
@@ -83,31 +96,81 @@ class KafkaStreamsExtensionOptionsTest {
     }
 
     @Test
-    void shouldDefaultToNoKafkaPropertiesForNow() {
-        assertThat(builder.build().properties().keySet(), is(empty()));
-        assertThat(builder.build().propertyMap().keySet(), is(empty()));
+    void shouldDefaultToEarliest() {
+        assertThat(
+                builder.build().properties("any").get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG),
+                is("earliest"));
     }
 
     @Test
-    @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:9092")
+    void shouldDefaultToAllAcks() {
+        assertThat(builder.build().properties("any").get(ProducerConfig.ACKS_CONFIG), is("all"));
+    }
+
+    @Test
+    void shouldDefaultToSnappyCompression() {
+        assertThat(
+                builder.build().properties("any").get(ProducerConfig.COMPRESSION_TYPE_CONFIG),
+                is("snappy"));
+    }
+
+    @Test
+    void shouldDefaultToThreeReplicasForInternalStreamsTopics() {
+        assertThat(
+                builder.build().properties("any").get(StreamsConfig.REPLICATION_FACTOR_CONFIG),
+                is(3));
+    }
+
+    @Test
+    void shouldDefaultToExactlyOnce() {
+        assertThat(
+                builder.build().properties("any").get(StreamsConfig.PROCESSING_GUARANTEE_CONFIG),
+                is(StreamsConfig.EXACTLY_ONCE_BETA));
+    }
+
+    @Test
+    void shouldDefaultToCommitInterval() {
+        assertThat(
+                builder.build().properties("any").get(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG),
+                is(1000));
+    }
+
+    @Test
+    void shouldDefaultExceptionHandler() {
+        assertThat(
+                builder.build()
+                        .properties("any")
+                        .get(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG),
+                is(StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class));
+    }
+
+    @Test
+    @SetEnvironmentVariable.SetEnvironmentVariables({
+        @SetEnvironmentVariable(key = "KAFKA_DEFAULT_BOOTSTRAP_SERVERS", value = "localhost:9092"),
+        @SetEnvironmentVariable(key = "KAFKA_OTHER_ACKS", value = "1")
+    })
     void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
         // When:
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // Then:
-        assertThat(options.properties(), hasEntry(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"));
+        assertThat(
+                options.properties(DEFAULT_CLUSTER_NAME),
+                hasEntry(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"));
+        assertThat(options.properties("other"), hasEntry(ProducerConfig.ACKS_CONFIG, "1"));
     }
 
     @Test
     void shouldLoadKafkaPropertyOverridesFromAlternateProvider() {
         // Given:
-        builder.withKafkaPropertiesOverrides(() -> Map.of("name", "value"));
+        builder.withKafkaPropertiesOverrides(
+                () -> propertiesBuilder().put("bob", "name", "value").build());
 
         // When:
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // Then:
-        assertThat(options.properties(), hasEntry("name", "value"));
+        assertThat(options.properties("bob"), hasEntry("name", "value"));
     }
 
     @Test
@@ -119,7 +182,19 @@ class KafkaStreamsExtensionOptionsTest {
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // Then:
-        assertThat(options.properties(), hasEntry("name", "value"));
+        assertThat(options.properties(DEFAULT_CLUSTER_NAME), hasEntry("name", "value"));
+    }
+
+    @Test
+    void shouldSetKafkaPropertyForSpecificCluster() {
+        // Given:
+        builder.withKafkaProperty("bob", "name", "value");
+
+        // When:
+        final KafkaStreamsExtensionOptions options = builder.build();
+
+        // Then:
+        assertThat(options.properties("bob"), hasEntry("name", "value"));
     }
 
     @Test
@@ -131,11 +206,11 @@ class KafkaStreamsExtensionOptionsTest {
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // Then:
-        assertThat(options.propertyMap(), hasEntry("name", "value"));
+        assertThat(options.propertyMap(DEFAULT_CLUSTER_NAME), hasEntry("name", "value"));
     }
 
     @Test
-    @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:9092")
+    @SetEnvironmentVariable(key = "KAFKA_DEFAULT_BOOTSTRAP_SERVERS", value = "localhost:9092")
     void shouldOverrideSetKafkaProperties() {
         // Given:
         builder.withKafkaProperty(BOOTSTRAP_SERVERS_CONFIG, "wrong!");
@@ -144,7 +219,9 @@ class KafkaStreamsExtensionOptionsTest {
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // Then:
-        assertThat(options.properties(), hasEntry(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"));
+        assertThat(
+                options.properties(DEFAULT_CLUSTER_NAME),
+                hasEntry(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"));
     }
 
     @Test
@@ -154,10 +231,10 @@ class KafkaStreamsExtensionOptionsTest {
         final KafkaStreamsExtensionOptions options = builder.build();
 
         // When:
-        options.properties().put("mutate", 10);
+        options.properties(DEFAULT_CLUSTER_NAME).put("mutate", 10);
 
         // Then:
-        assertThat(options.properties(), not(hasKey("mutate")));
+        assertThat(options.properties(DEFAULT_CLUSTER_NAME), not(hasKey("mutate")));
     }
 
     @Test

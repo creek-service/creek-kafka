@@ -50,13 +50,22 @@ class KafkaStreamsBuilderTest {
         builder = new KafkaStreamsBuilder(options, appFactory);
 
         when(appFactory.create(any(), any(), any())).thenReturn(app);
-        when(options.properties()).thenReturn(properties);
+        when(options.properties(any())).thenReturn(properties);
+    }
+
+    @Test
+    void shouldGetPropertiesForCorrectCluster() {
+        // When:
+        builder.build(topology, "cluster");
+
+        // Then:
+        verify(options).properties("cluster");
     }
 
     @Test
     void shouldBuildStreamsApp() {
         // When:
-        builder.build(topology);
+        builder.build(topology, "cluster");
 
         // Then:
         verify(appFactory)
@@ -66,7 +75,7 @@ class KafkaStreamsBuilderTest {
     @Test
     void shouldReturnStreamsApp() {
         // When:
-        final KafkaStreams result = builder.build(topology);
+        final KafkaStreams result = builder.build(topology, "cluster");
 
         // Then:
         assertThat(result, is(app));

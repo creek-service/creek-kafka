@@ -17,6 +17,7 @@
 package org.creekservice.internal.kafka.test.service.kafka.streams;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.OutputTopic;
 
@@ -51,13 +52,15 @@ public final class TopologyBuilder {
                         inputTopic.name(),
                         Consumed.with(inputTopic.keySerde(), inputTopic.valueSerde())
                                 .withName(name.name("ingest-" + inputTopic.name())))
+                .peek((k, v) -> System.out.println("received " + k + "-> " + v))
                 .transform(switchKeyAndValue(), name.named("switch"))
+                .peek((k, v) -> System.out.println("producing " + k + "-> " + v))
                 .to(
                         outputTopic.name(),
                         Produced.with(outputTopic.keySerde(), outputTopic.valueSerde())
                                 .withName(name.name("egress-" + outputTopic.name())));
 
-        return builder.build(ext.properties());
+        return builder.build(ext.properties(DEFAULT_CLUSTER_NAME));
     }
 
     private TransformerSupplier<String, Long, KeyValue<Long, String>> switchKeyAndValue() {
