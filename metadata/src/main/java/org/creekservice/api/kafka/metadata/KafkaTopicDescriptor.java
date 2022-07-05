@@ -37,7 +37,7 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
      *
      * <p>This name is used to look up connection details for the cluster.
      *
-     * <p>The name should be limited to alphanumeric characters.
+     * <p>The name should be limited to alphanumeric characters and hyphen {@code -}.
      *
      * @return the logical Kafka cluster name.
      */

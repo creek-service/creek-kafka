@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
 public final class ResourceRegistryFactory {
@@ -59,7 +59,7 @@ public final class ResourceRegistryFactory {
     }
 
     public ResourceRegistry create(
-            final ComponentDescriptor component, final KafkaStreamsExtensionOptions options) {
+            final ComponentDescriptor component, final ClustersProperties properties) {
 
         final Map<String, KafkaTopicDescriptor<?, ?>> topicDefs =
                 topicCollector.collectTopics(List.of(component));
@@ -69,15 +69,16 @@ public final class ResourceRegistryFactory {
                         .collect(
                                 Collectors.toUnmodifiableMap(
                                         Map.Entry::getKey,
-                                        e -> createTopicResource(e.getValue(), options)));
+                                        e -> createTopicResource(e.getValue(), properties)));
 
         return registryFactory.create(topics);
     }
 
     private <K, V> Topic<K, V> createTopicResource(
-            final KafkaTopicDescriptor<K, V> def, final KafkaStreamsExtensionOptions options) {
-        final Serde<K> keySerde = serde(def.key(), def.name(), def.cluster(), true, options);
-        final Serde<V> valueSerde = serde(def.value(), def.name(), def.cluster(), false, options);
+            final KafkaTopicDescriptor<K, V> def, final ClustersProperties properties) {
+        final Serde<K> keySerde = serde(def.key(), def.name(), def.cluster(), true, properties);
+        final Serde<V> valueSerde =
+                serde(def.value(), def.name(), def.cluster(), false, properties);
         return topicFactory.create(def, keySerde, valueSerde);
     }
 
@@ -86,11 +87,11 @@ public final class ResourceRegistryFactory {
             final String topicName,
             final String clusterName,
             final boolean isKey,
-            final KafkaStreamsExtensionOptions options) {
+            final ClustersProperties properties) {
         final KafkaSerdeProvider provider = provider(part, topicName, isKey);
 
         final Serde<T> serde = provider.create(part);
-        serde.configure(options.propertyMap(clusterName), isKey);
+        serde.configure(properties.get(clusterName), isKey);
         return serde;
     }
 

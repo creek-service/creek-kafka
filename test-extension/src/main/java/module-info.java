@@ -22,6 +22,7 @@ module creek.kafka.streams.test.extension {
     requires transitive creek.system.test.extension;
     requires creek.kafka.metadata;
     requires creek.base.type;
+    requires creek.kafka.common;
 
     provides CreekTestExtension with
             KafkaStreamsTestExtension;

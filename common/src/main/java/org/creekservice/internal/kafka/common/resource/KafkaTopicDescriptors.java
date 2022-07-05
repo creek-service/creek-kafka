@@ -80,8 +80,8 @@ public final class KafkaTopicDescriptors {
                 new StringJoiner(", ", topic.getClass().getSimpleName() + "[", "]")
                         .add("name=" + topic.name())
                         .add("cluster=" + topic.cluster())
-                        .add("key=" + asString(topic.key()))
-                        .add("value=" + asString(topic.value()));
+                        .add("key=" + (topic.key() == null ? "null" : asString(topic.key())))
+                        .add("value=" + (topic.value() == null ? "null" : asString(topic.value())));
 
         if (topic instanceof CreatableKafkaTopic) {
             final CreatableKafkaTopic<?, ?> owned = (CreatableKafkaTopic<?, ?>) topic;
@@ -121,7 +121,7 @@ public final class KafkaTopicDescriptors {
         final StringJoiner joiner =
                 new StringJoiner(", ", part.getClass().getSimpleName() + "[", "]")
                         .add("format=" + part.format())
-                        .add("type=" + part.type().getName());
+                        .add("type=" + (part.type() == null ? "null" : part.type().getName()));
 
         return joiner.toString();
     }

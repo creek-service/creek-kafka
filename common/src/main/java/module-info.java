@@ -7,5 +7,9 @@ module creek.kafka.common {
     exports org.creekservice.api.kafka.common.config;
     exports org.creekservice.api.kafka.common.resource;
     exports org.creekservice.internal.kafka.common.resource to
-            creek.kafka.streams.extension;
+            creek.kafka.streams.extension,
+            creek.kafka.streams.test.extension;
+    exports org.creekservice.internal.kafka.common.config to
+            creek.kafka.streams.extension,
+            creek.kafka.streams.test.extension;
 }

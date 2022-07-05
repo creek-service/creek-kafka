@@ -22,6 +22,7 @@ import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * Holds Kafka client properties for connecting to multiple Kafka clusters.
@@ -55,10 +56,27 @@ public final class ClustersProperties {
      * @param clusterName the name of the Kafka cluster.
      * @return the properties, or an empty map if non are set.
      */
-    public Map<String, ?> get(final String clusterName) {
+    public Map<String, Object> get(final String clusterName) {
         final Map<String, Object> props = new HashMap<>(common);
         props.putAll(clusterSpecific(clusterName));
         return props;
+    }
+
+    /**
+     * Get Kafka client properties for the supplied {@code clusterName} as a {@link Properties}
+     * object.
+     *
+     * @param clusterName the name of the Kafka cluster.
+     * @return the properties.
+     */
+    public Properties properties(final String clusterName) {
+        final Properties props = new Properties();
+        props.putAll(get(clusterName));
+        return props;
+    }
+
+    private Map<String, ?> clusterSpecific(final String clusterName) {
+        return clusters.getOrDefault(clusterName.toLowerCase(), Map.of());
     }
 
     @Override
@@ -80,11 +98,7 @@ public final class ClustersProperties {
 
     @Override
     public String toString() {
-        return "ClustersProperties{" + "common=" + common + ", byCluster=" + clusters + '}';
-    }
-
-    private Map<String, ?> clusterSpecific(final String clusterName) {
-        return clusters.getOrDefault(requireNonNull(clusterName, "clusterName"), Map.of());
+        return "ClustersProperties{" + "common=" + common + ", clusters=" + clusters + '}';
     }
 
     public static final class Builder {
@@ -100,7 +114,8 @@ public final class ClustersProperties {
         }
 
         public Builder put(final String cluster, final String name, final Object value) {
-            clusters.computeIfAbsent(requireNonBlank(cluster, "cluster"), k -> new HashMap<>())
+            clusters.computeIfAbsent(
+                            requireNonBlank(cluster, "cluster").toLowerCase(), k -> new HashMap<>())
                     .put(requireNonBlank(name, "name"), requireNonNull(value, "value"));
             return this;
         }
@@ -115,6 +130,29 @@ public final class ClustersProperties {
 
         public ClustersProperties build() {
             return new ClustersProperties(common, clusters);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final Builder builder = (Builder) o;
+            return Objects.equals(common, builder.common)
+                    && Objects.equals(clusters, builder.clusters);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(common, clusters);
+        }
+
+        @Override
+        public String toString() {
+            return "ClusterProperties{" + "common=" + common + ", clusters=" + clusters + '}';
         }
     }
 }

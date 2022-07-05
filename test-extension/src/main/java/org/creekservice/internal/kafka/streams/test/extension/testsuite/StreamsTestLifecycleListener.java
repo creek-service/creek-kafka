@@ -20,14 +20,15 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
-import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
@@ -37,10 +38,29 @@ import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListene
 public final class StreamsTestLifecycleListener implements TestLifecycleListener {
 
     private final CreekSystemTest api;
+    private final TopicCollector topicCollector;
     private final List<ServiceInstance> kafkaInstances = new ArrayList<>();
 
     public StreamsTestLifecycleListener(final CreekSystemTest api) {
-        this.api = requireNonNull(api, "systemTest");
+        this(
+                api,
+                d ->
+                        org
+                                .creekservice
+                                .internal
+                                .kafka
+                                .common
+                                .resource
+                                .TopicCollector
+                                .collectTopics(List.of(d))
+                                .values()
+                                .stream());
+    }
+
+    @VisibleForTesting
+    StreamsTestLifecycleListener(final CreekSystemTest api, final TopicCollector topicCollector) {
+        this.api = requireNonNull(api, "api");
+        this.topicCollector = requireNonNull(topicCollector, "topicCollector");
     }
 
     @Override
@@ -66,10 +86,8 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
         return service.descriptor()
                 .map(
                         descriptor ->
-                                descriptor
-                                        .resources()
-                                        .filter(KafkaTopicDescriptor.class::isInstance)
-                                        .map(r -> (KafkaTopicDescriptor<?, ?>) r)
+                                topicCollector
+                                        .collectTopics(descriptor)
                                         .map(KafkaTopicDescriptor::cluster)
                                         .distinct()
                                         .map(
@@ -94,7 +112,8 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
             final Collection<ConfigurableServiceInstance> clusterUsers,
             final String clusterName,
             final ServiceInstance kafka) {
-        final String prefix = "KAFKA_" + clusterName.toUpperCase() + "_";
+        final String prefix =
+                clusterName.isBlank() ? "KAFKA_" : "KAFKA_" + clusterName.toUpperCase() + "_";
 
         clusterUsers.forEach(
                 instance ->
@@ -114,7 +133,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
         private final ConfigurableServiceInstance service;
 
         ClusterInstance(final String clusterName, final ConfigurableServiceInstance service) {
-            this.clusterName = validate(requireNonBlank(clusterName, "cluster"));
+            this.clusterName = requireNonNull(clusterName, "cluster");
             this.service = requireNonNull(service, "service");
         }
 
@@ -125,21 +144,10 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
         public ConfigurableServiceInstance service() {
             return service;
         }
+    }
 
-        private static String validate(final String cluster) {
-            cluster.chars()
-                    .filter(c -> !(Character.isDigit(c) || Character.isAlphabetic(c)))
-                    .findFirst()
-                    .ifPresent(
-                            c -> {
-                                throw new IllegalArgumentException(
-                                        "Invalid character: '"
-                                                + (char) c
-                                                + "' found in cluster name: "
-                                                + cluster);
-                            });
-
-            return cluster;
-        }
+    @VisibleForTesting
+    interface TopicCollector {
+        Stream<KafkaTopicDescriptor<?, ?>> collectTopics(ServiceDescriptor service);
     }
 }

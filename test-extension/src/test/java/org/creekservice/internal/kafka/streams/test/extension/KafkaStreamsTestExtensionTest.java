@@ -23,13 +23,16 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -56,6 +59,17 @@ class KafkaStreamsTestExtensionTest {
     @Test
     void shouldExposeName() {
         assertThat(ext.name(), is("creek-kafka-streams"));
+    }
+
+    @Test
+    void shouldAppendValidatingListenerBeforeMainListener() {
+        // When:
+        ext.initialize(api);
+
+        // Then:
+        final InOrder inOrder = inOrder(api.testSuite().listener());
+        inOrder.verify(api.testSuite().listener()).append(isA(ValidatingTestListener.class));
+        inOrder.verify(api.testSuite().listener()).append(isA(StreamsTestLifecycleListener.class));
     }
 
     @Test

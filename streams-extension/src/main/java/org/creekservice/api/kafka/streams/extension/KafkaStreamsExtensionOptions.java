@@ -17,13 +17,11 @@
 package org.creekservice.api.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.api.kafka.common.config.ClustersProperties.propertiesBuilder;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.streams.StreamsConfig;
@@ -75,7 +73,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
                     StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
                     StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class);
 
-    private final ClustersProperties properties;
+    private final ClustersProperties.Builder properties;
+    private final KafkaPropertyOverrides overridesProvider;
     private final Duration streamsCloseTimeout;
     private final LifecycleObserver lifecycleObserver;
     private final StateRestoreObserver restoreObserver;
@@ -86,40 +85,28 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     }
 
     private KafkaStreamsExtensionOptions(
-            final ClustersProperties properties,
+            final ClustersProperties.Builder properties,
+            final KafkaPropertyOverrides overridesProvider,
             final Duration streamsCloseTimeout,
             final LifecycleObserver lifecycleObserver,
             final StateRestoreObserver restoreObserver,
             final KafkaMetricsPublisherOptions metricsPublishing) {
         this.properties = requireNonNull(properties, "properties");
+        this.overridesProvider = requireNonNull(overridesProvider, "overridesProvider");
         this.streamsCloseTimeout = requireNonNull(streamsCloseTimeout, "streamsCloseTimeout");
         this.lifecycleObserver = requireNonNull(lifecycleObserver, "lifecycleObserver");
         this.restoreObserver = requireNonNull(restoreObserver, "restoreObserver");
         this.metricsPublishing = requireNonNull(metricsPublishing, "metricsPublishing");
     }
 
-    /**
-     * Get Kafka client properties.
-     *
-     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
-     *     {@link org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
-     * @return the Kafka properties.
-     */
-    public Properties properties(final String clusterName) {
-        final Properties props = new Properties();
-        props.putAll(properties.get(clusterName));
-        return props;
+    /** @return the Kafka client properties */
+    public ClustersProperties.Builder propertiesBuilder() {
+        return properties;
     }
 
-    /**
-     * Get Kafka client properties.
-     *
-     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
-     *     {@link org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
-     * @return the Kafka properties.
-     */
-    public Map<String, ?> propertyMap(final String clusterName) {
-        return properties.get(clusterName);
+    /** @return the provider of Kafka client property overrides. */
+    public KafkaPropertyOverrides propertyOverrides() {
+        return overridesProvider;
     }
 
     /** @return the timeout used when closing the stream app. */
@@ -152,6 +139,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         }
         final KafkaStreamsExtensionOptions that = (KafkaStreamsExtensionOptions) o;
         return Objects.equals(properties, that.properties)
+                && Objects.equals(overridesProvider, that.overridesProvider)
                 && Objects.equals(streamsCloseTimeout, that.streamsCloseTimeout)
                 && Objects.equals(lifecycleObserver, that.lifecycleObserver)
                 && Objects.equals(restoreObserver, that.restoreObserver)
@@ -162,6 +150,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     public int hashCode() {
         return Objects.hash(
                 properties,
+                overridesProvider,
                 streamsCloseTimeout,
                 lifecycleObserver,
                 restoreObserver,
@@ -173,6 +162,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         return "KafkaStreamsExtensionOptions{"
                 + "properties="
                 + properties
+                + "overridesProvider="
+                + overridesProvider
                 + ", streamsCloseTimeout="
                 + streamsCloseTimeout
                 + ", lifecycleObserver="
@@ -187,7 +178,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder {
 
-        private final ClustersProperties.Builder properties = propertiesBuilder();
+        private final ClustersProperties.Builder properties =
+                ClustersProperties.propertiesBuilder();
         private Optional<KafkaPropertyOverrides> overridesProvider = Optional.empty();
         private Duration streamsCloseTimeout = DEFAULT_STREAMS_CLOSE_TIMEOUT;
         private Optional<LifecycleObserver> lifecycleObserver = Optional.empty();
@@ -307,12 +299,10 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
          * @return the built options.
          */
         public KafkaStreamsExtensionOptions build() {
-            properties.putAll(
-                    overridesProvider
-                            .orElseGet(SystemEnvPropertyOverrides::systemEnvPropertyOverrides)
-                            .get());
             return new KafkaStreamsExtensionOptions(
-                    properties.build(),
+                    properties,
+                    overridesProvider.orElseGet(
+                            SystemEnvPropertyOverrides::systemEnvPropertyOverrides),
                     streamsCloseTimeout,
                     lifecycleObserver.orElseGet(DefaultLifecycleObserver::new),
                     restoreObserver.orElseGet(DefaultStateRestoreObserver::new),

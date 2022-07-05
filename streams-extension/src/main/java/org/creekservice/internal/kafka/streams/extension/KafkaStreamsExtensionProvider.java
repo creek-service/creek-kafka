@@ -18,12 +18,16 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.stream.Stream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.model.ResourceHandler;
+import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
+import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
 
@@ -34,9 +38,13 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
     private final ExecutorFactory executorFactory;
     private final ExtensionFactory extensionFactory;
     private final ResourceRegistryFactory resourcesFactory;
+    private final ClustersPropertiesFactory propertiesFactory;
+    private final KafkaResourceValidator resourceValidator;
 
     public KafkaStreamsExtensionProvider() {
         this(
+                new KafkaResourceValidator(),
+                new ClustersPropertiesFactory(),
                 KafkaStreamsBuilder::new,
                 KafkaStreamsExecutor::new,
                 StreamsExtension::new,
@@ -45,10 +53,14 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
 
     @VisibleForTesting
     KafkaStreamsExtensionProvider(
+            final KafkaResourceValidator resourceValidator,
+            final ClustersPropertiesFactory propertiesFactory,
             final BuilderFactory builderFactory,
             final ExecutorFactory executorFactory,
             final ExtensionFactory extensionFactory,
             final ResourceRegistryFactory resourcesFactory) {
+        this.resourceValidator = requireNonNull(resourceValidator, "kafkaResourceValidator");
+        this.propertiesFactory = requireNonNull(propertiesFactory, "configFactory");
         this.builderFactory = requireNonNull(builderFactory, "builderFactory");
         this.executorFactory = requireNonNull(executorFactory, "executorFactory");
         this.extensionFactory = requireNonNull(extensionFactory, "extensionFactory");
@@ -64,18 +76,18 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
                         .get(KafkaStreamsExtensionOptions.class)
                         .orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
 
-        final ResourceRegistry resources = resourcesFactory.create(api.service(), options);
+        resourceValidator.validate(Stream.of(api.service()));
+        final ClustersProperties properties = propertiesFactory.create(api.service(), options);
+        final ResourceRegistry resources = resourcesFactory.create(api.service(), properties);
+        final KafkaStreamsBuilder builder = builderFactory.create(properties);
+        final KafkaStreamsExecutor executor = executorFactory.create(options);
 
-        return extensionFactory.create(
-                options,
-                resources,
-                builderFactory.create(options),
-                executorFactory.create(options));
+        return extensionFactory.create(properties, resources, builder, executor);
     }
 
     @VisibleForTesting
     interface BuilderFactory {
-        KafkaStreamsBuilder create(KafkaStreamsExtensionOptions options);
+        KafkaStreamsBuilder create(ClustersProperties clustersProperties);
     }
 
     @VisibleForTesting
@@ -86,7 +98,7 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
     @VisibleForTesting
     interface ExtensionFactory {
         StreamsExtension create(
-                KafkaStreamsExtensionOptions options,
+                ClustersProperties clustersProperties,
                 ResourceRegistry resources,
                 KafkaStreamsBuilder builder,
                 KafkaStreamsExecutor executor);

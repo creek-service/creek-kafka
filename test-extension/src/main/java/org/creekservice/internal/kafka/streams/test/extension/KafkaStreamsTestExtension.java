@@ -19,7 +19,9 @@ package org.creekservice.internal.kafka.streams.test.extension;
 
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.testsuite.TestListenerContainer;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
 
 /**
  * A Creek system test extension for testing Kafka Streams based microservices.
@@ -35,6 +37,8 @@ public final class KafkaStreamsTestExtension implements CreekTestExtension {
 
     @Override
     public void initialize(final CreekSystemTest systemTest) {
-        systemTest.testSuite().listener().append(new StreamsTestLifecycleListener(systemTest));
+        final TestListenerContainer testListeners = systemTest.testSuite().listener();
+        testListeners.append(new ValidatingTestListener(systemTest));
+        testListeners.append(new StreamsTestLifecycleListener(systemTest));
     }
 }

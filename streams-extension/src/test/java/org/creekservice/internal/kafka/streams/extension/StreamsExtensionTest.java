@@ -26,9 +26,9 @@ import static org.mockito.Mockito.when;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.common.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.Topic;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +43,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StreamsExtensionTest {
 
-    @Mock private KafkaStreamsExtensionOptions options;
+    @Mock private ClustersProperties clustersProperties;
     @Mock private ResourceRegistry resources;
     @Mock private KafkaStreamsBuilder builder;
     @Mock private KafkaStreamsExecutor executor;
@@ -56,9 +56,9 @@ class StreamsExtensionTest {
 
     @BeforeEach
     void setUp() {
-        extension = new StreamsExtension(options, resources, builder, executor);
+        extension = new StreamsExtension(clustersProperties, resources, builder, executor);
 
-        when(options.properties(any())).thenReturn(properties);
+        when(clustersProperties.properties(any())).thenReturn(properties);
         when(builder.build(any(), any())).thenReturn(app);
     }
 
@@ -74,7 +74,7 @@ class StreamsExtensionTest {
 
         // Then:
         assertThat(result, is(properties));
-        verify(options).properties("cluster-bob");
+        verify(clustersProperties).properties("cluster-bob");
     }
 
     @Test

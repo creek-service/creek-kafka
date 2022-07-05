@@ -16,9 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -27,10 +24,10 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener.TopicCollector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,17 +52,17 @@ class StreamsTestLifecycleListenerTest {
 
     @Mock private ServiceDescriptor descriptor0;
     @Mock private ServiceDescriptor descriptor1;
-    @Mock private ResourceDescriptor noneKafkaResource;
 
     @Mock private KafkaTopicDescriptor<?, ?> kafkaResource0;
 
     @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
+    @Mock private TopicCollector topicCollector;
 
     private StreamsTestLifecycleListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new StreamsTestLifecycleListener(api);
+        listener = new StreamsTestLifecycleListener(api, topicCollector);
 
         when(api.testSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
@@ -96,7 +93,7 @@ class StreamsTestLifecycleListenerTest {
     @Test
     void shouldNotStartKafkaIfNoServiceDescriptorsHaveKafkaResources() {
         // Given:
-        when(descriptor0.resources()).thenAnswer(inv -> Stream.of(noneKafkaResource));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of());
 
         // When:
         listener.beforeSuite(null);
@@ -108,8 +105,8 @@ class StreamsTestLifecycleListenerTest {
     @Test
     void shouldAddKafkaBrokerPerCluster() {
         // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
-        when(descriptor1.resources()).thenReturn(Stream.of(kafkaResource1));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(descriptor1)).thenReturn(Stream.of(kafkaResource1));
 
         // When:
         listener.beforeSuite(null);
@@ -122,7 +119,7 @@ class StreamsTestLifecycleListenerTest {
     @Test
     void shouldStartKafka() {
         // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
 
         // When:
         listener.beforeSuite(null);
@@ -134,7 +131,7 @@ class StreamsTestLifecycleListenerTest {
     @Test
     void shouldStopKafkaOnlyOnce() {
         // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
         listener.beforeSuite(null);
 
         // When:
@@ -148,8 +145,9 @@ class StreamsTestLifecycleListenerTest {
     @Test
     void shouldSetKafkaEndpointOnServicesUnderTest() {
         // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
-        when(descriptor1.resources()).thenReturn(Stream.of(kafkaResource0, kafkaResource1));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(descriptor1))
+                .thenReturn(Stream.of(kafkaResource0, kafkaResource1));
 
         when(api.testSuite().services().add(new KafkaContainerDef("bob")).name())
                 .thenReturn("kafka-bob-0");
@@ -166,24 +164,10 @@ class StreamsTestLifecycleListenerTest {
     }
 
     @Test
-    void shouldThrowOnInvalidClusterName() {
-        // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
-        when(kafkaResource0.cluster()).thenReturn("in-valid");
-
-        // When:
-        final Exception e =
-                assertThrows(IllegalArgumentException.class, () -> listener.beforeSuite(null));
-
-        // Then:
-        assertThat(e.getMessage(), is("Invalid character: '-' found in cluster name: in-valid"));
-    }
-
-    @Test
     void shouldSetApplicationIdOnServicesUnderTest() {
         // Given:
-        when(descriptor0.resources()).thenReturn(Stream.of(kafkaResource0));
-        when(descriptor1.resources()).thenReturn(Stream.of(kafkaResource1));
+        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(descriptor1)).thenReturn(Stream.of(kafkaResource1));
 
         // When:
         listener.beforeSuite(null);

@@ -17,6 +17,7 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static java.lang.System.lineSeparator;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.system.test.extension.service.ServiceInstance.ExecResult.execResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -73,6 +74,15 @@ class KafkaContainerDefTest {
     @Test
     void shouldExposeName() {
         assertThat(def.name(), is("kafka-bob"));
+    }
+
+    @Test
+    void shouldSupportDefaultName() {
+        // Given:
+        def = new KafkaContainerDef(DEFAULT_CLUSTER_NAME);
+
+        // Then:
+        assertThat(def.name(), is("kafka-default"));
     }
 
     @Test

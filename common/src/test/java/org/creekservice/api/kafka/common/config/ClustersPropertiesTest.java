@@ -49,6 +49,16 @@ class ClustersPropertiesTest {
     @Test
     void shouldImplementHashcodeAndEquals() {
         new EqualsTester()
+                // Builder:
+                .addEqualityGroup(
+                        propertiesBuilder().put("a", "b", "c").putCommon("d", "e"),
+                        propertiesBuilder().put("A", "b", "c").putCommon("d", "e"))
+                .addEqualityGroup(propertiesBuilder().put("diff", "b", "c").putCommon("d", "e"))
+                .addEqualityGroup(propertiesBuilder().put("a", "diff", "c").putCommon("d", "e"))
+                .addEqualityGroup(propertiesBuilder().put("a", "b", "diff").putCommon("d", "e"))
+                .addEqualityGroup(propertiesBuilder().put("a", "b", "c").putCommon("diff", "e"))
+                .addEqualityGroup(propertiesBuilder().put("a", "b", "c").putCommon("d", "diff"))
+                // Instance:
                 .addEqualityGroup(
                         propertiesBuilder().put("a", "b", "c").putCommon("d", "e").build(),
                         propertiesBuilder().put("a", "b", "c").putCommon("d", "e").build())
@@ -148,5 +158,29 @@ class ClustersPropertiesTest {
         // Then:
         final ClustersProperties props = builder.build();
         assertThat(props.get("c").get("k1"), is(1));
+    }
+
+    @Test
+    void shouldBeCaseInsensitiveOnClusterName() {
+        // Given:
+        final ClustersProperties props =
+                propertiesBuilder()
+                        .put("cluster", "k1", 1)
+                        .put("cluster", "k2", 1)
+                        .put("Cluster", "k1", 2)
+                        .build();
+
+        // Then:
+        assertThat(props.get("cLUSTer"), is(Map.of("k1", 2, "k2", 1)));
+    }
+
+    @Test
+    void shouldGetProperties() {
+        // Given:
+        final ClustersProperties props =
+                propertiesBuilder().putCommon("k1", 1).put("cluster", "k2", 2).build();
+
+        // Then:
+        assertThat(Map.copyOf(props.properties("cluster")), is(Map.of("k1", 1, "k2", 2)));
     }
 }
