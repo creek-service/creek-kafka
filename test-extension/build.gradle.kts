@@ -19,6 +19,7 @@ plugins {
 }
 
 val creekSystemTestVersion : String by extra
+val creekBaseVersion : String by extra
 val testContainersVersion : String by extra
 val kafkaVersion : String by extra
 
@@ -26,6 +27,9 @@ dependencies {
     api(project(":metadata"))
     api("org.creekservice:creek-system-test-extension:$creekSystemTestVersion")
 
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
+
+    testImplementation(project(":test-service"))
     testImplementation("org.creekservice:creek-system-test-test-util:$creekSystemTestVersion")
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")

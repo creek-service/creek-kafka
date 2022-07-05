@@ -17,15 +17,20 @@
 package org.creekservice.api.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.kafka.common.config.ClustersProperties.propertiesBuilder;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
+import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
@@ -38,7 +43,39 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
 
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
 
-    private final Map<String, Object> properties;
+    /** More sensible Kafka client defaults: */
+    private static final Map<String, ?> CLIENT_DEFAULTS =
+            Map.of(
+                    // If not offsets exist (e.g. on first run of an application), then default to
+                    // reading data from the start.
+                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+                    // More resilient default for replication:
+                    ProducerConfig.ACKS_CONFIG, "all",
+                    // Turn on compression by default as it's almost always quicker as it reduces
+                    // payload size and the network
+                    // is almost always the bottleneck:
+                    ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+
+    /** More sensible Kafka Streams defaults: */
+    private static final Map<String, ?> STREAMS_DEFAULTS =
+            Map.of(
+                    // Kafka default is only 1. This isn't very resilient, so up to a more sensible
+                    // 3:
+                    StreamsConfig.REPLICATION_FACTOR_CONFIG,
+                    3,
+                    // Default to exactly once semantics:
+                    StreamsConfig.PROCESSING_GUARANTEE_CONFIG,
+                    StreamsConfig.EXACTLY_ONCE_BETA,
+                    // Reduce default commit interval from 30s to 1s:
+                    // Reducing eos publishing delays and reducing the number of messages replayed
+                    // on failure.
+                    StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,
+                    1000,
+                    // Configure an exception handler to log structured messages:
+                    StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
+                    StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class);
+
+    private final ClustersProperties properties;
     private final Duration streamsCloseTimeout;
     private final LifecycleObserver lifecycleObserver;
     private final StateRestoreObserver restoreObserver;
@@ -49,28 +86,40 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     }
 
     private KafkaStreamsExtensionOptions(
-            final Map<String, Object> properties,
+            final ClustersProperties properties,
             final Duration streamsCloseTimeout,
             final LifecycleObserver lifecycleObserver,
             final StateRestoreObserver restoreObserver,
             final KafkaMetricsPublisherOptions metricsPublishing) {
-        this.properties = Map.copyOf(requireNonNull(properties, "properties"));
+        this.properties = requireNonNull(properties, "properties");
         this.streamsCloseTimeout = requireNonNull(streamsCloseTimeout, "streamsCloseTimeout");
         this.lifecycleObserver = requireNonNull(lifecycleObserver, "lifecycleObserver");
         this.restoreObserver = requireNonNull(restoreObserver, "restoreObserver");
         this.metricsPublishing = requireNonNull(metricsPublishing, "metricsPublishing");
     }
 
-    /** @return the Kafka properties. */
-    public Properties properties() {
+    /**
+     * Get Kafka client properties.
+     *
+     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
+     *     {@link org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
+     * @return the Kafka properties.
+     */
+    public Properties properties(final String clusterName) {
         final Properties props = new Properties();
-        props.putAll(properties);
+        props.putAll(properties.get(clusterName));
         return props;
     }
 
-    /** @return the Kafka properties. */
-    public Map<String, ?> propertyMap() {
-        return Map.copyOf(properties);
+    /**
+     * Get Kafka client properties.
+     *
+     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
+     *     {@link org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
+     * @return the Kafka properties.
+     */
+    public Map<String, ?> propertyMap(final String clusterName) {
+        return properties.get(clusterName);
     }
 
     /** @return the timeout used when closing the stream app. */
@@ -138,7 +187,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder {
 
-        private final Map<String, Object> properties = new HashMap<>();
+        private final ClustersProperties.Builder properties = propertiesBuilder();
         private Optional<KafkaPropertyOverrides> overridesProvider = Optional.empty();
         private Duration streamsCloseTimeout = DEFAULT_STREAMS_CLOSE_TIMEOUT;
         private Optional<LifecycleObserver> lifecycleObserver = Optional.empty();
@@ -146,7 +195,10 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         private KafkaMetricsPublisherOptions metricsPublishing =
                 KafkaMetricsPublisherOptions.builder().build();
 
-        private Builder() {}
+        private Builder() {
+            CLIENT_DEFAULTS.forEach(properties::putCommon);
+            STREAMS_DEFAULTS.forEach(properties::putCommon);
+        }
 
         /**
          * Set an alternate provider of Kafka property overrides.
@@ -174,14 +226,34 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         }
 
         /**
-         * Set/overwrite a property that should be passed to the Kafka clients / streams app.
+         * Set a common Kafka client property.
+         *
+         * <p>This property will be set for all clusters unless overridden either via {@link
+         * #withKafkaProperty(String, String, Object)} or via {@link #withKafkaPropertiesOverrides}.
          *
          * @param name the name of the property
          * @param value the value of the property
          * @return self
          */
         public Builder withKafkaProperty(final String name, final Object value) {
-            properties.put(name, value);
+            properties.putCommon(name, value);
+            return this;
+        }
+
+        /**
+         * Set a Kafka client property for a specific cluster.
+         *
+         * <p>Note: Any value set here can be overridden by the {@link #withKafkaPropertiesOverrides
+         * overridesProvider}.
+         *
+         * @param cluster the name of the Kafka cluster this property should be scoped to.
+         * @param name the name of the property
+         * @param value the value of the property
+         * @return self
+         */
+        public Builder withKafkaProperty(
+                final String cluster, final String name, final Object value) {
+            properties.put(cluster, name, value);
             return this;
         }
 
@@ -240,7 +312,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
                             .orElseGet(SystemEnvPropertyOverrides::systemEnvPropertyOverrides)
                             .get());
             return new KafkaStreamsExtensionOptions(
-                    properties,
+                    properties.build(),
                     streamsCloseTimeout,
                     lifecycleObserver.orElseGet(DefaultLifecycleObserver::new),
                     restoreObserver.orElseGet(DefaultStateRestoreObserver::new),

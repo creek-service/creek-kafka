@@ -54,8 +54,8 @@ final class StreamsExtension implements KafkaStreamsExtension {
     }
 
     @Override
-    public Properties properties() {
-        return options.properties();
+    public Properties properties(final String clusterName) {
+        return options.properties(clusterName);
     }
 
     @Override
@@ -64,8 +64,8 @@ final class StreamsExtension implements KafkaStreamsExtension {
     }
 
     @Override
-    public KafkaStreams build(final Topology topology) {
-        return appBuilder.build(topology);
+    public KafkaStreams build(final Topology topology, final String clusterName) {
+        return appBuilder.build(topology, clusterName);
     }
 
     @Override

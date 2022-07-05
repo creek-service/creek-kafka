@@ -25,10 +25,10 @@
         <Logger name="org.creekservice" level="DEBUG" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="kafka" level="debug" additivity="false">
+        <Logger name="kafka" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="org.apache.kafka" level="debug" additivity="false">
+        <Logger name="org.apache.kafka" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
         <Root level="INFO">

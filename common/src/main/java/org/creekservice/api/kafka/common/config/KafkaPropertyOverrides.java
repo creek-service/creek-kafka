@@ -16,10 +16,8 @@
 
 package org.creekservice.api.kafka.common.config;
 
-
-import java.util.Map;
-
 /** A provider of Kafka properties overrides */
 public interface KafkaPropertyOverrides {
-    Map<String, Object> get();
+
+    ClustersProperties get();
 }

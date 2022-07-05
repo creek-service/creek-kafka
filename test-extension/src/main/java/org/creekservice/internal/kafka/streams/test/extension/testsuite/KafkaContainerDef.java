@@ -30,8 +30,9 @@ import org.creekservice.api.system.test.extension.service.ServiceInstance.ExecRe
 final class KafkaContainerDef implements ServiceDefinition {
 
     public static final int TEST_NETWORK_PORT = 9093;
-    private static final int SERVICE_NETWORK_PORT = 9092;
+    public static final int SERVICE_NETWORK_PORT = 9092;
     private static final int ZOOKEEPER_PORT = 2181;
+    private static final String DEFAULT_INTERNAL_PARTITION_COUNT = "1";
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private final String name;
@@ -136,8 +137,11 @@ final class KafkaContainerDef implements ServiceDefinition {
                 // port of test-network listener is not known until the service starts:
                 .addEnv("KAFKA_ADVERTISED_LISTENERS", serviceNetworkListener(instance))
                 .addEnv("KAFKA_BROKER_ID", "1")
+                .addEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_PARTITION_COUNT)
                 .addEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
-                .addEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF)
+                .addEnv(
+                        "KAFKA_TRANSACTION_STATE_LOG_NUM_PARTITIONS",
+                        DEFAULT_INTERNAL_PARTITION_COUNT)
                 .addEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF)
                 .addEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "")

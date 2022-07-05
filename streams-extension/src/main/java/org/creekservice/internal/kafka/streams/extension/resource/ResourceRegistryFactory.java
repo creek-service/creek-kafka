@@ -76,20 +76,21 @@ public final class ResourceRegistryFactory {
 
     private <K, V> Topic<K, V> createTopicResource(
             final KafkaTopicDescriptor<K, V> def, final KafkaStreamsExtensionOptions options) {
-        final Serde<K> keySerde = serde(def.key(), def.name(), true, options);
-        final Serde<V> valueSerde = serde(def.value(), def.name(), false, options);
+        final Serde<K> keySerde = serde(def.key(), def.name(), def.cluster(), true, options);
+        final Serde<V> valueSerde = serde(def.value(), def.name(), def.cluster(), false, options);
         return topicFactory.create(def, keySerde, valueSerde);
     }
 
     private <T> Serde<T> serde(
             final KafkaTopicDescriptor.PartDescriptor<T> part,
             final String topicName,
+            final String clusterName,
             final boolean isKey,
             final KafkaStreamsExtensionOptions options) {
         final KafkaSerdeProvider provider = provider(part, topicName, isKey);
 
         final Serde<T> serde = provider.create(part);
-        serde.configure(options.propertyMap(), isKey);
+        serde.configure(options.propertyMap(clusterName), isKey);
         return serde;
     }
 

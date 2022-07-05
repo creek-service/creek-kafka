@@ -21,7 +21,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides.systemEnvPropertyOverrides;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
 import java.util.Map;
@@ -33,22 +32,39 @@ class SystemEnvPropertyOverridesTest {
 
     @Test
     @SetEnvironmentVariables({
-        @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:9092"),
-        @SetEnvironmentVariable(key = "KAFKA_GROUP_ID", value = "a-group")
+        @SetEnvironmentVariable(key = "KAFKA_DEFAULT_BOOTSTRAP_SERVERS", value = "localhost:9092"),
+        @SetEnvironmentVariable(key = "KAFKA_DEFAULT_GROUP_ID", value = "a-group")
     })
     void shouldLoadPrefixedPropertiesFromEnvironment() {
         // When:
-        final Map<String, Object> properties = systemEnvPropertyOverrides().get();
+        final ClustersProperties properties = systemEnvPropertyOverrides().get();
 
         // Then:
-        assertThat(properties, hasEntry(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"));
-        assertThat(properties, hasEntry(GROUP_ID_CONFIG, "a-group"));
+        assertThat(
+                properties.get("default"),
+                is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", GROUP_ID_CONFIG, "a-group")));
+    }
+
+    @Test
+    @SetEnvironmentVariables({
+        @SetEnvironmentVariable(key = "KAFKA_BOB1_BOOTSTRAP_SERVERS", value = "localhost:9092"),
+        @SetEnvironmentVariable(key = "KAFKA_JANE29_GROUP_ID", value = "a-group")
+    })
+    void shouldSupportMultipleClusters() {
+        // When:
+        final ClustersProperties properties = systemEnvPropertyOverrides().get();
+
+        // Then:
+        assertThat(properties.get("bob1"), is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")));
+        assertThat(properties.get("jane29"), is(Map.of(GROUP_ID_CONFIG, "a-group")));
     }
 
     @Test
     @SetEnvironmentVariable(key = "NOT_KAFKA_PREFIXED", value = "whatever")
     public void shouldIgnoreNonPrefixedProperties() {
-        final Map<String, ?> properties = systemEnvPropertyOverrides().get();
-        assertThat(properties.entrySet(), is(empty()));
+        final ClustersProperties properties = systemEnvPropertyOverrides().get();
+        assertThat(properties.get("not").entrySet(), is(empty()));
+        assertThat(properties.get("kafka").entrySet(), is(empty()));
+        assertThat(properties.get("prefixed").entrySet(), is(empty()));
     }
 }

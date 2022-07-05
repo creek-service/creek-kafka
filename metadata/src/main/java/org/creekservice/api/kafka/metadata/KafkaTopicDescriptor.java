@@ -27,6 +27,8 @@ import org.creekservice.api.platform.metadata.ResourceDescriptor;
  */
 public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
+    String DEFAULT_CLUSTER_NAME = "default";
+
     /** @return name of the topic as it is in Kafka. */
     String name();
 
@@ -35,10 +37,12 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
      *
      * <p>This name is used to look up connection details for the cluster.
      *
+     * <p>The name should be limited to alphanumeric characters.
+     *
      * @return the logical Kafka cluster name.
      */
     default String cluster() {
-        return "default";
+        return DEFAULT_CLUSTER_NAME;
     }
 
     /** @return metadata about the topic's key: */

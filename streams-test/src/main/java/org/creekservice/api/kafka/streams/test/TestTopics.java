@@ -99,7 +99,7 @@ public final class TestTopics {
         final TopicSerde<K, V> serde = new TopicSerde<>(topic.keySerde(), topic.valueSerde());
 
         final Map<String, Object> props = new HashMap<>();
-        final Properties properties = ext.properties();
+        final Properties properties = ext.properties(def.cluster());
         properties.stringPropertyNames().forEach(k -> props.put(k, properties.getProperty(k)));
 
         serde.configure(props);

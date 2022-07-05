@@ -33,9 +33,11 @@ public interface KafkaStreamsExtension extends CreekExtension {
      * <p>Note: the properties should be considered immutable. Changing them may result in undefined
      * behaviour.
      *
+     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
+     *     {@link KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
      * @return the properties.
      */
-    Properties properties();
+    Properties properties(String clusterName);
 
     /**
      * Get a topic resource for the supplied {@code def}.
@@ -49,9 +51,12 @@ public interface KafkaStreamsExtension extends CreekExtension {
      * Build a Kafka Streams app from the supplied {@code topology}.
      *
      * @param topology the topology to build.
+     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
+     *     {@link KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}. Note, topics used in streams
+     *     topologies must all be in the same cluster.
      * @return the streams app.
      */
-    KafkaStreams build(Topology topology);
+    KafkaStreams build(Topology topology, String clusterName);
 
     /**
      * Execute a Kafka Streams app.
@@ -66,6 +71,6 @@ public interface KafkaStreamsExtension extends CreekExtension {
      * @param topology the topology to build and execute.
      */
     default void execute(final Topology topology) {
-        execute(build(topology));
+        execute(build(topology, KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME));
     }
 }

@@ -42,8 +42,8 @@ public final class KafkaStreamsBuilder {
         this.appFactory = requireNonNull(appFactory, "appFactory");
     }
 
-    public KafkaStreams build(final Topology topology) {
-        final Properties properties = options.properties();
+    public KafkaStreams build(final Topology topology, final String clusterName) {
+        final Properties properties = options.properties(clusterName);
         final KafkaClientSupplier kafkaClientSupplier = new DefaultKafkaClientSupplier();
 
         return appFactory.create(topology, properties, kafkaClientSupplier);

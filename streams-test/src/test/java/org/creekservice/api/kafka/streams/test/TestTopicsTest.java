@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.streams.test;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.apache.kafka.streams.KeyValue.pair;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.streams.test.util.TestServiceDescriptor.InputTopic;
 import static org.creekservice.api.kafka.streams.test.util.TestServiceDescriptor.OutputTopic;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -61,7 +62,9 @@ class TestTopicsTest {
     void setUp() {
         testDriver =
                 new TopologyTestDriver(
-                        topology(), ctx.extension(KafkaStreamsExtension.class).properties());
+                        topology(),
+                        ctx.extension(KafkaStreamsExtension.class)
+                                .properties(DEFAULT_CLUSTER_NAME));
     }
 
     @AfterEach
@@ -110,6 +113,7 @@ class TestTopicsTest {
         builder.stream(InputTopic.name(), Consumed.with(Serdes.String(), Serdes.Long()))
                 .to(OutputTopic.name(), Produced.with(Serdes.String(), Serdes.Long()));
 
-        return builder.build(ctx.extension(KafkaStreamsExtension.class).properties());
+        return builder.build(
+                ctx.extension(KafkaStreamsExtension.class).properties(DEFAULT_CLUSTER_NAME));
     }
 }

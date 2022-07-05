@@ -50,6 +50,7 @@ class ResourceRegistryFactoryTest {
     private static final SerializationFormat KEY_FORMAT = serializationFormat("key-format");
     private static final SerializationFormat VALUE_FORMAT = serializationFormat("value-format");
     private static final Map<String, ?> SOME_CONFIG = Map.of("some", "config");
+    private static final String CLUSTER_NAME = "bob";
 
     @Mock private ComponentDescriptor component;
     @Mock private ResourceRegistryFactory.TopicCollector topicCollector;
@@ -162,7 +163,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldConfigureKeySerde() {
         // Given:
-        when(options.propertyMap()).thenReturn((Map) SOME_CONFIG);
+        when(options.propertyMap(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
 
         // When:
         factory.create(component, options);
@@ -175,7 +176,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldConfigureValueSerde() {
         // Given:
-        when(options.propertyMap()).thenReturn((Map) SOME_CONFIG);
+        when(options.propertyMap(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
 
         // When:
         factory.create(component, options);
@@ -257,6 +258,7 @@ class ResourceRegistryFactoryTest {
             final PartDescriptor<K> keyPart,
             final PartDescriptor<V> valuePart) {
         when(topic.name()).thenReturn(name);
+        when(topic.cluster()).thenReturn(CLUSTER_NAME);
         when(topic.key()).thenReturn(keyPart);
         when(topic.value()).thenReturn(valuePart);
     }

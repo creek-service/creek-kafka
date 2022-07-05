@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.extension;
 
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,8 +58,8 @@ class StreamsExtensionTest {
     void setUp() {
         extension = new StreamsExtension(options, resources, builder, executor);
 
-        when(options.properties()).thenReturn(properties);
-        when(builder.build(any())).thenReturn(app);
+        when(options.properties(any())).thenReturn(properties);
+        when(builder.build(any(), any())).thenReturn(app);
     }
 
     @Test
@@ -68,16 +69,21 @@ class StreamsExtensionTest {
 
     @Test
     void shouldReturnProperties() {
-        assertThat(extension.properties(), is(properties));
+        // When:
+        final Properties result = extension.properties("cluster-bob");
+
+        // Then:
+        assertThat(result, is(properties));
+        verify(options).properties("cluster-bob");
     }
 
     @Test
-    void shouldBuildTopology() {
+    void shouldBuildSpecificTopology() {
         // When:
-        final KafkaStreams result = extension.build(topology);
+        final KafkaStreams result = extension.build(topology, "cluster-bob");
 
         // Then:
-        verify(builder).build(topology);
+        verify(builder).build(topology, "cluster-bob");
         assertThat(result, is(app));
     }
 
@@ -96,7 +102,7 @@ class StreamsExtensionTest {
         extension.execute(topology);
 
         // Then:
-        verify(builder).build(topology);
+        verify(builder).build(topology, DEFAULT_CLUSTER_NAME);
         verify(executor).execute(app);
     }
 
