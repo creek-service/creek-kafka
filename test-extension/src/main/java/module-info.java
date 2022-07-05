@@ -16,7 +16,7 @@
 
 
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.internal.kafka.streams.test.extension.KafkaStreamsTestExtension;
+import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
 
 module creek.kafka.streams.test.extension {
     requires transitive creek.system.test.extension;
@@ -25,5 +25,5 @@ module creek.kafka.streams.test.extension {
     requires creek.kafka.common;
 
     provides CreekTestExtension with
-            KafkaStreamsTestExtension;
+            KafkaTestExtension;
 }

@@ -29,10 +29,10 @@ import org.creekservice.internal.kafka.streams.test.extension.testsuite.Validati
  * <p>The extension will start any required Kafka clusters and handle any Kafka related inputs and
  * expectations defined in system tests.
  */
-public final class KafkaStreamsTestExtension implements CreekTestExtension {
+public final class KafkaTestExtension implements CreekTestExtension {
     @Override
     public String name() {
-        return "creek-kafka-streams";
+        return "creek-kafka";
     }
 
     @Override

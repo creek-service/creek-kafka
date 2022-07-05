@@ -37,28 +37,28 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class KafkaStreamsTestExtensionTest {
+class KafkaTestExtensionTest {
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
 
-    private KafkaStreamsTestExtension ext;
+    private KafkaTestExtension ext;
 
     @BeforeEach
     void setUp() {
-        ext = new KafkaStreamsTestExtension();
+        ext = new KafkaTestExtension();
     }
 
     @Test
     void shouldExposeExtension() {
         assertThat(
                 extensionTester().accessibleExtensions(),
-                hasItem(instanceOf(KafkaStreamsTestExtension.class)));
+                hasItem(instanceOf(KafkaTestExtension.class)));
     }
 
     @Test
     void shouldExposeName() {
-        assertThat(ext.name(), is("creek-kafka-streams"));
+        assertThat(ext.name(), is("creek-kafka"));
     }
 
     @Test
