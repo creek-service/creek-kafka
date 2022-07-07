@@ -76,10 +76,12 @@ class TopicCollectorTest {
         when(creatableTopicValue.format()).thenReturn(SOME_FORMAT);
 
         when(topic.name()).thenReturn("topicDef");
+        when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
         when(topic.key()).thenReturn(topicKey);
         when(topic.value()).thenReturn(topicValue);
 
         when(creatableTopic.name()).thenReturn("creatableTopicDef");
+        when(creatableTopic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
         when(creatableTopic.key()).thenReturn(creatableTopicKey);
         when(creatableTopic.value()).thenReturn(creatableTopicValue);
         when(creatableTopic.config()).thenReturn(() -> 0);

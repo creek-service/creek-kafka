@@ -28,12 +28,12 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class ResourceRegistryFactoryTest {
     @Mock private ResourceRegistryFactory.TopicCollector topicCollector;
     @Mock private ResourceRegistryFactory.RegistryFactory registryFactory;
     @Mock private ResourceRegistryFactory.TopicFactory topicFactory;
-    @Mock private KafkaStreamsExtensionOptions options;
+    @Mock private ClustersProperties clusterProperties;
     @Mock private KafkaSerdeProviders serdeProviders;
     @Mock private KafkaSerdeProvider keySerdeProvider;
     @Mock private KafkaSerdeProvider valueSerdeProvider;
@@ -106,7 +106,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldCollectTopicDescriptors() {
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(topicCollector).collectTopics(List.of(component));
@@ -118,7 +118,7 @@ class ResourceRegistryFactoryTest {
         when(topicCollector.collectTopics(any())).thenReturn(Map.of());
 
         // When:
-        final ResourceRegistry result = factory.create(component, options);
+        final ResourceRegistry result = factory.create(component, clusterProperties);
 
         // Then:
         verify(registryFactory).create(Map.of());
@@ -128,7 +128,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldGetKeySerdeFromProviders() {
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(serdeProviders).get(topicDefA.key().format());
@@ -139,7 +139,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldGetValueSerdeFromProviders() {
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(serdeProviders).get(topicDefA.value().format());
@@ -153,7 +153,7 @@ class ResourceRegistryFactoryTest {
         when(topicDefA.value()).thenReturn(customPart);
 
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(valueSerdeProvider).create(customPart);
@@ -163,10 +163,10 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldConfigureKeySerde() {
         // Given:
-        when(options.propertyMap(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
+        when(clusterProperties.get(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
 
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(keySerde).configure(SOME_CONFIG, true);
@@ -176,10 +176,10 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldConfigureValueSerde() {
         // Given:
-        when(options.propertyMap(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
+        when(clusterProperties.get(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
 
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(valueSerde).configure(SOME_CONFIG, false);
@@ -188,7 +188,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldCreateTopicsWithCorrectParams() {
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(topicFactory).create(eq(topicDefA), any(), any());
@@ -202,7 +202,7 @@ class ResourceRegistryFactoryTest {
         when(topicFactory.create(eq(topicDefB), any(), any())).thenReturn(topicTwo);
 
         // When:
-        factory.create(component, options);
+        factory.create(component, clusterProperties);
 
         // Then:
         verify(registryFactory).create(Map.of("A", topicOne, "B", topicTwo));
@@ -216,7 +216,8 @@ class ResourceRegistryFactoryTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> factory.create(component, options));
+                assertThrows(
+                        RuntimeException.class, () -> factory.create(component, clusterProperties));
 
         // Then:
         assertThat(
@@ -234,7 +235,8 @@ class ResourceRegistryFactoryTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> factory.create(component, options));
+                assertThrows(
+                        RuntimeException.class, () -> factory.create(component, clusterProperties));
 
         // Then:
         assertThat(

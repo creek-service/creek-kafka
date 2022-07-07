@@ -31,7 +31,9 @@ class TestKafkaStreamsExtensionOptionsTest {
         // When:
         final Object stateDir =
                 TestKafkaStreamsExtensionOptions.defaults()
-                        .properties("any")
+                        .propertiesBuilder()
+                        .build()
+                        .get("any")
                         .get(StreamsConfig.STATE_DIR_CONFIG);
 
         // Then:

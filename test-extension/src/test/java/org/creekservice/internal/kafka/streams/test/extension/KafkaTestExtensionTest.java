@@ -23,39 +23,53 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class KafkaStreamsTestExtensionTest {
+class KafkaTestExtensionTest {
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
 
-    private KafkaStreamsTestExtension ext;
+    private KafkaTestExtension ext;
 
     @BeforeEach
     void setUp() {
-        ext = new KafkaStreamsTestExtension();
+        ext = new KafkaTestExtension();
     }
 
     @Test
     void shouldExposeExtension() {
         assertThat(
                 extensionTester().accessibleExtensions(),
-                hasItem(instanceOf(KafkaStreamsTestExtension.class)));
+                hasItem(instanceOf(KafkaTestExtension.class)));
     }
 
     @Test
     void shouldExposeName() {
-        assertThat(ext.name(), is("creek-kafka-streams"));
+        assertThat(ext.name(), is("creek-kafka"));
+    }
+
+    @Test
+    void shouldAppendValidatingListenerBeforeMainListener() {
+        // When:
+        ext.initialize(api);
+
+        // Then:
+        final InOrder inOrder = inOrder(api.testSuite().listener());
+        inOrder.verify(api.testSuite().listener()).append(isA(ValidatingTestListener.class));
+        inOrder.verify(api.testSuite().listener()).append(isA(StreamsTestLifecycleListener.class));
     }
 
     @Test

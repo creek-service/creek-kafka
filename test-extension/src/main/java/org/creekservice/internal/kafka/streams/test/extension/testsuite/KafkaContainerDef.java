@@ -38,7 +38,10 @@ final class KafkaContainerDef implements ServiceDefinition {
     private final String name;
 
     KafkaContainerDef(final String clusterName) {
-        this.name = "kafka-" + requireNonNull(clusterName, "clusterName");
+        this.name =
+                requireNonNull(clusterName, "clusterName").isBlank()
+                        ? "kafka"
+                        : "kafka-" + clusterName;
     }
 
     @Override

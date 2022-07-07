@@ -16,8 +16,17 @@
 
 package org.creekservice.api.kafka.common.config;
 
-/** A provider of Kafka properties overrides */
+
+import java.util.Set;
+
+/** A provider of Kafka client properties overrides */
 public interface KafkaPropertyOverrides {
 
-    ClustersProperties get();
+    /**
+     * Get Kafka client property overrides.
+     *
+     * @param clusterNames the set of known Kafka cluster names.
+     * @return property overrides.
+     */
+    ClustersProperties get(Set<String> clusterNames);
 }

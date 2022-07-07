@@ -28,7 +28,7 @@ import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.internals.DefaultKafkaClientSupplier;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,17 +40,17 @@ class KafkaStreamsBuilderTest {
 
     @Mock private KafkaStreamsBuilder.AppFactory appFactory;
     @Mock private KafkaStreams app;
-    @Mock private KafkaStreamsExtensionOptions options;
+    @Mock private ClustersProperties clustersProperties;
     @Mock private Properties properties;
     @Mock private Topology topology;
     private KafkaStreamsBuilder builder;
 
     @BeforeEach
     void setUp() {
-        builder = new KafkaStreamsBuilder(options, appFactory);
+        builder = new KafkaStreamsBuilder(clustersProperties, appFactory);
 
         when(appFactory.create(any(), any(), any())).thenReturn(app);
-        when(options.properties(any())).thenReturn(properties);
+        when(clustersProperties.properties(any())).thenReturn(properties);
     }
 
     @Test
@@ -59,7 +59,7 @@ class KafkaStreamsBuilderTest {
         builder.build(topology, "cluster");
 
         // Then:
-        verify(options).properties("cluster");
+        verify(clustersProperties).properties("cluster");
     }
 
     @Test

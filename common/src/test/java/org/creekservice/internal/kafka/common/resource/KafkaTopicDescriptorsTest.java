@@ -18,7 +18,9 @@ package org.creekservice.internal.kafka.common.resource;
 
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
@@ -338,7 +340,30 @@ class KafkaTopicDescriptorsTest {
                 };
 
         // Then:
-        assertThat(defaultDescriptor.cluster(), is("default"));
+        assertThat(defaultDescriptor.cluster(), is(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME));
+    }
+
+    @Test
+    void shouldNotBlowUpOnNulls() {
+        // Given:
+        final KafkaTopicDescriptor<?, ?> descriptor = mock(KafkaTopicDescriptor.class);
+
+        // Then:
+        assertThat(
+                KafkaTopicDescriptors.asString(descriptor),
+                containsString("[name=null, cluster=null, key=null, value=null]"));
+    }
+
+    @Test
+    void shouldNotBlowUpOnPartNulls() {
+        // Given:
+        final KafkaTopicDescriptor.PartDescriptor<?> descriptor =
+                mock(KafkaTopicDescriptor.PartDescriptor.class);
+
+        // Then:
+        assertThat(
+                KafkaTopicDescriptors.asString(descriptor),
+                containsString("[format=null, type=null]"));
     }
 
     private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
