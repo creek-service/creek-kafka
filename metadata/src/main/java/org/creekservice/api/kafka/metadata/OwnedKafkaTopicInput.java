@@ -37,24 +37,5 @@ public interface OwnedKafkaTopicInput<K, V> extends ComponentInput, CreatableKaf
      *
      * @return the output topic.
      */
-    @SuppressWarnings("DuplicatedCode")
-    default KafkaTopicOutput<K, V> toOutput() {
-        final OwnedKafkaTopicInput<K, V> input = this;
-        return new KafkaTopicOutput<>() {
-            @Override
-            public String name() {
-                return input.name();
-            }
-
-            @Override
-            public PartDescriptor<K> key() {
-                return input.key();
-            }
-
-            @Override
-            public PartDescriptor<V> value() {
-                return input.value();
-            }
-        };
-    }
+    KafkaTopicOutput<K, V> toOutput();
 }

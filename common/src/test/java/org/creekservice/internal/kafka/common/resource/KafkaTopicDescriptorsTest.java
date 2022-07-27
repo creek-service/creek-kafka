@@ -16,12 +16,14 @@
 
 package org.creekservice.internal.kafka.common.resource;
 
+import static org.creekservice.api.kafka.metadata.KafkaResourceIds.topicId;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
+import java.net.URI;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -69,6 +71,22 @@ class KafkaTopicDescriptorsTest {
                                 owned.value().type(),
                                 owned.config())),
                 is(true));
+    }
+
+    @Test
+    void shouldNotMatchUnownedIfIdDifferent() {
+        assertThat(
+                KafkaTopicDescriptors.matches(
+                        unowned,
+                        new SecondKafkaTopic<>(
+                                URI.create("diff:/res"),
+                                unowned.name(),
+                                unowned.cluster(),
+                                unowned.key().format(),
+                                unowned.value().format(),
+                                unowned.key().type(),
+                                unowned.value().type())),
+                is(false));
     }
 
     @Test
@@ -158,6 +176,23 @@ class KafkaTopicDescriptorsTest {
                                 unowned.value().format(),
                                 unowned.key().type(),
                                 Void.class)),
+                is(false));
+    }
+
+    @Test
+    void shouldNotMatchOwnedIIdDifferent() {
+        assertThat(
+                KafkaTopicDescriptors.matches(
+                        owned,
+                        new SecondCreatableKafkaTopic<>(
+                                URI.create("diff:/res"),
+                                owned.name(),
+                                owned.cluster(),
+                                owned.key().format(),
+                                owned.value().format(),
+                                owned.key().type(),
+                                owned.value().type(),
+                                owned.config())),
                 is(false));
     }
 
@@ -296,6 +331,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.asString(unowned),
                 is(
                         "FirstKafkaTopic["
+                                + "id=kafka-topic://c1/bob, "
                                 + "name=bob, "
                                 + "cluster=c1, "
                                 + "key=TestPart[format=A, type=long], "
@@ -309,6 +345,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.asString(owned),
                 is(
                         "FirstCreatableKafkaTopic["
+                                + "id=kafka-topic://c1/peter, "
                                 + "name=peter, "
                                 + "cluster=c1, "
                                 + "key=TestPart[format=B, type=java.lang.String], "
@@ -323,6 +360,11 @@ class KafkaTopicDescriptorsTest {
         // Given:
         final KafkaTopicDescriptor<?, ?> defaultDescriptor =
                 new KafkaTopicDescriptor<>() {
+                    @Override
+                    public URI id() {
+                        return null;
+                    }
+
                     @Override
                     public String name() {
                         return null;
@@ -351,7 +393,7 @@ class KafkaTopicDescriptorsTest {
         // Then:
         assertThat(
                 KafkaTopicDescriptors.asString(descriptor),
-                containsString("[name=null, cluster=null, key=null, value=null]"));
+                containsString("[id=null, name=null, cluster=null, key=null, value=null]"));
     }
 
     @Test
@@ -368,6 +410,7 @@ class KafkaTopicDescriptorsTest {
 
     private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
+        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -380,10 +423,16 @@ class KafkaTopicDescriptorsTest {
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
+            this.id = topicId(cluster, name);
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
+        }
+
+        @Override
+        public URI id() {
+            return id;
         }
 
         @Override
@@ -429,6 +478,7 @@ class KafkaTopicDescriptorsTest {
 
     private static final class SecondKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
+        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -441,10 +491,27 @@ class KafkaTopicDescriptorsTest {
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
+            this(topicId(cluster, name), name, cluster, keyFormat, valueFormat, keyType, valueType);
+        }
+
+        SecondKafkaTopic(
+                final URI id,
+                final String name,
+                final String cluster,
+                final SerializationFormat keyFormat,
+                final SerializationFormat valueFormat,
+                final Class<K> keyType,
+                final Class<V> valueType) {
+            this.id = id;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
+        }
+
+        @Override
+        public URI id() {
+            return id;
         }
 
         @Override
@@ -490,6 +557,7 @@ class KafkaTopicDescriptorsTest {
 
     private static final class FirstCreatableKafkaTopic<K, V> implements CreatableKafkaTopic<K, V> {
 
+        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -504,11 +572,17 @@ class KafkaTopicDescriptorsTest {
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
+            this.id = topicId(cluster, name);
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
+        }
+
+        @Override
+        public URI id() {
+            return id;
         }
 
         @Override
@@ -560,6 +634,7 @@ class KafkaTopicDescriptorsTest {
     private static final class SecondCreatableKafkaTopic<K, V>
             implements CreatableKafkaTopic<K, V> {
 
+        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -574,11 +649,38 @@ class KafkaTopicDescriptorsTest {
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
+            this(
+                    topicId(cluster, name),
+                    name,
+                    cluster,
+                    keyFormat,
+                    valueFormat,
+                    keyType,
+                    valueType,
+                    config);
+        }
+
+        @SuppressWarnings("checkstyle:ParameterNumber")
+        SecondCreatableKafkaTopic(
+                final URI id,
+                final String name,
+                final String cluster,
+                final SerializationFormat keyFormat,
+                final SerializationFormat valueFormat,
+                final Class<K> keyType,
+                final Class<V> valueType,
+                final KafkaTopicConfig config) {
+            this.id = id;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
+        }
+
+        @Override
+        public URI id() {
+            return id;
         }
 
         @Override
