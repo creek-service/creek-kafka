@@ -2,11 +2,11 @@ plugins {
     java
     jacoco
     `maven-publish`
-    id("com.github.spotbugs") version "5.0.9"                           // https://plugins.gradle.org/plugin/com.github.spotbugs
+    id("com.github.spotbugs") version "5.0.10"                           // https://plugins.gradle.org/plugin/com.github.spotbugs
     id("com.diffplug.spotless") version "6.9.1"                         // https://mvnrepository.com/artifact/com.diffplug.spotless/spotless-plugin-gradle
     id("pl.allegro.tech.build.axion-release") version "1.13.14"          // https://mvnrepository.com/artifact/pl.allegro.tech.build.axion-release/pl.allegro.tech.build.axion-release.gradle.plugin?repo=gradle-plugins
     id("com.github.kt3k.coveralls") version "2.12.0"                    // https://plugins.gradle.org/plugin/com.github.kt3k.coveralls
-    id("org.javamodularity.moduleplugin") version "1.8.11" apply false  // https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin
+    id("org.javamodularity.moduleplugin") version "1.8.12" apply false  // https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin
 }
 
 project.version = scmVersion.version
