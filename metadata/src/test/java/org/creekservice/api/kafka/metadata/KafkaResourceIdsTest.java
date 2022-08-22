@@ -18,8 +18,12 @@ package org.creekservice.api.kafka.metadata;
 
 import static org.creekservice.api.kafka.metadata.KafkaResourceIds.topicId;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
 
 class KafkaResourceIdsTest {
@@ -28,5 +32,16 @@ class KafkaResourceIdsTest {
     void shouldCreateUniqueKafkaTopicResourceId() {
         assertThat(
                 topicId("cluster-a", "topic-b").toString(), is("kafka-topic://cluster-a/topic-b"));
+    }
+
+    @Test
+    void shouldThrowOnInvalidId() {
+        // When:
+        final Exception e =
+                assertThrows(IllegalArgumentException.class, () -> topicId("%%%%", "%%%%"));
+
+        // Then:
+        assertThat(e.getCause(), instanceOf(URISyntaxException.class));
+        assertThat(e.getMessage(), containsString("Malformed escape pair"));
     }
 }
