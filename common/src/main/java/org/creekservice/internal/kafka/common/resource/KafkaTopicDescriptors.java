@@ -105,10 +105,6 @@ public final class KafkaTopicDescriptors {
     public static boolean matches(
             final KafkaTopicDescriptor.PartDescriptor<?> left,
             final KafkaTopicDescriptor.PartDescriptor<?> right) {
-        if (left == right) {
-            return true;
-        }
-
         return Objects.equals(left.format(), right.format())
                 && Objects.equals(left.type(), right.type());
     }

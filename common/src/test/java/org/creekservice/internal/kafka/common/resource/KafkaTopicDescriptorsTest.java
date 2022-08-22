@@ -34,6 +34,7 @@ class KafkaTopicDescriptorsTest {
 
     private static final SerializationFormat FORMAT_A = serializationFormat("A");
     private static final SerializationFormat FORMAT_B = serializationFormat("B");
+    private static final URI RES_ID = topicId("c", "t");
 
     private final KafkaTopicConfig config = new TestConfig(1);
     private final KafkaTopicDescriptor<?, ?> unowned =
@@ -48,6 +49,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                unowned.id(),
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -63,6 +65,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
+                                owned.id(),
                                 owned.name(),
                                 owned.cluster(),
                                 owned.key().format(),
@@ -95,6 +98,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 "diff",
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -110,6 +114,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 unowned.name(),
                                 "diff",
                                 unowned.key().format(),
@@ -125,6 +130,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 owned.name(),
                                 owned.cluster(),
                                 FORMAT_B,
@@ -140,6 +146,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -155,6 +162,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -170,6 +178,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
+                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -313,6 +322,7 @@ class KafkaTopicDescriptorsTest {
         // Given:
         final SecondKafkaTopic<?, ?> unowned =
                 new SecondKafkaTopic<>(
+                        owned.id(),
                         owned.name(),
                         owned.cluster(),
                         owned.key().format(),
@@ -331,7 +341,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.asString(unowned),
                 is(
                         "FirstKafkaTopic["
-                                + "id=kafka-topic://c1/bob, "
+                                + "id=kafka-topic://c/t, "
                                 + "name=bob, "
                                 + "cluster=c1, "
                                 + "key=TestPart[format=A, type=long], "
@@ -423,7 +433,7 @@ class KafkaTopicDescriptorsTest {
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
-            this.id = topicId(cluster, name);
+            this.id = RES_ID;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
@@ -483,16 +493,6 @@ class KafkaTopicDescriptorsTest {
         private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
-
-        SecondKafkaTopic(
-                final String name,
-                final String cluster,
-                final SerializationFormat keyFormat,
-                final SerializationFormat valueFormat,
-                final Class<K> keyType,
-                final Class<V> valueType) {
-            this(topicId(cluster, name), name, cluster, keyFormat, valueFormat, keyType, valueType);
-        }
 
         SecondKafkaTopic(
                 final URI id,
