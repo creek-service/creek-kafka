@@ -24,10 +24,8 @@ import org.creekservice.api.platform.metadata.ResourceHandler;
 @SuppressWarnings("rawtypes")
 public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor> {
     @Override
-    public void validate(final Collection<KafkaTopicDescriptor> resourceGroup) {
-    }
+    public void validate(final Collection<KafkaTopicDescriptor> resourceGroup) {}
 
     @Override
-    public void ensure(final Collection<KafkaTopicDescriptor> resources) {
-    }
+    public void ensure(final Collection<KafkaTopicDescriptor> resources) {}
 }
