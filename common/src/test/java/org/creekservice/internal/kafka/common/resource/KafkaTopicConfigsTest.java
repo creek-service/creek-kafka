@@ -14,49 +14,66 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.metadata;
+package org.creekservice.internal.kafka.common.resource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.util.Map;
+import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.junit.jupiter.api.Test;
 
-class KafkaTopicConfigTest {
+class KafkaTopicConfigsTest {
 
     private final KafkaTopicConfig config = new FirstTopicConfig(1);
 
     @Test
     void shouldMatchIfAttributesMatch() {
         assertThat(
-                KafkaTopicConfig.matches(
-                        config, new SecondTopicConfig(config.getPartitions(), config.getConfig())),
+                KafkaTopicConfigs.matches(
+                        config, new SecondTopicConfig(config.partitions(), config.config())),
                 is(true));
     }
 
     @Test
     void shouldNotMatchIfPartitionsDiffer() {
         assertThat(
-                KafkaTopicConfig.matches(
-                        config,
-                        new SecondTopicConfig(config.getPartitions() + 1, config.getConfig())),
+                KafkaTopicConfigs.matches(
+                        config, new SecondTopicConfig(config.partitions() + 1, config.config())),
                 is(false));
     }
 
     @Test
     void shouldNotMatchIfConfigDiffer() {
         assertThat(
-                KafkaTopicConfig.matches(
-                        config,
-                        new SecondTopicConfig(config.getPartitions(), Map.of("diff", "diff"))),
+                KafkaTopicConfigs.matches(
+                        config, new SecondTopicConfig(config.partitions(), Map.of("diff", "diff"))),
                 is(false));
     }
 
     @Test
     void shouldImplementAsString() {
         assertThat(
-                KafkaTopicConfig.asString(new SecondTopicConfig(17, Map.of("a", "b"))),
+                KafkaTopicConfigs.asString(new SecondTopicConfig(17, Map.of("a", "b"))),
                 is("SecondTopicConfig[" + "partitions=17, " + "config={a=b}" + "]"));
+    }
+
+    @Test
+    void shouldImplementHashCode() {
+        // Given:
+        final int hashCode =
+                KafkaTopicConfigs.hashCode(new SecondTopicConfig(17, Map.of("a", "b")));
+
+        // Then:
+        assertThat(
+                KafkaTopicConfigs.hashCode(new SecondTopicConfig(17, Map.of("a", "b"))),
+                is(hashCode));
+        assertThat(
+                KafkaTopicConfigs.hashCode(new SecondTopicConfig(0, Map.of("a", "b"))),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicConfigs.hashCode(new SecondTopicConfig(17, Map.of())), is(not(hashCode)));
     }
 
     private static final class FirstTopicConfig implements KafkaTopicConfig {
@@ -68,7 +85,7 @@ class KafkaTopicConfigTest {
         }
 
         @Override
-        public int getPartitions() {
+        public int partitions() {
             return partitions;
         }
     }
@@ -84,12 +101,12 @@ class KafkaTopicConfigTest {
         }
 
         @Override
-        public int getPartitions() {
+        public int partitions() {
             return partitions;
         }
 
         @Override
-        public Map<String, String> getConfig() {
+        public Map<String, String> config() {
             return config;
         }
     }

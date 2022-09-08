@@ -35,6 +35,11 @@ class KafkaResourceIdsTest {
     }
 
     @Test
+    void shouldHandleEmptyClusterName() {
+        assertThat(topicId("", "topic-b").toString(), is("kafka-topic:///topic-b"));
+    }
+
+    @Test
     void shouldThrowOnInvalidId() {
         // When:
         final Exception e =

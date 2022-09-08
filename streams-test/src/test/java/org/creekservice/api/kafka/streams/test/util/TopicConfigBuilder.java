@@ -103,12 +103,12 @@ public final class TopicConfigBuilder {
         }
 
         @Override
-        public int getPartitions() {
+        public int partitions() {
             return partitions;
         }
 
         @Override
-        public Map<String, String> getConfig() {
+        public Map<String, String> config() {
             return config;
         }
     }

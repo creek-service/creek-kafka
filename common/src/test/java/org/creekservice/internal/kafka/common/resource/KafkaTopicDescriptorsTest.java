@@ -21,12 +21,15 @@ import static org.creekservice.api.kafka.metadata.SerializationFormat.serializat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.junit.jupiter.api.Test;
 
@@ -313,7 +316,7 @@ class KafkaTopicDescriptorsTest {
                                 owned.value().format(),
                                 owned.key().type(),
                                 owned.value().type(),
-                                new TestConfig(owned.config().getPartitions() + 1))),
+                                new TestConfig(owned.config().partitions() + 1))),
                 is(false));
     }
 
@@ -361,7 +364,7 @@ class KafkaTopicDescriptorsTest {
                                 + "key=TestPart[format=B, type=java.lang.String], "
                                 + "value=TestPart[format=A, type=long], "
                                 + "config="
-                                + KafkaTopicConfig.asString(config)
+                                + KafkaTopicConfigs.asString(config)
                                 + "]"));
     }
 
@@ -407,6 +410,18 @@ class KafkaTopicDescriptorsTest {
     }
 
     @Test
+    void shouldNotBlowUpOnNullConfig() {
+        // Given:
+        final KafkaTopicDescriptor<?, ?> descriptor = mock(OwnedKafkaTopicOutput.class);
+
+        // Then:
+        assertThat(
+                KafkaTopicDescriptors.asString(descriptor),
+                containsString(
+                        "[id=null, name=null, cluster=null, key=null, value=null, config=null]"));
+    }
+
+    @Test
     void shouldNotBlowUpOnPartNulls() {
         // Given:
         final KafkaTopicDescriptor.PartDescriptor<?> descriptor =
@@ -416,6 +431,171 @@ class KafkaTopicDescriptorsTest {
         assertThat(
                 KafkaTopicDescriptors.asString(descriptor),
                 containsString("[format=null, type=null]"));
+    }
+
+    @Test
+    void shouldCalculateHashCode() {
+        // Given:
+        final int hashCode = KafkaTopicDescriptors.hashCode(owned);
+
+        // Then:
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new SecondCreatableKafkaTopic<>(
+                                "peter",
+                                "c1",
+                                FORMAT_B,
+                                FORMAT_A,
+                                String.class,
+                                long.class,
+                                config)),
+                is(hashCode));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstKafkaTopic<>(
+                                "peter", "c1", FORMAT_B, FORMAT_A, String.class, long.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "diff",
+                                "c1",
+                                FORMAT_B,
+                                FORMAT_A,
+                                String.class,
+                                long.class,
+                                config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter",
+                                "diff",
+                                FORMAT_B,
+                                FORMAT_A,
+                                String.class,
+                                long.class,
+                                config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter",
+                                "c1",
+                                FORMAT_A,
+                                FORMAT_A,
+                                String.class,
+                                long.class,
+                                config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter",
+                                "c1",
+                                FORMAT_B,
+                                FORMAT_B,
+                                String.class,
+                                long.class,
+                                config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter", "c1", FORMAT_B, FORMAT_A, Void.class, long.class, config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter",
+                                "c1",
+                                FORMAT_B,
+                                FORMAT_A,
+                                String.class,
+                                Void.class,
+                                config)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCode(
+                        new FirstCreatableKafkaTopic<>(
+                                "peter",
+                                "c1",
+                                FORMAT_B,
+                                FORMAT_A,
+                                String.class,
+                                long.class,
+                                mock(KafkaTopicConfig.class))),
+                is(not(hashCode)));
+    }
+
+    @Test
+    void shouldCalculateHashCodeIgnoringConfig() {
+        // Given:
+        final int hashCode =
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_B, long.class, String.class));
+
+        // Then:
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_B, long.class, String.class)),
+                is(hashCode));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstCreatableKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_B, long.class, String.class, config)),
+                is(hashCode));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "diff", "c1", FORMAT_A, FORMAT_B, long.class, String.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "bob", "diff", FORMAT_A, FORMAT_B, long.class, String.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_B, FORMAT_B, long.class, String.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_A, long.class, String.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_B, String.class, String.class)),
+                is(not(hashCode)));
+        assertThat(
+                KafkaTopicDescriptors.hashCodeIgnoringConfig(
+                        new FirstKafkaTopic<>(
+                                "t", "c", FORMAT_A, FORMAT_B, long.class, long.class)),
+                is(not(hashCode)));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldCalculateHashCodeOfPart() {
+        // Given:
+        final int hashCode = KafkaTopicDescriptors.hashCode(unowned.key());
+        final KafkaTopicDescriptor.PartDescriptor<?> part =
+                mock(KafkaTopicDescriptor.PartDescriptor.class);
+        when(part.type()).thenReturn((Class) unowned.key().type());
+        when(part.format()).thenReturn(unowned.key().format());
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.hashCode(part), is(hashCode));
+        when(part.type()).thenReturn((Class) Void.class);
+        assertThat(KafkaTopicDescriptors.hashCode(part), is(not(hashCode)));
+        when(part.type()).thenReturn((Class) unowned.key().type());
+        when(part.format()).thenReturn(serializationFormat("diff"));
+        assertThat(KafkaTopicDescriptors.hashCode(part), is(not(hashCode)));
     }
 
     private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
@@ -738,7 +918,7 @@ class KafkaTopicDescriptorsTest {
         }
 
         @Override
-        public int getPartitions() {
+        public int partitions() {
             return partitions;
         }
     }

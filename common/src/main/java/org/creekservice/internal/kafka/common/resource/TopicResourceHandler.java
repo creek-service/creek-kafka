@@ -14,18 +14,33 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.streams.extension.resource;
+package org.creekservice.internal.kafka.common.resource;
 
+import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 
-@SuppressWarnings("rawtypes")
-public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor> {
-    @Override
-    public void validate(final Collection<KafkaTopicDescriptor> resourceGroup) {}
+public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor<?, ?>> {
+
+    private final KafkaResourceValidator validator;
+
+    public TopicResourceHandler() {
+        this(new KafkaResourceValidator());
+    }
+
+    @VisibleForTesting
+    TopicResourceHandler(final KafkaResourceValidator validator) {
+        this.validator = requireNonNull(validator, "validator");
+    }
 
     @Override
-    public void ensure(final Collection<KafkaTopicDescriptor> resources) {}
+    public void validate(final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
+        validator.validateGroup(resourceGroup);
+    }
+
+    @Override
+    public void ensure(final Collection<? extends KafkaTopicDescriptor<?, ?>> resources) {}
 }

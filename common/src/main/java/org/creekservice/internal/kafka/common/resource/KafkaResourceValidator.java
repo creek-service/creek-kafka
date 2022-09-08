@@ -16,8 +16,17 @@
 
 package org.creekservice.internal.kafka.common.resource;
 
+import static java.lang.System.lineSeparator;
+import static java.util.stream.Collectors.groupingBy;
+import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
@@ -35,18 +44,70 @@ public final class KafkaResourceValidator {
      * @param components the components to validate
      */
     public void validate(final Stream<? extends ComponentDescriptor> components) {
-        components
-                .flatMap(ComponentDescriptor::resources)
-                .filter(KafkaTopicDescriptor.class::isInstance)
-                .map(d -> (KafkaTopicDescriptor<?, ?>) d)
-                .forEach(KafkaResourceValidator::validate);
+        final List<? extends KafkaTopicDescriptor<?, ?>> topics =
+                components
+                        .flatMap(ComponentDescriptor::resources)
+                        .filter(KafkaTopicDescriptor.class::isInstance)
+                        .map(d -> (KafkaTopicDescriptor<?, ?>) d)
+                        .collect(Collectors.toList());
+
+        topics.forEach(KafkaResourceValidator::validateTopic);
+
+        topics.stream()
+                .collect(groupingBy(KafkaTopicDescriptor::id))
+                .values()
+                .forEach(this::validateGroup);
     }
 
-    private static void validate(final KafkaTopicDescriptor<?, ?> descriptor) {
+    /**
+     * Validate a group of resources that all describe the same topic.
+     *
+     * @param resourceGroup the group of descriptors to validate.
+     */
+    public void validateGroup(
+            final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
+        resourceGroup.forEach(KafkaResourceValidator::validateTopic);
+        validateTopicGroup(resourceGroup);
+    }
+
+    public static void validateTopicGroup(
+            final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
+        final Map<Integer, ? extends KafkaTopicDescriptor<?, ?>> uniqueNoConfig =
+                resourceGroup.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        KafkaTopicDescriptors::hashCodeIgnoringConfig,
+                                        Function.identity(),
+                                        (v0, v1) -> v0));
+
+        if (uniqueNoConfig.size() > 1) {
+            throw new InconsistentResourceGroupException(uniqueNoConfig.values());
+        }
+
+        final Map<Integer, ? extends KafkaTopicDescriptor<?, ?>> uniqueConfig =
+                resourceGroup.stream()
+                        .filter(CreatableKafkaTopic.class::isInstance)
+                        .collect(
+                                Collectors.toMap(
+                                        KafkaTopicDescriptors::hashCode,
+                                        Function.identity(),
+                                        (v0, v1) -> v0));
+
+        if (uniqueConfig.size() > 1) {
+            throw new InconsistentResourceGroupException(uniqueConfig.values());
+        }
+    }
+
+    private static void validateTopic(final KafkaTopicDescriptor<?, ?> descriptor) {
         requireNonBlank("name()", descriptor.name(), descriptor);
         validateClusterName(descriptor);
         validatePart("key()", descriptor.key(), descriptor);
         validatePart("value()", descriptor.value(), descriptor);
+
+        if (descriptor instanceof CreatableKafkaTopic) {
+            final CreatableKafkaTopic<?, ?> creatable = (CreatableKafkaTopic<?, ?>) descriptor;
+            requireNonNull("config()", creatable.config(), descriptor);
+        }
     }
 
     private static void validateClusterName(final KafkaTopicDescriptor<?, ?> descriptor) {
@@ -96,8 +157,32 @@ public final class KafkaResourceValidator {
             super(
                     "Invalid topic descriptor: "
                             + msg
-                            + System.lineSeparator()
+                            + lineSeparator()
                             + KafkaTopicDescriptors.asString(descriptor));
+        }
+    }
+
+    private static final class InconsistentResourceGroupException extends RuntimeException {
+        InconsistentResourceGroupException(
+                final Collection<? extends KafkaTopicDescriptor<?, ?>> unique) {
+            super(
+                    "Resource descriptors for the same resource disagree on the details. descriptors: "
+                            + format(unique));
+        }
+
+        private static String format(
+                final Collection<? extends KafkaTopicDescriptor<?, ?>> unique) {
+            return unique.stream()
+                    .map(
+                            t ->
+                                    "\t"
+                                            + KafkaTopicDescriptors.asString(t)
+                                            + " ("
+                                            + codeLocation(t)
+                                            + ")")
+                    .collect(
+                            Collectors.joining(
+                                    lineSeparator(), "[" + lineSeparator(), lineSeparator() + "]"));
         }
     }
 }
