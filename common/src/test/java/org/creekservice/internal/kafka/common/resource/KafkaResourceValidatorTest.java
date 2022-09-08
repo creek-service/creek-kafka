@@ -29,7 +29,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaResourceIds;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
@@ -49,7 +48,6 @@ import org.mockito.quality.Strictness;
 class KafkaResourceValidatorTest {
 
     private static final SerializationFormat SOME_FORMAT = serializationFormat("something");
-    private static final URI ID_1 = KafkaResourceIds.topicId("c", "t");
 
     @Mock private ComponentDescriptor componentA;
     @Mock private ComponentDescriptor componentB;
@@ -387,7 +385,7 @@ class KafkaResourceValidatorTest {
 
     private KafkaTopicDescriptor<Long, String> setUpMock(
             final KafkaTopicDescriptor<Long, String> topic) {
-        when(topic.id()).thenReturn(ID_1);
+        when(topic.id()).thenReturn(URI.create("topic://default/some-topic"));
         when(topic.name()).thenReturn("some-topic");
         when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
         when(topic.key()).thenReturn(topicKey);
