@@ -25,11 +25,11 @@ import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
-import org.creekservice.api.service.extension.model.ResourceHandler;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
+import org.creekservice.internal.kafka.streams.extension.resource.TopicResourceHandler;
 
 /** Provider of {@link org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension}. */
 public final class KafkaStreamsExtensionProvider implements CreekExtensionProvider {
@@ -69,7 +69,7 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
 
     @Override
     public StreamsExtension initialize(final CreekService api) {
-        api.model().addResource(KafkaTopicDescriptor.class, new ResourceHandler<>() {});
+        api.model().addResource(KafkaTopicDescriptor.class, new TopicResourceHandler());
 
         final KafkaStreamsExtensionOptions options =
                 api.options()
