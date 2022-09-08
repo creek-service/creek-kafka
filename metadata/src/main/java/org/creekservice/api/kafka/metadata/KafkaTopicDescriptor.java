@@ -17,6 +17,8 @@
 package org.creekservice.api.kafka.metadata;
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 
 /**
@@ -28,6 +30,16 @@ import org.creekservice.api.platform.metadata.ResourceDescriptor;
 public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
     String DEFAULT_CLUSTER_NAME = "default";
+    String SCHEME = "kafka-topic";
+
+    @Override
+    default URI id() {
+        try {
+            return new URI(SCHEME, cluster(), "/" + name(), null);
+        } catch (final URISyntaxException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
 
     /** @return name of the topic as it is in Kafka. */
     String name();

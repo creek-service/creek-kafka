@@ -24,7 +24,6 @@ import static org.creekservice.api.kafka.metadata.SerializationFormat.serializat
 import java.net.URI;
 import java.util.Optional;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopicInternal;
-import org.creekservice.api.kafka.metadata.KafkaResourceIds;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicInput;
@@ -263,7 +262,6 @@ public final class TopicDescriptors {
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private abstract static class TopicDescriptor<K, V> {
-        private final URI id;
         private final String topicName;
         private final PartDescriptor<K> key;
         private final PartDescriptor<V> value;
@@ -279,11 +277,6 @@ public final class TopicDescriptors {
             this.key = new KafkaPart<>(keyType);
             this.value = new KafkaPart<>(valueType);
             this.config = requireNonNull(config, "config").map(TopicConfigBuilder::build);
-            this.id = KafkaResourceIds.topicId(clusterName, topicName);
-        }
-
-        public URI id() {
-            return id;
         }
 
         public String name() {

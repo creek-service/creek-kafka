@@ -16,13 +16,13 @@
 
 package org.creekservice.internal.kafka.common.resource;
 
-import static org.creekservice.api.kafka.metadata.KafkaResourceIds.topicId;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -37,7 +37,6 @@ class KafkaTopicDescriptorsTest {
 
     private static final SerializationFormat FORMAT_A = serializationFormat("A");
     private static final SerializationFormat FORMAT_B = serializationFormat("B");
-    private static final URI RES_ID = topicId("c", "t");
 
     private final KafkaTopicConfig config = new TestConfig(1);
     private final KafkaTopicDescriptor<?, ?> unowned =
@@ -52,7 +51,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                unowned.id(),
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -68,7 +66,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         owned,
                         new SecondCreatableKafkaTopic<>(
-                                owned.id(),
                                 owned.name(),
                                 owned.cluster(),
                                 owned.key().format(),
@@ -81,50 +78,32 @@ class KafkaTopicDescriptorsTest {
 
     @Test
     void shouldNotMatchUnownedIfIdDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        unowned,
-                        new SecondKafkaTopic<>(
-                                URI.create("diff:/res"),
-                                unowned.name(),
-                                unowned.cluster(),
-                                unowned.key().format(),
-                                unowned.value().format(),
-                                unowned.key().type(),
-                                unowned.value().type())),
-                is(false));
+        // Given:
+        final KafkaTopicDescriptor<?, ?> spy = spy(unowned);
+        when(spy.id()).thenReturn(URI.create("diff:/res"));
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(unowned, spy), is(false));
     }
 
     @Test
     void shouldNotMatchUnownedIfNameDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        unowned,
-                        new SecondKafkaTopic<>(
-                                RES_ID,
-                                "diff",
-                                unowned.cluster(),
-                                unowned.key().format(),
-                                unowned.value().format(),
-                                unowned.key().type(),
-                                unowned.value().type())),
-                is(false));
+        // Given:
+        final KafkaTopicDescriptor<?, ?> spy = spy(unowned);
+        when(spy.name()).thenReturn("diff");
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(unowned, spy), is(false));
     }
 
     @Test
     void shouldNotMatchUnownedIfClusterDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        unowned,
-                        new SecondKafkaTopic<>(
-                                RES_ID,
-                                unowned.name(),
-                                "diff",
-                                unowned.key().format(),
-                                unowned.value().format(),
-                                unowned.key().type(),
-                                unowned.value().type())),
-                is(false));
+        // Given:
+        final KafkaTopicDescriptor<?, ?> spy = spy(unowned);
+        when(spy.cluster()).thenReturn("diff");
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(unowned, spy), is(false));
     }
 
     @Test
@@ -133,7 +112,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                RES_ID,
                                 owned.name(),
                                 owned.cluster(),
                                 FORMAT_B,
@@ -149,7 +127,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -165,7 +142,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -181,7 +157,6 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.matches(
                         unowned,
                         new SecondKafkaTopic<>(
-                                RES_ID,
                                 unowned.name(),
                                 unowned.cluster(),
                                 unowned.key().format(),
@@ -192,52 +167,33 @@ class KafkaTopicDescriptorsTest {
     }
 
     @Test
-    void shouldNotMatchOwnedIIdDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        owned,
-                        new SecondCreatableKafkaTopic<>(
-                                URI.create("diff:/res"),
-                                owned.name(),
-                                owned.cluster(),
-                                owned.key().format(),
-                                owned.value().format(),
-                                owned.key().type(),
-                                owned.value().type(),
-                                owned.config())),
-                is(false));
+    void shouldNotMatchOwnedIfIdDifferent() {
+        // Given:
+        final CreatableKafkaTopic<?, ?> spy = spy(owned);
+        when(spy.id()).thenReturn(URI.create("diff:/res"));
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(owned, spy), is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfNameDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        owned,
-                        new SecondCreatableKafkaTopic<>(
-                                "Diff",
-                                owned.cluster(),
-                                owned.key().format(),
-                                owned.value().format(),
-                                owned.key().type(),
-                                owned.value().type(),
-                                owned.config())),
-                is(false));
+        // Given:
+        final CreatableKafkaTopic<?, ?> spy = spy(owned);
+        when(spy.name()).thenReturn("diff");
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(owned, spy), is(false));
     }
 
     @Test
     void shouldNotMatchOwnedIfClusterDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        owned,
-                        new SecondCreatableKafkaTopic<>(
-                                owned.name(),
-                                "Diff",
-                                owned.key().format(),
-                                owned.value().format(),
-                                owned.key().type(),
-                                owned.value().type(),
-                                owned.config())),
-                is(false));
+        // Given:
+        final CreatableKafkaTopic<?, ?> spy = spy(owned);
+        when(spy.cluster()).thenReturn("diff");
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(owned, spy), is(false));
     }
 
     @Test
@@ -306,18 +262,12 @@ class KafkaTopicDescriptorsTest {
 
     @Test
     void shouldNotMatchOwnedIfConfigDifferent() {
-        assertThat(
-                KafkaTopicDescriptors.matches(
-                        owned,
-                        new SecondCreatableKafkaTopic<>(
-                                owned.name(),
-                                owned.cluster(),
-                                owned.key().format(),
-                                owned.value().format(),
-                                owned.key().type(),
-                                owned.value().type(),
-                                new TestConfig(owned.config().partitions() + 1))),
-                is(false));
+        // Given:
+        final CreatableKafkaTopic<?, ?> spy = spy(owned);
+        when(spy.config()).thenReturn(new TestConfig(owned.config().partitions() + 1));
+
+        // Then:
+        assertThat(KafkaTopicDescriptors.matches(owned, spy), is(false));
     }
 
     @Test
@@ -325,7 +275,6 @@ class KafkaTopicDescriptorsTest {
         // Given:
         final SecondKafkaTopic<?, ?> unowned =
                 new SecondKafkaTopic<>(
-                        owned.id(),
                         owned.name(),
                         owned.cluster(),
                         owned.key().format(),
@@ -344,7 +293,7 @@ class KafkaTopicDescriptorsTest {
                 KafkaTopicDescriptors.asString(unowned),
                 is(
                         "FirstKafkaTopic["
-                                + "id=kafka-topic://c/t, "
+                                + "id=kafka-topic://c1/bob, "
                                 + "name=bob, "
                                 + "cluster=c1, "
                                 + "key=TestPart[format=A, type=long], "
@@ -600,7 +549,6 @@ class KafkaTopicDescriptorsTest {
 
     private static final class FirstKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
-        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -613,16 +561,10 @@ class KafkaTopicDescriptorsTest {
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
-            this.id = RES_ID;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
-        }
-
-        @Override
-        public URI id() {
-            return id;
         }
 
         @Override
@@ -668,30 +610,22 @@ class KafkaTopicDescriptorsTest {
 
     private static final class SecondKafkaTopic<K, V> implements KafkaTopicDescriptor<K, V> {
 
-        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
 
         SecondKafkaTopic(
-                final URI id,
                 final String name,
                 final String cluster,
                 final SerializationFormat keyFormat,
                 final SerializationFormat valueFormat,
                 final Class<K> keyType,
                 final Class<V> valueType) {
-            this.id = id;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
-        }
-
-        @Override
-        public URI id() {
-            return id;
         }
 
         @Override
@@ -737,7 +671,6 @@ class KafkaTopicDescriptorsTest {
 
     private static final class FirstCreatableKafkaTopic<K, V> implements CreatableKafkaTopic<K, V> {
 
-        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
@@ -752,17 +685,11 @@ class KafkaTopicDescriptorsTest {
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
-            this.id = topicId(cluster, name);
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
-        }
-
-        @Override
-        public URI id() {
-            return id;
         }
 
         @Override
@@ -814,35 +741,14 @@ class KafkaTopicDescriptorsTest {
     private static final class SecondCreatableKafkaTopic<K, V>
             implements CreatableKafkaTopic<K, V> {
 
-        private final URI id;
         private final String name;
         private final String cluster;
         private final TestPart<K> key;
         private final TestPart<V> value;
         private final KafkaTopicConfig config;
 
-        SecondCreatableKafkaTopic(
-                final String name,
-                final String cluster,
-                final SerializationFormat keyFormat,
-                final SerializationFormat valueFormat,
-                final Class<K> keyType,
-                final Class<V> valueType,
-                final KafkaTopicConfig config) {
-            this(
-                    topicId(cluster, name),
-                    name,
-                    cluster,
-                    keyFormat,
-                    valueFormat,
-                    keyType,
-                    valueType,
-                    config);
-        }
-
         @SuppressWarnings("checkstyle:ParameterNumber")
         SecondCreatableKafkaTopic(
-                final URI id,
                 final String name,
                 final String cluster,
                 final SerializationFormat keyFormat,
@@ -850,17 +756,11 @@ class KafkaTopicDescriptorsTest {
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final KafkaTopicConfig config) {
-            this.id = id;
             this.name = name;
             this.cluster = cluster;
             this.key = new TestPart<>(keyType, keyFormat);
             this.value = new TestPart<>(valueType, valueFormat);
             this.config = config;
-        }
-
-        @Override
-        public URI id() {
-            return id;
         }
 
         @Override
