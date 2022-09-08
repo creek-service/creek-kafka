@@ -22,17 +22,18 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
+import org.creekservice.internal.kafka.common.resource.TopicResourceHandler;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -62,22 +63,24 @@ class KafkaTestExtensionTest {
     }
 
     @Test
-    void shouldAppendValidatingListenerBeforeMainListener() {
-        // When:
-        ext.initialize(api);
-
-        // Then:
-        final InOrder inOrder = inOrder(api.test().env().listener());
-        inOrder.verify(api.test().env().listener()).append(isA(ValidatingTestListener.class));
-        inOrder.verify(api.test().env().listener()).append(isA(StartKafkaTestListener.class));
-    }
-
-    @Test
-    void shouldAppendTestSuiteListener() {
+    void shouldAppendTestListenerToStartKafka() {
         // When:
         ext.initialize(api);
 
         // Then:
         verify(api.test().env().listener()).append(isA(StartKafkaTestListener.class));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldRegisterResourceHandler() {
+        // When:
+        ext.initialize(api);
+
+        // Then:
+        verify(api.component().model())
+                .addResource(
+                        eq(KafkaTopicDescriptor.class),
+                        (ResourceHandler) isA(TopicResourceHandler.class));
     }
 }
