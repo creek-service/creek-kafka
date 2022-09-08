@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,9 +67,10 @@ class ValidatingTestListenerTest {
 
         listener = new ValidatingTestListener(api, validator);
 
-        when(api.testSuite().services().stream()).thenReturn(Stream.of(inst0, inst1));
-        when(inst0.descriptor()).thenReturn(Optional.of(descriptor0));
-        when(inst1.descriptor()).thenReturn(Optional.of(descriptor1));
+        when(api.test().env().currentSuite().services().stream())
+                .thenReturn(Stream.of(inst0, inst1));
+        doReturn(Optional.of(descriptor0)).when(inst0).descriptor();
+        doReturn(Optional.of(descriptor1)).when(inst1).descriptor();
         doAnswer(trackValidatedComponents()).when(validator).validate(any());
     }
 

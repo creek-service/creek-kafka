@@ -125,7 +125,7 @@ class KafkaStreamsExecutorTest {
 
         // Then:
         final InOrder inOrder = Mockito.inOrder(app);
-        inOrder.verify(app).setStateListener(isA(LifecycleListener.class));
+        inOrder.verify(app).setStateListener(isA(StreamsStateListener.class));
         inOrder.verify(app).start();
     }
 

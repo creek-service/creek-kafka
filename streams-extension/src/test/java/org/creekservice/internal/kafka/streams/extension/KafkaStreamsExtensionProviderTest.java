@@ -39,7 +39,7 @@ import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.extension.CreekService;
-import org.creekservice.api.service.extension.model.ModelContainer;
+import org.creekservice.api.service.extension.model.ComponentModelContainer;
 import org.creekservice.api.service.extension.option.OptionCollection;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
@@ -77,7 +77,7 @@ class KafkaStreamsExtensionProviderTest {
     @Mock private ResourceRegistry resources;
     @Mock private CreekService api;
     @Mock private OptionCollection options;
-    @Mock private ModelContainer model;
+    @Mock private ComponentModelContainer model;
     private final List<ComponentDescriptor> validatedComponents = new ArrayList<>();
 
     private KafkaStreamsExtensionProvider provider;

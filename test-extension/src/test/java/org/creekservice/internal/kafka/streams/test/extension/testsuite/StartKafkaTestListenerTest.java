@@ -17,6 +17,7 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,8 +27,8 @@ import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener.TopicCollector;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener.TopicCollector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class StreamsTestLifecycleListenerTest {
+class StartKafkaTestListenerTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
@@ -58,19 +59,19 @@ class StreamsTestLifecycleListenerTest {
     @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
     @Mock private TopicCollector topicCollector;
 
-    private StreamsTestLifecycleListener listener;
+    private StartKafkaTestListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new StreamsTestLifecycleListener(api, topicCollector);
+        listener = new StartKafkaTestListener(api, topicCollector);
 
-        when(api.testSuite().services().stream())
+        when(api.test().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
 
         when(serviceInstance0.name()).thenReturn("inst0");
         when(serviceInstance1.name()).thenReturn("inst1");
-        when(serviceInstance0.descriptor()).thenReturn(Optional.of(descriptor0));
-        when(serviceInstance1.descriptor()).thenReturn(Optional.of(descriptor1));
+        doReturn(Optional.of(descriptor0)).when(serviceInstance0).descriptor();
+        doReturn(Optional.of(descriptor1)).when(serviceInstance1).descriptor();
         when(descriptor0.name()).thenReturn("service-0");
         when(descriptor1.name()).thenReturn("service-1");
         when(kafkaResource0.cluster()).thenReturn("bob");
@@ -87,7 +88,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services(), never()).add(any());
+        verify(api.test().env().currentSuite().services(), never()).add(any());
     }
 
     @Test
@@ -99,7 +100,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services(), never()).add(any());
+        verify(api.test().env().currentSuite().services(), never()).add(any());
     }
 
     @Test
@@ -112,8 +113,8 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services()).add(new KafkaContainerDef("bob"));
-        verify(api.testSuite().services()).add(new KafkaContainerDef("janet"));
+        verify(api.test().env().currentSuite().services()).add(new KafkaContainerDef("bob"));
+        verify(api.test().env().currentSuite().services()).add(new KafkaContainerDef("janet"));
     }
 
     @Test
@@ -125,7 +126,7 @@ class StreamsTestLifecycleListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services().add(any())).start();
+        verify(api.test().env().currentSuite().services().add(any())).start();
     }
 
     @Test
@@ -139,7 +140,7 @@ class StreamsTestLifecycleListenerTest {
         listener.afterSuite(null);
 
         // Then:
-        verify(api.testSuite().services().add(any())).stop();
+        verify(api.test().env().currentSuite().services().add(any())).stop();
     }
 
     @Test
@@ -149,9 +150,9 @@ class StreamsTestLifecycleListenerTest {
         when(topicCollector.collectTopics(descriptor1))
                 .thenReturn(Stream.of(kafkaResource0, kafkaResource1));
 
-        when(api.testSuite().services().add(new KafkaContainerDef("bob")).name())
+        when(api.test().env().currentSuite().services().add(new KafkaContainerDef("bob")).name())
                 .thenReturn("kafka-bob-0");
-        when(api.testSuite().services().add(new KafkaContainerDef("janet")).name())
+        when(api.test().env().currentSuite().services().add(new KafkaContainerDef("janet")).name())
                 .thenReturn("kafka-janet-0");
 
         // When:

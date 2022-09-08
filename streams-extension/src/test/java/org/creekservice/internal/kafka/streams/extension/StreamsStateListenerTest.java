@@ -40,18 +40,18 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LifecycleListenerTest {
+class StreamsStateListenerTest {
 
     private static final KafkaStreams.State IGNORED = null;
 
     @Mock private LifecycleObserver observer;
     private CompletableFuture<Void> forceShutdown;
-    private LifecycleListener listener;
+    private StreamsStateListener listener;
 
     @BeforeEach
     void setUp() {
         forceShutdown = new CompletableFuture<>();
-        listener = new LifecycleListener(observer, forceShutdown);
+        listener = new StreamsStateListener(observer, forceShutdown);
     }
 
     @Test

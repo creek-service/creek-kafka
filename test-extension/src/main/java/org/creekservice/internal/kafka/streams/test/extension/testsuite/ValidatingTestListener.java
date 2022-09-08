@@ -23,12 +23,12 @@ import java.util.stream.Stream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 
-public final class ValidatingTestListener implements TestLifecycleListener {
+public final class ValidatingTestListener implements TestEnvironmentListener {
 
     private final CreekSystemTest api;
     private final KafkaResourceValidator validator;
@@ -46,7 +46,7 @@ public final class ValidatingTestListener implements TestLifecycleListener {
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         final Stream<ServiceDescriptor> descriptors =
-                api.testSuite().services().stream()
+                api.test().env().currentSuite().services().stream()
                         .map(ServiceInstance::descriptor)
                         .flatMap(Optional::stream);
 
