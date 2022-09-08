@@ -27,7 +27,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,9 +67,9 @@ class KafkaTestExtensionTest {
         ext.initialize(api);
 
         // Then:
-        final InOrder inOrder = inOrder(api.testSuite().listener());
-        inOrder.verify(api.testSuite().listener()).append(isA(ValidatingTestListener.class));
-        inOrder.verify(api.testSuite().listener()).append(isA(StreamsTestLifecycleListener.class));
+        final InOrder inOrder = inOrder(api.test().env().listener());
+        inOrder.verify(api.test().env().listener()).append(isA(ValidatingTestListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(StartKafkaTestListener.class));
     }
 
     @Test
@@ -78,6 +78,6 @@ class KafkaTestExtensionTest {
         ext.initialize(api);
 
         // Then:
-        verify(api.testSuite().listener()).append(isA(StreamsTestLifecycleListener.class));
+        verify(api.test().env().listener()).append(isA(StartKafkaTestListener.class));
     }
 }

@@ -23,13 +23,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.kafka.streams.KafkaStreams;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 
-final class LifecycleListener implements KafkaStreams.StateListener {
+final class StreamsStateListener implements KafkaStreams.StateListener {
 
     private final LifecycleObserver observer;
     private final CompletableFuture<Void> forceShutdown;
     private final AtomicBoolean starting = new AtomicBoolean(true);
 
-    LifecycleListener(
+    StreamsStateListener(
             final LifecycleObserver observer, final CompletableFuture<Void> forceShutdown) {
         this.observer = requireNonNull(observer, "observer");
         this.forceShutdown = requireNonNull(forceShutdown, "forceShutdown");
