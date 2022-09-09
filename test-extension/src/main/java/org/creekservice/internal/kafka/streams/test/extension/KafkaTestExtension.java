@@ -17,11 +17,12 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.testsuite.TestListenerContainer;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.StreamsTestLifecycleListener;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.ValidatingTestListener;
+import org.creekservice.internal.kafka.common.resource.TopicResourceHandler;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 
 /**
  * A Creek system test extension for testing Kafka Streams based microservices.
@@ -35,10 +36,13 @@ public final class KafkaTestExtension implements CreekTestExtension {
         return "creek-kafka";
     }
 
+    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
-    public void initialize(final CreekSystemTest systemTest) {
-        final TestListenerContainer testListeners = systemTest.testSuite().listener();
-        testListeners.append(new ValidatingTestListener(systemTest));
-        testListeners.append(new StreamsTestLifecycleListener(systemTest));
+    public void initialize(final CreekSystemTest api) {
+        api.component()
+                .model()
+                .addResource(
+                        KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
+        api.test().env().listener().append(new StartKafkaTestListener(api));
     }
 }

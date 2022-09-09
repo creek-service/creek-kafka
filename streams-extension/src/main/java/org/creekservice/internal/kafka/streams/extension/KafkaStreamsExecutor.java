@@ -86,7 +86,7 @@ public final class KafkaStreamsExecutor {
 
             metricsPublisher.schedule(streamsApp::metrics);
 
-            streamsApp.setStateListener(new LifecycleListener(observer, shutdownFuture));
+            streamsApp.setStateListener(new StreamsStateListener(observer, shutdownFuture));
 
             streamsApp.setGlobalStateRestoreListener(
                     new RestoreListener(options.restoreObserver()));

@@ -30,18 +30,18 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 
-public final class StreamsTestLifecycleListener implements TestLifecycleListener {
+public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     private final CreekSystemTest api;
     private final TopicCollector topicCollector;
     private final List<ServiceInstance> kafkaInstances = new ArrayList<>();
 
-    public StreamsTestLifecycleListener(final CreekSystemTest api) {
+    public StartKafkaTestListener(final CreekSystemTest api) {
         this(
                 api,
                 d ->
@@ -58,7 +58,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
     }
 
     @VisibleForTesting
-    StreamsTestLifecycleListener(final CreekSystemTest api, final TopicCollector topicCollector) {
+    StartKafkaTestListener(final CreekSystemTest api, final TopicCollector topicCollector) {
         this.api = requireNonNull(api, "api");
         this.topicCollector = requireNonNull(topicCollector, "topicCollector");
     }
@@ -66,7 +66,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         final Map<String, List<ConfigurableServiceInstance>> clusterServices =
-                api.testSuite().services().stream()
+                api.test().env().currentSuite().services().stream()
                         .flatMap(this::requiredClusters)
                         .collect(
                                 groupingBy(
@@ -100,7 +100,7 @@ public final class StreamsTestLifecycleListener implements TestLifecycleListener
             final String clusterName, final Collection<ConfigurableServiceInstance> clusterUsers) {
 
         final ServiceInstance kafka =
-                api.testSuite().services().add(new KafkaContainerDef(clusterName));
+                api.test().env().currentSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
         kafkaInstances.add(kafka);

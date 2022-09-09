@@ -20,7 +20,6 @@ package org.creekservice.internal.kafka.common.resource;
 import java.util.Objects;
 import java.util.StringJoiner;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
 public final class KafkaTopicDescriptors {
@@ -58,10 +57,10 @@ public final class KafkaTopicDescriptors {
             return false;
         }
 
-        final boolean leftOwned = left instanceof CreatableKafkaTopic;
-        final boolean rightOwned = right instanceof CreatableKafkaTopic;
-        if (leftOwned && rightOwned) {
-            return KafkaTopicConfig.matches(
+        final boolean leftCreatable = left instanceof CreatableKafkaTopic;
+        final boolean rightCreatable = right instanceof CreatableKafkaTopic;
+        if (leftCreatable && rightCreatable) {
+            return KafkaTopicConfigs.matches(
                     ((CreatableKafkaTopic<?, ?>) left).config(),
                     ((CreatableKafkaTopic<?, ?>) right).config());
         }
@@ -89,11 +88,49 @@ public final class KafkaTopicDescriptors {
                         .add("value=" + (topic.value() == null ? "null" : asString(topic.value())));
 
         if (topic instanceof CreatableKafkaTopic) {
-            final CreatableKafkaTopic<?, ?> owned = (CreatableKafkaTopic<?, ?>) topic;
-            joiner.add("config=" + KafkaTopicConfig.asString(owned.config()));
+            final CreatableKafkaTopic<?, ?> creatable = (CreatableKafkaTopic<?, ?>) topic;
+            joiner.add(
+                    "config="
+                            + (creatable.config() == null
+                                    ? "null"
+                                    : KafkaTopicConfigs.asString(creatable.config())));
         }
 
         return joiner.toString();
+    }
+
+    /**
+     * Compute hash code of topic descriptor.
+     *
+     * <p>Avoids Creek being at the mercy of implementers of the interface.
+     *
+     * @param topic the topic descriptor.
+     * @return the hash code.
+     */
+    public static int hashCode(final KafkaTopicDescriptor<?, ?> topic) {
+
+        if (topic instanceof CreatableKafkaTopic) {
+            final CreatableKafkaTopic<?, ?> creatable = (CreatableKafkaTopic<?, ?>) topic;
+            return Objects.hash(
+                    creatable.id(),
+                    creatable.name(),
+                    hashCode(creatable.key()),
+                    hashCode(creatable.value()),
+                    KafkaTopicConfigs.hashCode(creatable.config()));
+        }
+
+        return hashCodeIgnoringConfig(topic);
+    }
+
+    /**
+     * Compute hash code of topic descriptor, ignoring any config.
+     *
+     * @param topic the topic descriptor.
+     * @return the hash code.
+     */
+    public static int hashCodeIgnoringConfig(final KafkaTopicDescriptor<?, ?> topic) {
+        return Objects.hash(
+                topic.id(), topic.name(), hashCode(topic.key()), hashCode(topic.value()));
     }
 
     /**
@@ -125,5 +162,17 @@ public final class KafkaTopicDescriptors {
                         .add("type=" + (part.type() == null ? "null" : part.type().getName()));
 
         return joiner.toString();
+    }
+
+    /**
+     * Compute hash code of part.
+     *
+     * <p>Avoids Creek being at the mercy of implementers of the interface.
+     *
+     * @param part the part.
+     * @return the hash code.
+     */
+    public static int hashCode(final KafkaTopicDescriptor.PartDescriptor<?> part) {
+        return Objects.hash(part.format(), part.type());
     }
 }

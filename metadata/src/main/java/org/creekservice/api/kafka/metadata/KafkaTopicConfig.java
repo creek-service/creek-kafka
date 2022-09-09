@@ -18,38 +18,15 @@ package org.creekservice.api.kafka.metadata;
 
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
 
 /** Type for defining a Kafka topic's config */
 public interface KafkaTopicConfig {
+
     /** @return topics partition count. */
-    int getPartitions();
+    int partitions();
 
     /** @return any specific configs. If not supplied, cluster/env defaults will be used. */
-    default Map<String, String> getConfig() {
+    default Map<String, String> config() {
         return Map.of();
-    }
-
-    /** @return true if left and right are equivalent. */
-    static boolean matches(final KafkaTopicConfig left, final KafkaTopicConfig right) {
-        return left.getPartitions() == right.getPartitions()
-                && Objects.equals(left.getConfig(), right.getConfig());
-    }
-
-    /**
-     * Convert topic details to string.
-     *
-     * <p>Used when logging topic details.
-     * Avoids the need for every implementor of this type to define {@code toString).
-     *
-     * @param config the config to convert
-     * @return string representation
-     */
-    static String asString(final KafkaTopicConfig config) {
-        return new StringJoiner(", ", config.getClass().getSimpleName() + "[", "]")
-                .add("partitions=" + config.getPartitions())
-                .add("config=" + config.getConfig())
-                .toString();
     }
 }

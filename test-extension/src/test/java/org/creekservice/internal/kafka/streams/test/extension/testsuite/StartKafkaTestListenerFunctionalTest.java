@@ -60,9 +60,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.service.ServiceContainer;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -77,29 +77,30 @@ import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
 import org.testcontainers.DockerClientFactory;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class StreamsTestLifecycleListenerFunctionalTest {
+class StartKafkaTestListenerFunctionalTest {
 
     private static final CreekSystemTestExtensionTester EXT_TESTER = extensionTester();
-    private static StreamsTestLifecycleListener listener;
+    private static StartKafkaTestListener listener;
     private static ConfigurableServiceInstance testService;
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     @BeforeAll
     static void beforeAll() {
-        final ServiceContainer services = EXT_TESTER.dockerServicesContainer();
+        final ServiceInstanceContainer services = EXT_TESTER.dockerServicesContainer();
 
         final CreekSystemTest api =
                 mock(CreekSystemTest.class, withSettings().defaultAnswer(new ReturnsDeepStubs()));
 
-        when(api.testSuite().services().add(any()))
+        when(api.test().env().currentSuite().services().add(any()))
                 .thenAnswer(inv -> services.add(inv.getArgument(0)));
 
         testService = services.add(EXT_TESTER.serviceDefinitions().get("test-service"));
 
-        when(api.testSuite().services().stream()).thenReturn(Stream.of(testService));
+        when(api.test().env().currentSuite().services().stream())
+                .thenReturn(Stream.of(testService));
 
-        listener = new StreamsTestLifecycleListener(api);
+        listener = new StartKafkaTestListener(api);
     }
 
     @AfterAll

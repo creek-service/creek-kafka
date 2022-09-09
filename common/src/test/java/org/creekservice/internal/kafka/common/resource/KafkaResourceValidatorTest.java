@@ -23,8 +23,13 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
+import java.net.URI;
+import java.util.List;
 import java.util.stream.Stream;
+import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
@@ -48,7 +53,11 @@ class KafkaResourceValidatorTest {
     @Mock private ComponentDescriptor componentB;
     @Mock private PartDescriptor<Long> topicKey;
     @Mock private PartDescriptor<String> topicValue;
+    @Mock private PartDescriptor<String> topicValue2;
     @Mock private KafkaTopicDescriptor<Long, String> topic;
+    @Mock private KafkaTopicDescriptor<Long, String> topic2;
+    @Mock private KafkaTopicConfig config;
+    @Mock private KafkaTopicConfig config2;
     private KafkaResourceValidator validator;
 
     @BeforeEach
@@ -59,10 +68,11 @@ class KafkaResourceValidatorTest {
         when(topicValue.type()).thenReturn(String.class);
         when(topicValue.format()).thenReturn(SOME_FORMAT);
 
-        when(topic.name()).thenReturn("some-topic");
-        when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
-        when(topic.key()).thenReturn(topicKey);
-        when(topic.value()).thenReturn(topicValue);
+        when(topicValue2.type()).thenReturn(String.class);
+        when(topicValue2.format()).thenReturn(SOME_FORMAT);
+
+        setUpMock(topic);
+        setUpMock(topic2);
 
         when(componentA.resources()).thenReturn(Stream.of(topic));
 
@@ -246,6 +256,29 @@ class KafkaResourceValidatorTest {
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldThrowOnNullConfig() {
+        // Given:
+        topic =
+                setUpMock(
+                        mock(
+                                KafkaTopicDescriptor.class,
+                                withSettings().extraInterfaces(CreatableKafkaTopic.class)));
+        when(((CreatableKafkaTopic<?, ?>) topic).config()).thenReturn(null);
+
+        when(componentA.resources()).thenReturn(Stream.of(topic));
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+
+        // Then:
+        assertThat(e.getMessage(), startsWith("Invalid topic descriptor: config() is null"));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
+    }
+
     @Test
     void shouldCheckEachComponent() {
         // Given:
@@ -257,5 +290,106 @@ class KafkaResourceValidatorTest {
         assertThrows(
                 RuntimeException.class,
                 () -> validator.validate(Stream.of(componentA, componentB)));
+    }
+
+    @Test
+    void shouldValidateDescriptorsInGroup() {
+        // Given:
+        when(topicValue.format()).thenReturn(null);
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
+
+        assertThat(e.getMessage(), containsString("value().format() is null"));
+    }
+
+    @Test
+    void shouldThrowOnInconsistentGroup() {
+        // Given:
+        when(topic2.value()).thenReturn(topicValue2);
+        when(topicValue2.format()).thenReturn(serializationFormat("different"));
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> validator.validateGroup(List.of(topic, topic, topic2, topic2)));
+
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Resource descriptors for the same resource disagree on the details. descriptors: ["));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic2)));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldThrowOnInconsistentGroupConfig() {
+        // Given:
+        topic =
+                setUpMock(
+                        mock(
+                                KafkaTopicDescriptor.class,
+                                withSettings().extraInterfaces(CreatableKafkaTopic.class)));
+        topic2 =
+                setUpMock(
+                        mock(
+                                KafkaTopicDescriptor.class,
+                                withSettings().extraInterfaces(CreatableKafkaTopic.class)));
+
+        when(((CreatableKafkaTopic<?, ?>) topic).config()).thenReturn(config);
+        when(((CreatableKafkaTopic<?, ?>) topic2).config()).thenReturn(config2);
+        when(config2.partitions()).thenReturn(35);
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> validator.validateGroup(List.of(topic, topic, topic2, topic2)));
+
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Resource descriptors for the same resource disagree on the details. descriptors: ["));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic2)));
+    }
+
+    @Test
+    void shouldNotThrowOnConsistentGroup() {
+        // When:
+        validator.validateGroup(List.of(topic, topic2));
+
+        // Then: did not throw.
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldNotThrowOnConsistentGroupWithConfig() {
+        // Given:
+        topic2 =
+                setUpMock(
+                        mock(
+                                KafkaTopicDescriptor.class,
+                                withSettings().extraInterfaces(CreatableKafkaTopic.class)));
+        when(((CreatableKafkaTopic<?, ?>) topic2).config()).thenReturn(config2);
+
+        // When:
+        validator.validateGroup(List.of(topic, topic2));
+        when(((CreatableKafkaTopic<?, ?>) topic2).config()).thenReturn(config2);
+
+        // Then: did not throw.
+    }
+
+    private KafkaTopicDescriptor<Long, String> setUpMock(
+            final KafkaTopicDescriptor<Long, String> topic) {
+        when(topic.id()).thenReturn(URI.create("topic://default/some-topic"));
+        when(topic.name()).thenReturn("some-topic");
+        when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
+        when(topic.key()).thenReturn(topicKey);
+        when(topic.value()).thenReturn(topicValue);
+        return topic;
     }
 }

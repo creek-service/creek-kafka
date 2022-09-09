@@ -23,10 +23,11 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
-import org.creekservice.api.service.extension.model.ResourceHandler;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
+import org.creekservice.internal.kafka.common.resource.TopicResourceHandler;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
@@ -67,9 +68,12 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
         this.resourcesFactory = requireNonNull(resourcesFactory, "resourcesFactory");
     }
 
+    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
     public StreamsExtension initialize(final CreekService api) {
-        api.model().addResource(KafkaTopicDescriptor.class, new ResourceHandler<>() {});
+        api.model()
+                .addResource(
+                        KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
 
         final KafkaStreamsExtensionOptions options =
                 api.options()
