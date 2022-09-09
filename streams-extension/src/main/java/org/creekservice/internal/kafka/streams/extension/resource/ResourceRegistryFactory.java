@@ -19,7 +19,6 @@ package org.creekservice.internal.kafka.streams.extension.resource;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.kafka.common.serialization.Serde;
@@ -59,10 +58,11 @@ public final class ResourceRegistryFactory {
     }
 
     public ResourceRegistry create(
-            final ComponentDescriptor component, final ClustersProperties properties) {
+            final Collection<? extends ComponentDescriptor> components,
+            final ClustersProperties properties) {
 
         final Map<String, KafkaTopicDescriptor<?, ?>> topicDefs =
-                topicCollector.collectTopics(List.of(component));
+                topicCollector.collectTopics(components);
 
         final Map<String, Topic<?, ?>> topics =
                 topicDefs.entrySet().stream()

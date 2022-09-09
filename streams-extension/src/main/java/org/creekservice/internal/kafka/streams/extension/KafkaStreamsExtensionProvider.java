@@ -18,11 +18,12 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.stream.Stream;
+import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
@@ -70,7 +71,8 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
 
     @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
-    public StreamsExtension initialize(final CreekService api) {
+    public StreamsExtension initialize(
+            final CreekService api, final Collection<? extends ComponentDescriptor> components) {
         api.model()
                 .addResource(
                         KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
@@ -80,9 +82,9 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
                         .get(KafkaStreamsExtensionOptions.class)
                         .orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
 
-        resourceValidator.validate(Stream.of(api.service()));
-        final ClustersProperties properties = propertiesFactory.create(api.service(), options);
-        final ResourceRegistry resources = resourcesFactory.create(api.service(), properties);
+        resourceValidator.validate(components.stream());
+        final ClustersProperties properties = propertiesFactory.create(components, options);
+        final ResourceRegistry resources = resourcesFactory.create(components, properties);
         final KafkaStreamsBuilder builder = builderFactory.create(properties);
         final KafkaStreamsExecutor executor = executorFactory.create(options);
 
