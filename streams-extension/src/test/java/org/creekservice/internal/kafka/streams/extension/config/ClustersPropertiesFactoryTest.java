@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +60,13 @@ class ClustersPropertiesFactoryTest {
         when(options.propertiesBuilder()).thenReturn(propertiesBuilder);
         when(options.propertyOverrides()).thenReturn(propertiesOverrides);
 
-        when(topicCollector.collectTopics(components)).thenReturn(Map.of("a", topicA, "b", topicB));
+        when(topicCollector.collectTopics(components))
+                .thenReturn(
+                        Map.of(
+                                URI.create("topic://default/a"),
+                                topicA,
+                                URI.create("topic://default/b"),
+                                topicB));
 
         when(topicA.cluster()).thenReturn("cluster-A");
         when(topicB.cluster()).thenReturn("cluster-B");

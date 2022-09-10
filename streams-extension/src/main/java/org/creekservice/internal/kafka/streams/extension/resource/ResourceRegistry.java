@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.extension.resource;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.URI;
 import java.util.Map;
 import org.creekservice.api.kafka.common.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -25,15 +26,15 @@ import org.creekservice.internal.kafka.common.resource.KafkaTopicDescriptors;
 
 public final class ResourceRegistry {
 
-    private final Map<String, Topic<?, ?>> topics;
+    private final Map<URI, Topic<?, ?>> topics;
 
-    ResourceRegistry(final Map<String, Topic<?, ?>> topics) {
+    ResourceRegistry(final Map<URI, Topic<?, ?>> topics) {
         this.topics = Map.copyOf(requireNonNull(topics, "topics"));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
-        final Topic<?, ?> found = topics.get(def.name());
+        final Topic<?, ?> found = topics.get(def.id());
         if (found == null) {
             throw new UnknownTopicException(def.name());
         }

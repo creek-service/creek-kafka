@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
@@ -100,7 +101,8 @@ class ResourceRegistryFactoryTest {
 
         when(topicFactory.create(any(), any(), any())).thenReturn((Topic) topicOne);
 
-        when(topicCollector.collectTopics(any())).thenReturn(Map.of("A", topicDefA));
+        when(topicCollector.collectTopics(any()))
+                .thenReturn(Map.of(URI.create("topic://default/A"), topicDefA));
     }
 
     @Test
@@ -198,14 +200,25 @@ class ResourceRegistryFactoryTest {
     void shouldCreateTopicResourcesForEachTopicDescriptor() {
         // Given:
         when(topicCollector.collectTopics(any()))
-                .thenReturn(Map.of("A", topicDefA, "B", topicDefB));
+                .thenReturn(
+                        Map.of(
+                                URI.create("topic://default/a"),
+                                topicDefA,
+                                URI.create("topic://default/b"),
+                                topicDefB));
         when(topicFactory.create(eq(topicDefB), any(), any())).thenReturn(topicTwo);
 
         // When:
         factory.create(components, clusterProperties);
 
         // Then:
-        verify(registryFactory).create(Map.of("A", topicOne, "B", topicTwo));
+        verify(registryFactory)
+                .create(
+                        Map.of(
+                                URI.create("topic://default/a"),
+                                topicOne,
+                                URI.create("topic://default/b"),
+                                topicTwo));
     }
 
     @Test

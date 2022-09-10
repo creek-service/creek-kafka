@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.extension.resource;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,10 +62,10 @@ public final class ResourceRegistryFactory {
             final Collection<? extends ComponentDescriptor> components,
             final ClustersProperties properties) {
 
-        final Map<String, KafkaTopicDescriptor<?, ?>> topicDefs =
+        final Map<URI, KafkaTopicDescriptor<?, ?>> topicDefs =
                 topicCollector.collectTopics(components);
 
-        final Map<String, Topic<?, ?>> topics =
+        final Map<URI, Topic<?, ?>> topics =
                 topicDefs.entrySet().stream()
                         .collect(
                                 Collectors.toUnmodifiableMap(
@@ -108,7 +109,7 @@ public final class ResourceRegistryFactory {
 
     @VisibleForTesting
     interface TopicCollector {
-        Map<String, KafkaTopicDescriptor<?, ?>> collectTopics(
+        Map<URI, KafkaTopicDescriptor<?, ?>> collectTopics(
                 Collection<? extends ComponentDescriptor> components);
     }
 
@@ -120,7 +121,7 @@ public final class ResourceRegistryFactory {
 
     @VisibleForTesting
     interface RegistryFactory {
-        ResourceRegistry create(Map<String, Topic<?, ?>> topics);
+        ResourceRegistry create(Map<URI, Topic<?, ?>> topics);
     }
 
     private static final class UnknownSerializationFormatException extends RuntimeException {

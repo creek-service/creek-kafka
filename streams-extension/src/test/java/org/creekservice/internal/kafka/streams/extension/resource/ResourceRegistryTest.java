@@ -25,6 +25,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.Map;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
@@ -50,7 +51,13 @@ class ResourceRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry = new ResourceRegistry(Map.of("topic-A", topicA, "topic-B", topicB));
+        registry =
+                new ResourceRegistry(
+                        Map.of(
+                                URI.create("topic://default/topic-A"),
+                                topicA,
+                                URI.create("topic://default/topic-B"),
+                                topicB));
 
         when(topicA.descriptor()).thenReturn(topicDefA);
         when(topicB.descriptor()).thenReturn(topicDefB);
