@@ -18,23 +18,26 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
-import org.creekservice.internal.kafka.common.resource.TopicResourceHandler;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
+import org.creekservice.internal.kafka.streams.extension.resource.TopicResourceHandler;
 
 /** Provider of {@link org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension}. */
-public final class KafkaStreamsExtensionProvider implements CreekExtensionProvider {
+public final class KafkaStreamsExtensionProvider
+        implements CreekExtensionProvider<KafkaStreamsExtension> {
 
     private final BuilderFactory builderFactory;
     private final ExecutorFactory executorFactory;
@@ -71,9 +74,9 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
 
     @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
-    public StreamsExtension initialize(
-            final CreekService api, final Collection<? extends ComponentDescriptor> components) {
-        api.model()
+    public KafkaStreamsExtension initialize(final CreekService api) {
+        api.components()
+                .model()
                 .addResource(
                         KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
 
@@ -81,6 +84,9 @@ public final class KafkaStreamsExtensionProvider implements CreekExtensionProvid
                 api.options()
                         .get(KafkaStreamsExtensionOptions.class)
                         .orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
+
+        final List<ComponentDescriptor> components =
+                api.components().descriptors().stream().collect(Collectors.toList());
 
         resourceValidator.validate(components.stream());
         final ClustersProperties properties = propertiesFactory.create(components, options);

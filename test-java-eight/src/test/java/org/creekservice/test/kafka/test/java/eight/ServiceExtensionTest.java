@@ -31,7 +31,7 @@ class ServiceExtensionTest {
 
     @Test
     void shouldLoadStreamsExtension() {
-        final List<CreekExtensionProvider> found = CreekExtensionProviders.load();
+        final List<CreekExtensionProvider<?>> found = CreekExtensionProviders.load();
         assertThat(found, hasItem(is(instanceOf(KafkaStreamsExtensionProvider.class))));
     }
 }

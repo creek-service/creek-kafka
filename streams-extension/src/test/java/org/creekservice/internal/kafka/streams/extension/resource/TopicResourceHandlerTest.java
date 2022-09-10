@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.common.resource;
+package org.creekservice.internal.kafka.streams.extension.resource;
 
 import static org.mockito.Mockito.verify;
 
 import java.util.Collection;
 import java.util.List;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

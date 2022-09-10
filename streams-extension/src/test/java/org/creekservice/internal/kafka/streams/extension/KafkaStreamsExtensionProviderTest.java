@@ -36,13 +36,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.extension.CreekService;
-import org.creekservice.api.service.extension.model.ComponentModelContainer;
-import org.creekservice.api.service.extension.option.OptionCollection;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
@@ -50,6 +49,7 @@ import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegist
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,8 +64,10 @@ class KafkaStreamsExtensionProviderTest {
     public static final KafkaStreamsExtensionOptions DEFAULT_OPTIONS =
             KafkaStreamsExtensionOptions.builder().build();
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private CreekService api;
+
     @Mock private KafkaResourceValidator resourceValidator;
-    @Mock private Collection<? extends ComponentDescriptor> components;
     @Mock private KafkaStreamsExtensionOptions userOptions;
     @Mock private ClustersPropertiesFactory propertiesFactory;
     @Mock private KafkaStreamsExtensionProvider.BuilderFactory builderFactory;
@@ -77,15 +79,16 @@ class KafkaStreamsExtensionProviderTest {
     @Mock private KafkaStreamsExecutor streamsExecutor;
     @Mock private StreamsExtension streamsExtension;
     @Mock private ResourceRegistry resources;
-    @Mock private CreekService api;
-    @Mock private OptionCollection options;
-    @Mock private ComponentModelContainer model;
+
+    private Collection<? extends ComponentDescriptor> components;
+
     private final List<ComponentDescriptor> validatedComponents = new ArrayList<>();
 
     private KafkaStreamsExtensionProvider provider;
 
     @BeforeEach
     void setUp() {
+        components = List.of(mock(ServiceDescriptor.class), mock(AggregateDescriptor.class));
         validatedComponents.clear();
 
         provider =
@@ -103,18 +106,17 @@ class KafkaStreamsExtensionProviderTest {
         when(resourceFactory.create(any(), any())).thenReturn(resources);
         when(extensionFactory.create(any(), any(), any(), any())).thenReturn(streamsExtension);
 
-        when(api.options()).thenReturn(options);
-        when(api.model()).thenReturn(model);
+        when(api.options().get(any())).thenReturn(Optional.empty());
+        when(api.components().descriptors().stream()).thenAnswer(inv -> components.stream());
     }
 
     @Test
     void shouldValidateResources() {
         // Given:
         doAnswer(trackValidatedComponents()).when(resourceValidator).validate(any());
-        components = List.of(mock(ServiceDescriptor.class), mock(AggregateDescriptor.class));
 
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         assertThat(validatedComponents, is(components));
@@ -123,7 +125,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldValidateResourcesFirst() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         final InOrder inOrder =
@@ -148,8 +150,7 @@ class KafkaStreamsExtensionProviderTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        IllegalArgumentException.class, () -> provider.initialize(api, components));
+                assertThrows(IllegalArgumentException.class, () -> provider.initialize(api));
 
         // Then:
         assertThat(e, is(sameInstance(cause)));
@@ -158,16 +159,16 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldHandleTopicResources() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
-        verify(model).addResource(eq(KafkaTopicDescriptor.class), any());
+        verify(api.components().model()).addResource(eq(KafkaTopicDescriptor.class), any());
     }
 
     @Test
     void shouldBuildClustersPropertiesWithDefaultOptions() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(propertiesFactory).create(components, DEFAULT_OPTIONS);
@@ -176,10 +177,11 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildClustersPropertiesWithWithUserOptions() {
         // Given:
-        when(options.get(KafkaStreamsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
+        when(api.options().get(KafkaStreamsExtensionOptions.class))
+                .thenReturn(Optional.of(userOptions));
 
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(propertiesFactory).create(components, userOptions);
@@ -188,7 +190,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildStreamsBuilder() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(builderFactory).create(clustersProperties);
@@ -197,7 +199,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildResources() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(resourceFactory).create(components, clustersProperties);
@@ -206,7 +208,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildExecutorWithDefaultOptions() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(executorFactory).create(DEFAULT_OPTIONS);
@@ -215,10 +217,11 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildExecutorWithUserOptions() {
         // Given:
-        when(options.get(KafkaStreamsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
+        when(api.options().get(KafkaStreamsExtensionOptions.class))
+                .thenReturn(Optional.of(userOptions));
 
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(executorFactory).create(userOptions);
@@ -227,7 +230,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldBuildExtension() {
         // When:
-        provider.initialize(api, components);
+        provider.initialize(api);
 
         // Then:
         verify(extensionFactory)
@@ -237,7 +240,7 @@ class KafkaStreamsExtensionProviderTest {
     @Test
     void shouldReturnExtension() {
         // When:
-        final StreamsExtension result = provider.initialize(api, components);
+        final KafkaStreamsExtension result = provider.initialize(api);
 
         // Then:
         assertThat(result, is(sameInstance(streamsExtension)));

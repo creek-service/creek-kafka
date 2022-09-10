@@ -18,8 +18,9 @@
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
 
-module creek.kafka.streams.test.extension {
+module creek.kafka.test.extension {
     requires transitive creek.system.test.extension;
+    requires creek.kafka.streams.extension;
     requires creek.kafka.metadata;
     requires creek.base.type;
     requires creek.kafka.common;
