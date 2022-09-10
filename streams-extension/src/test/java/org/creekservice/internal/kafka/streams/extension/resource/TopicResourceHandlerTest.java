@@ -16,39 +16,9 @@
 
 package org.creekservice.internal.kafka.streams.extension.resource;
 
-import static org.mockito.Mockito.verify;
 
-import java.util.Collection;
-import java.util.List;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TopicResourceHandlerTest {
-
-    @Mock private KafkaResourceValidator validator;
-    @Mock private KafkaTopicDescriptor<?, ?> descriptor;
-    private TopicResourceHandler handler;
-
-    @BeforeEach
-    void setUp() {
-        handler = new TopicResourceHandler(validator);
-    }
-
-    @Test
-    void shouldValidateGroup() {
-        // Given:
-        final Collection<? extends KafkaTopicDescriptor<?, ?>> group = List.of(descriptor);
-
-        // When:
-        handler.validate(group);
-
-        // Then:
-        verify(validator).validateGroup(group);
-    }
-}
+class TopicResourceHandlerTest {}
