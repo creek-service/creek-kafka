@@ -19,6 +19,7 @@ package org.creekservice.internal.kafka.common.resource;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class TopicCollector {
      * @param components the components to extract topics from.
      * @return the map of topics by name.
      */
-    public static Map<String, KafkaTopicDescriptor<?, ?>> collectTopics(
+    public static Map<URI, KafkaTopicDescriptor<?, ?>> collectTopics(
             final Collection<? extends ComponentDescriptor> components) {
         return components.stream()
                 .flatMap(ComponentDescriptor::resources)
@@ -48,7 +49,7 @@ public final class TopicCollector {
                 .map(d -> (KafkaTopicDescriptor<?, ?>) d)
                 .collect(
                         groupingBy(
-                                KafkaTopicDescriptor::name,
+                                KafkaTopicDescriptor::id,
                                 collectingAndThen(
                                         Collectors.toList(),
                                         TopicCollector::throwOnDescriptorMismatch)));

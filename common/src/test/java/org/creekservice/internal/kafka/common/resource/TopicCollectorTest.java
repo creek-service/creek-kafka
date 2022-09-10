@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -75,11 +76,13 @@ class TopicCollectorTest {
         when(creatableTopicValue.type()).thenReturn(String.class);
         when(creatableTopicValue.format()).thenReturn(SOME_FORMAT);
 
+        when(topic.id()).thenCallRealMethod();
         when(topic.name()).thenReturn("topicDef");
         when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
         when(topic.key()).thenReturn(topicKey);
         when(topic.value()).thenReturn(topicValue);
 
+        when(creatableTopic.id()).thenCallRealMethod();
         when(creatableTopic.name()).thenReturn("creatableTopicDef");
         when(creatableTopic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
         when(creatableTopic.key()).thenReturn(creatableTopicKey);
@@ -106,13 +109,28 @@ class TopicCollectorTest {
     @Test
     void shouldCollectTopics() {
         // When:
-        final Map<String, KafkaTopicDescriptor<?, ?>> result =
+        final Map<URI, KafkaTopicDescriptor<?, ?>> result =
                 collectTopics(List.of(componentA, componentB));
 
         // Then:
-        assertThat(result, hasEntry(topic.name(), topic));
-        assertThat(result, hasEntry(creatableTopic.name(), creatableTopic));
-        assertThat(result.entrySet(), hasSize(2));
+        assertThat(result, is(Map.of(topic.id(), topic, creatableTopic.id(), creatableTopic)));
+    }
+
+    @Test
+    void shouldHandleTopicsWithSameNameOnDifferentClusters() {
+        // Given:
+        when(topic.name()).thenReturn("topicDef");
+        when(topic.cluster()).thenReturn(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME);
+
+        when(creatableTopic.name()).thenReturn("topicDef");
+        when(creatableTopic.cluster()).thenReturn("diffCluster");
+
+        // When:
+        final Map<URI, KafkaTopicDescriptor<?, ?>> result =
+                collectTopics(List.of(componentA, componentB));
+
+        // Then:
+        assertThat(result, is(Map.of(topic.id(), topic, creatableTopic.id(), creatableTopic)));
     }
 
     @Test
@@ -121,11 +139,11 @@ class TopicCollectorTest {
         when(componentB.resources()).thenReturn(Stream.of(topic));
 
         // When:
-        final Map<String, KafkaTopicDescriptor<?, ?>> result =
+        final Map<URI, KafkaTopicDescriptor<?, ?>> result =
                 collectTopics(List.of(componentA, componentB));
 
         // Then:
-        assertThat(result, hasEntry(topic.name(), topic));
+        assertThat(result, hasEntry(topic.id(), topic));
         assertThat(result.entrySet(), hasSize(1));
     }
 
@@ -136,10 +154,10 @@ class TopicCollectorTest {
         when(componentA.resources()).thenReturn(Stream.of(topic, creatableTopic, topic));
 
         // When:
-        final Map<String, KafkaTopicDescriptor<?, ?>> result = collectTopics(List.of(componentA));
+        final Map<URI, KafkaTopicDescriptor<?, ?>> result = collectTopics(List.of(componentA));
 
         // Then:
-        assertThat(result, hasEntry(topic.name(), creatableTopic));
+        assertThat(result, hasEntry(topic.id(), creatableTopic));
         assertThat(result.entrySet(), hasSize(1));
     }
 

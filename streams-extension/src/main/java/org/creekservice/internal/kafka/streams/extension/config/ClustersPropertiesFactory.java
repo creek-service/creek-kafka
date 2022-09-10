@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.extension.config;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +57,7 @@ public final class ClustersPropertiesFactory {
 
     @VisibleForTesting
     interface TopicCollector {
-        Map<String, KafkaTopicDescriptor<?, ?>> collectTopics(
+        Map<URI, KafkaTopicDescriptor<?, ?>> collectTopics(
                 Collection<? extends ComponentDescriptor> components);
     }
 }
