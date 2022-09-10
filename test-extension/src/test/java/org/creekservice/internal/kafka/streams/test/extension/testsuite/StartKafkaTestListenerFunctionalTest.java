@@ -92,12 +92,12 @@ class StartKafkaTestListenerFunctionalTest {
         final CreekSystemTest api =
                 mock(CreekSystemTest.class, withSettings().defaultAnswer(new ReturnsDeepStubs()));
 
-        when(api.test().env().currentSuite().services().add(any()))
+        when(api.tests().env().currentSuite().services().add(any()))
                 .thenAnswer(inv -> services.add(inv.getArgument(0)));
 
         testService = services.add(EXT_TESTER.serviceDefinitions().get("test-service"));
 
-        when(api.test().env().currentSuite().services().stream())
+        when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(testService));
 
         listener = new StartKafkaTestListener(api);

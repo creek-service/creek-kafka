@@ -65,7 +65,7 @@ class StartKafkaTestListenerTest {
     void setUp() {
         listener = new StartKafkaTestListener(api, topicCollector);
 
-        when(api.test().env().currentSuite().services().stream())
+        when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
 
         when(serviceInstance0.name()).thenReturn("inst0");
@@ -88,7 +88,7 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services(), never()).add(any());
+        verify(api.tests().env().currentSuite().services(), never()).add(any());
     }
 
     @Test
@@ -100,7 +100,7 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services(), never()).add(any());
+        verify(api.tests().env().currentSuite().services(), never()).add(any());
     }
 
     @Test
@@ -113,8 +113,8 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services()).add(new KafkaContainerDef("bob"));
-        verify(api.test().env().currentSuite().services()).add(new KafkaContainerDef("janet"));
+        verify(api.tests().env().currentSuite().services()).add(new KafkaContainerDef("bob"));
+        verify(api.tests().env().currentSuite().services()).add(new KafkaContainerDef("janet"));
     }
 
     @Test
@@ -126,7 +126,7 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services().add(any())).start();
+        verify(api.tests().env().currentSuite().services().add(any())).start();
     }
 
     @Test
@@ -140,7 +140,7 @@ class StartKafkaTestListenerTest {
         listener.afterSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services().add(any())).stop();
+        verify(api.tests().env().currentSuite().services().add(any())).stop();
     }
 
     @Test
@@ -150,9 +150,9 @@ class StartKafkaTestListenerTest {
         when(topicCollector.collectTopics(descriptor1))
                 .thenReturn(Stream.of(kafkaResource0, kafkaResource1));
 
-        when(api.test().env().currentSuite().services().add(new KafkaContainerDef("bob")).name())
+        when(api.tests().env().currentSuite().services().add(new KafkaContainerDef("bob")).name())
                 .thenReturn("kafka-bob-0");
-        when(api.test().env().currentSuite().services().add(new KafkaContainerDef("janet")).name())
+        when(api.tests().env().currentSuite().services().add(new KafkaContainerDef("janet")).name())
                 .thenReturn("kafka-janet-0");
 
         // When:

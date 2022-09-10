@@ -27,7 +27,7 @@ dependencies {
     api(project(":metadata"))
     api("org.creekservice:creek-system-test-extension:$creekSystemTestVersion")
 
-    implementation(project(":common"))
+    implementation(project(":streams-extension"))
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
 
     testImplementation(project(":test-service"))

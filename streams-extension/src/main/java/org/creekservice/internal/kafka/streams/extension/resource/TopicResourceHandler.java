@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.common.resource;
+package org.creekservice.internal.kafka.streams.extension.resource;
 
 import static java.util.Objects.requireNonNull;
 
@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
+import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 
 public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor<?, ?>> {
 

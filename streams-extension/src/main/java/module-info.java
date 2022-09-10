@@ -19,6 +19,8 @@ module creek.kafka.streams.extension {
     exports org.creekservice.api.kafka.streams.extension.exception;
     exports org.creekservice.api.kafka.streams.extension.observation;
     exports org.creekservice.api.kafka.streams.extension.util;
+    exports org.creekservice.internal.kafka.streams.extension to
+            creek.kafka.test.extension;
 
     provides CreekExtensionProvider with
             KafkaStreamsExtensionProvider;

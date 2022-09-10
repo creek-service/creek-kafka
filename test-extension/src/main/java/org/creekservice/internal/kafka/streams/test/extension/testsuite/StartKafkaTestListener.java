@@ -66,7 +66,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         final Map<String, List<ConfigurableServiceInstance>> clusterServices =
-                api.test().env().currentSuite().services().stream()
+                api.tests().env().currentSuite().services().stream()
                         .flatMap(this::requiredClusters)
                         .collect(
                                 groupingBy(
@@ -100,7 +100,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
             final String clusterName, final Collection<ConfigurableServiceInstance> clusterUsers) {
 
         final ServiceInstance kafka =
-                api.test().env().currentSuite().services().add(new KafkaContainerDef(clusterName));
+                api.tests().env().currentSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
         kafkaInstances.add(kafka);

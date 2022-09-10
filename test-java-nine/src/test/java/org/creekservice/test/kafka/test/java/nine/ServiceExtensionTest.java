@@ -30,7 +30,7 @@ class ServiceExtensionTest {
     @Test
     void shouldLoadStreamsExtension() {
         // When:
-        final List<CreekExtensionProvider> found = CreekExtensionProviders.load();
+        final List<CreekExtensionProvider<?>> found = CreekExtensionProviders.load();
 
         // Then:
         final List<String> classNames =

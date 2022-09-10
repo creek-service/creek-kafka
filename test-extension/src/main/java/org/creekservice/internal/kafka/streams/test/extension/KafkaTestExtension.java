@@ -17,11 +17,9 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.internal.kafka.common.resource.TopicResourceHandler;
+import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 
 /**
@@ -36,13 +34,9 @@ public final class KafkaTestExtension implements CreekTestExtension {
         return "creek-kafka";
     }
 
-    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
     public void initialize(final CreekSystemTest api) {
-        api.component()
-                .model()
-                .addResource(
-                        KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
-        api.test().env().listener().append(new StartKafkaTestListener(api));
+        api.extensions().initialize(new KafkaStreamsExtensionProvider());
+        api.tests().env().listeners().append(new StartKafkaTestListener(api));
     }
 }
