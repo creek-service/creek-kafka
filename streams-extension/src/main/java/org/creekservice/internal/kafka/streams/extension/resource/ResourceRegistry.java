@@ -36,7 +36,7 @@ public final class ResourceRegistry {
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
         final Topic<?, ?> found = topics.get(def.id());
         if (found == null) {
-            throw new UnknownTopicException(def.name());
+            throw new UnknownTopicException(def.id());
         }
 
         if (!KafkaTopicDescriptors.matches(found.descriptor(), def)) {
@@ -47,8 +47,8 @@ public final class ResourceRegistry {
     }
 
     private static final class UnknownTopicException extends IllegalArgumentException {
-        UnknownTopicException(final String name) {
-            super("Unknown topic. No component has a topic of the supplied name. topic=" + name);
+        UnknownTopicException(final URI id) {
+            super("Unknown topic. No topic has the supplied id. id=" + id);
         }
     }
 

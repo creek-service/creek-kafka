@@ -54,9 +54,9 @@ class ResourceRegistryTest {
         registry =
                 new ResourceRegistry(
                         Map.of(
-                                URI.create("topic://default/topic-A"),
+                                URI.create("kafka-topic://default/topic-A"),
                                 topicA,
-                                URI.create("topic://default/topic-B"),
+                                URI.create("kafka-topic://default/topic-B"),
                                 topicB));
 
         when(topicA.descriptor()).thenReturn(topicDefA);
@@ -68,6 +68,26 @@ class ResourceRegistryTest {
 
     @Test
     void shouldGetTopic() {
+        assertThat(registry.topic(topicDefA), is(topicA));
+        assertThat(registry.topic(topicDefB), is(topicB));
+    }
+
+    @Test
+    void shouldBeClusterAware() {
+        // Given:
+        when(topicDefB.name()).thenReturn("topic-A");
+        when(topicDefB.cluster()).thenReturn("different");
+
+        // When:
+        registry =
+                new ResourceRegistry(
+                        Map.of(
+                                URI.create("kafka-topic://default/topic-A"),
+                                topicA,
+                                URI.create("kafka-topic://different/topic-A"),
+                                topicB));
+
+        // Then:
         assertThat(registry.topic(topicDefA), is(topicA));
         assertThat(registry.topic(topicDefB), is(topicB));
     }
@@ -104,7 +124,7 @@ class ResourceRegistryTest {
     @Test
     void shouldThrowOnUnknownTopic() {
         // Given:
-        when(topicDefA.name()).thenReturn("unknown");
+        when(topicDefA.cluster()).thenReturn("unknown");
 
         // When:
         final Exception e =
@@ -113,7 +133,8 @@ class ResourceRegistryTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Unknown topic. No component has a topic of the supplied name. topic=unknown"));
+                is(
+                        "Unknown topic. No topic has the supplied id. id=kafka-topic://unknown/topic-A"));
     }
 
     private <K, V> void setUpTopicDef(
@@ -124,6 +145,8 @@ class ResourceRegistryTest {
         final PartDescriptor<K> key = part(keyType);
         final PartDescriptor<V> value = part(valueType);
 
+        when(def.id()).thenCallRealMethod();
+        when(def.cluster()).thenCallRealMethod();
         when(def.name()).thenReturn(name);
         when(def.key()).thenReturn(key);
         when(def.value()).thenReturn(value);
