@@ -19,8 +19,12 @@ package org.creekservice.internal.kafka.streams.extension.client;
 import static org.apache.kafka.common.KafkaFuture.completedFuture;
 import static org.creekservice.test.TopicConfigBuilder.withPartitions;
 import static org.creekservice.test.TopicDescriptors.outputTopic;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,8 +34,13 @@ import java.util.function.Function;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.common.KafkaFuture;
+import org.apache.kafka.common.errors.BrokerNotAvailableException;
+import org.apache.kafka.common.errors.TopicExistsException;
+import org.apache.kafka.common.internals.KafkaFutureImpl;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,11 +61,12 @@ class KafkaTopicClientTest {
     @Mock private Function<Map<String, Object>, Admin> adminFactory;
     @Mock private Admin admin;
     @Mock private CreateTopicsResult createTopicsResult;
+    private final TestStructuredLogger logger = TestStructuredLogger.create();
     private KafkaTopicClient client;
 
     @BeforeEach
     void setUp() {
-        client = new KafkaTopicClient(clusterProps, adminFactory);
+        client = new KafkaTopicClient(clusterProps, adminFactory, logger);
 
         when(adminFactory.apply(any())).thenReturn(admin);
         when(admin.createTopics(any())).thenReturn(createTopicsResult);
@@ -97,5 +107,91 @@ class KafkaTopicClientTest {
 
         // Then:
         verify(admin).close();
+    }
+
+    @Test
+    void shouldNotThrowOnExistingTopic() {
+        // Given:
+        givenTopicExists();
+
+        // When:
+        client.ensure(List.of(TOPIC_A));
+
+        // Then: did not throw.
+    }
+
+    @Test
+    void shouldThrowOnOtherErrors() {
+        // Given:
+        final BrokerNotAvailableException cause = new BrokerNotAvailableException("");
+        final KafkaFutureImpl<Void> f = new KafkaFutureImpl<>();
+        f.completeExceptionally(cause);
+        when(createTopicsResult.values()).thenReturn(Map.of(TOPIC_A.name(), f));
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
+
+        // Then:
+        assertThat(e.getMessage(), is("Failed to create topic. topic: t, cluster: c"));
+        assertThat(e.getCause(), is(cause));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldThrowOnInterrupt() throws Exception {
+        // Given:
+        final InterruptedException cause = new InterruptedException();
+        final KafkaFuture<Void> f = mock(KafkaFuture.class);
+        when(f.get()).thenThrow(cause);
+        when(createTopicsResult.values()).thenReturn(Map.of(TOPIC_A.name(), f));
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
+
+        // Then:
+        assertThat(e.getMessage(), is("Failed to create topic. topic: t, cluster: c"));
+        assertThat(e.getCause(), is(cause));
+    }
+
+    @Test
+    void shouldLogOnEnsure() {
+        // When:
+        client.ensure(List.of(TOPIC_A));
+
+        // Then:
+        assertThat(
+                logger.textEntries(),
+                hasItem("INFO: {message=Ensuring topics, topic-ids=[kafka-topic://c/t]}"));
+    }
+
+    @Test
+    void shouldLogOnCreate() {
+        // When:
+        client.ensure(List.of(TOPIC_A));
+
+        // Then:
+        assertThat(
+                logger.textEntries(),
+                hasItem("INFO: {cluster=c, message=Created topic, name=t, partitions=1}"));
+    }
+
+    @Test
+    void shouldLogOnPreExisting() {
+        // Given:
+        givenTopicExists();
+
+        // When:
+        client.ensure(List.of(TOPIC_A));
+
+        // Then:
+        assertThat(logger.textEntries(), hasItem("DEBUG: {message=Topic already exists, nane=t}"));
+    }
+
+    private void givenTopicExists() {
+        final KafkaFutureImpl<Void> f = new KafkaFutureImpl<>();
+        f.completeExceptionally(new TopicExistsException(""));
+        when(createTopicsResult.values()).thenReturn(Map.of(TOPIC_A.name(), f));
     }
 }

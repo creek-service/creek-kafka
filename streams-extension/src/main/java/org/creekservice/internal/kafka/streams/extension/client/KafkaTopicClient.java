@@ -43,22 +43,25 @@ import org.creekservice.api.observability.logging.structured.StructuredLoggerFac
 
 public final class KafkaTopicClient implements TopicClient {
 
-    private static final StructuredLogger LOGGER =
-            StructuredLoggerFactory.internalLogger(KafkaTopicClient.class);
-
+    private final StructuredLogger logger;
     private final ClustersProperties clusterProps;
     private final Function<Map<String, Object>, Admin> adminFactory;
 
     public KafkaTopicClient(final ClustersProperties clusterProps) {
-        this(clusterProps, Admin::create);
+        this(
+                clusterProps,
+                Admin::create,
+                StructuredLoggerFactory.internalLogger(KafkaTopicClient.class));
     }
 
     @VisibleForTesting
     KafkaTopicClient(
             final ClustersProperties clusterProps,
-            final Function<Map<String, Object>, Admin> adminFactory) {
+            final Function<Map<String, Object>, Admin> adminFactory,
+            final StructuredLogger logger) {
         this.clusterProps = requireNonNull(clusterProps, "clusterProps");
         this.adminFactory = requireNonNull(adminFactory, "adminFactory");
+        this.logger = requireNonNull(logger, "logger");
     }
 
     public void ensure(final List<? extends CreatableKafkaTopic<?, ?>> topics) {
@@ -69,7 +72,7 @@ public final class KafkaTopicClient implements TopicClient {
     }
 
     private void ensure(final String cluster, final List<CreatableKafkaTopic<?, ?>> topics) {
-        LOGGER.info(
+        logger.info(
                 "Ensuring topics",
                 log ->
                         log.with(
@@ -106,7 +109,7 @@ public final class KafkaTopicClient implements TopicClient {
                                         .filter(c -> c.source() == DYNAMIC_TOPIC_CONFIG)
                                         .collect(toList());
 
-                        LOGGER.info(
+                        logger.info(
                                 "Created topic",
                                 log -> {
                                     final LogEntryCustomizer configNs =
@@ -119,9 +122,9 @@ public final class KafkaTopicClient implements TopicClient {
                                 });
                     } catch (ExecutionException ex) {
                         if (!(ex.getCause() instanceof TopicExistsException)) {
-                            throw new CreateTopicException(topic, cluster, ex);
+                            throw new CreateTopicException(topic, cluster, ex.getCause());
                         }
-                        LOGGER.debug("Topic already exists", log -> log.with("nane", topic));
+                        logger.debug("Topic already exists", log -> log.with("nane", topic));
                     } catch (Exception ex) {
                         throw new CreateTopicException(topic, cluster, ex);
                     }
@@ -142,7 +145,7 @@ public final class KafkaTopicClient implements TopicClient {
         CreateTopicException(
                 final String topicName, final String clusterName, final Throwable cause) {
             super(
-                    "Failed to create topics. topic: " + topicName + ", cluster: " + clusterName,
+                    "Failed to create topic. topic: " + topicName + ", cluster: " + clusterName,
                     cause);
         }
     }

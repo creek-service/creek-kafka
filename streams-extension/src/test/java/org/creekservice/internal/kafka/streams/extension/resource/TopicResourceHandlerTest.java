@@ -19,8 +19,10 @@ package org.creekservice.internal.kafka.streams.extension.resource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.creekservice.api.kafka.metadata.KafkaTopicInput;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
@@ -41,6 +43,16 @@ class TopicResourceHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new TopicResourceHandler(topicClient);
+    }
+
+    @Test
+    void shouldImplementHashCodeAndEquals() {
+        new EqualsTester()
+                .addEqualityGroup(
+                        new TopicResourceHandler(topicClient),
+                        new TopicResourceHandler(topicClient))
+                .addEqualityGroup(new TopicResourceHandler(mock(TopicClient.class)))
+                .testEquals();
     }
 
     @Test
