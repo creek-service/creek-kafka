@@ -17,8 +17,11 @@
 package org.creekservice.api.kafka.streams.test;
 
 
+import java.util.List;
 import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.test.util.Temp;
 
 /**
@@ -52,11 +55,17 @@ public final class TestKafkaStreamsExtensionOptions {
         return KafkaStreamsExtensionOptions.builder()
                 .withKafkaProperty(
                         StreamsConfig.STATE_DIR_CONFIG,
-                        Temp.tempDir("ks-state").toAbsolutePath().toString());
+                        Temp.tempDir("ks-state").toAbsolutePath().toString())
+                .withTopicClient(new MockTopicClient());
     }
 
     /** @return options with base set of test config. */
     public static KafkaStreamsExtensionOptions defaults() {
         return builder().build();
+    }
+
+    private static class MockTopicClient implements TopicClient {
+        @Override
+        public void ensure(final List<? extends CreatableKafkaTopic<?, ?>> topics) {}
     }
 }

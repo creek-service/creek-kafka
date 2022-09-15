@@ -23,6 +23,7 @@ val creekBaseVersion : String by extra
 val creekServiceVersion : String by extra
 val creekObsVersion : String by extra
 val spotBugsVersion : String by extra
+val testContainersVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
@@ -38,4 +39,9 @@ dependencies {
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekObsVersion")
+    testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
+    testImplementation("org.testcontainers:kafka:$testContainersVersion")
 }
+
+// Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
+modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")

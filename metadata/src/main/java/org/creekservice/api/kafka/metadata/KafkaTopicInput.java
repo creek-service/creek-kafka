@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.metadata;
 
 
 import org.creekservice.api.platform.metadata.ComponentInput;
+import org.creekservice.api.platform.metadata.UnownedResource;
 
 /**
  * An input topic that is not owned.
@@ -32,4 +33,5 @@ import org.creekservice.api.platform.metadata.ComponentInput;
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopicInput<K, V> extends ComponentInput, KafkaTopicDescriptor<K, V> {}
+public interface KafkaTopicInput<K, V>
+        extends ComponentInput, UnownedResource, KafkaTopicDescriptor<K, V> {}

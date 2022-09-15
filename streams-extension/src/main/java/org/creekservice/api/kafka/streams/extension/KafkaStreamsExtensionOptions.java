@@ -28,6 +28,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
+import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -37,6 +38,7 @@ import org.creekservice.internal.kafka.streams.extension.observation.DefaultLife
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultStateRestoreObserver;
 
 /** Options for the Kafka streams extension. */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions {
 
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
@@ -79,6 +81,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     private final LifecycleObserver lifecycleObserver;
     private final StateRestoreObserver restoreObserver;
     private final KafkaMetricsPublisherOptions metricsPublishing;
+    private final Optional<TopicClient> topicClient;
 
     public static Builder builder() {
         return new Builder();
@@ -90,13 +93,15 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
             final Duration streamsCloseTimeout,
             final LifecycleObserver lifecycleObserver,
             final StateRestoreObserver restoreObserver,
-            final KafkaMetricsPublisherOptions metricsPublishing) {
+            final KafkaMetricsPublisherOptions metricsPublishing,
+            final Optional<TopicClient> topicClient) {
         this.properties = requireNonNull(properties, "properties");
         this.overridesProvider = requireNonNull(overridesProvider, "overridesProvider");
         this.streamsCloseTimeout = requireNonNull(streamsCloseTimeout, "streamsCloseTimeout");
         this.lifecycleObserver = requireNonNull(lifecycleObserver, "lifecycleObserver");
         this.restoreObserver = requireNonNull(restoreObserver, "restoreObserver");
         this.metricsPublishing = requireNonNull(metricsPublishing, "metricsPublishing");
+        this.topicClient = requireNonNull(topicClient, "topicClient");
     }
 
     /** @return the Kafka client properties */
@@ -127,6 +132,11 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     /** @return metrics publishing options */
     public KafkaMetricsPublisherOptions metricsPublishing() {
         return metricsPublishing;
+    }
+
+    /** @return explicit topic client to use */
+    public Optional<TopicClient> topicClient() {
+        return topicClient;
     }
 
     @Override
@@ -186,6 +196,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         private Optional<StateRestoreObserver> restoreObserver = Optional.empty();
         private KafkaMetricsPublisherOptions metricsPublishing =
                 KafkaMetricsPublisherOptions.builder().build();
+        private Optional<TopicClient> topicClient = Optional.empty();
 
         private Builder() {
             CLIENT_DEFAULTS.forEach(properties::putCommon);
@@ -294,6 +305,19 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         }
 
         /**
+         * Set an explicit topic client to use.
+         *
+         * <p>Intended for internal use only, to allow a mock client to be installed during testing.
+         *
+         * @param topicClient the client to use.
+         * @return self.
+         */
+        public Builder withTopicClient(final TopicClient topicClient) {
+            this.topicClient = Optional.of(topicClient);
+            return this;
+        }
+
+        /**
          * Build the immutable options.
          *
          * @return the built options.
@@ -306,7 +330,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
                     streamsCloseTimeout,
                     lifecycleObserver.orElseGet(DefaultLifecycleObserver::new),
                     restoreObserver.orElseGet(DefaultStateRestoreObserver::new),
-                    metricsPublishing);
+                    metricsPublishing,
+                    topicClient);
         }
     }
 }

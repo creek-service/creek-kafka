@@ -22,10 +22,10 @@ import org.creekservice.api.platform.metadata.ComponentInternal;
 /**
  * An internal Kafka topic, e.g. a repartition or changelog topic
  *
- * <p>Internal topics are created by the owning service, but not by service initialization code. The
- * service, or more commonly Kafka Streams, will explicitly create them. For such topics, this is
- * the right type to implement. For internal topics that should be created by service initialization
- * code, use {@link CreatableKafkaTopicInternal}
+ * <p>Internal topics are unmanaged. They should be created by the owning service, but not by the
+ * Creek service initialization code. The service, or more commonly Kafka Streams, will explicitly
+ * create them. For such topics, this is the right type to implement. For internal topics that
+ * should be created by service initialization code, use {@link CreatableKafkaTopicInternal}
  *
  * <p>Schemas for internal topics <i>are</i> automatically registered by the service initialization
  * code.

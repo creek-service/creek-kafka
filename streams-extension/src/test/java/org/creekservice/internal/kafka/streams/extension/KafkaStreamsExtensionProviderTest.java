@@ -21,11 +21,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,14 +38,17 @@ import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
+import org.creekservice.internal.kafka.streams.extension.resource.TopicResourceHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,11 +73,13 @@ class KafkaStreamsExtensionProviderTest {
     @Mock private KafkaResourceValidator resourceValidator;
     @Mock private KafkaStreamsExtensionOptions userOptions;
     @Mock private ClustersPropertiesFactory propertiesFactory;
+    @Mock private KafkaStreamsExtensionProvider.TopicClientFactory topicClientFactory;
     @Mock private KafkaStreamsExtensionProvider.BuilderFactory builderFactory;
     @Mock private KafkaStreamsExtensionProvider.ExecutorFactory executorFactory;
     @Mock private KafkaStreamsExtensionProvider.ExtensionFactory extensionFactory;
     @Mock private ClustersProperties clustersProperties;
     @Mock private ResourceRegistryFactory resourceFactory;
+    @Mock private TopicClient topicClient;
     @Mock private KafkaStreamsBuilder streamsBuilder;
     @Mock private KafkaStreamsExecutor streamsExecutor;
     @Mock private StreamsExtension streamsExtension;
@@ -95,12 +100,14 @@ class KafkaStreamsExtensionProviderTest {
                 new KafkaStreamsExtensionProvider(
                         resourceValidator,
                         propertiesFactory,
+                        topicClientFactory,
                         builderFactory,
                         executorFactory,
                         extensionFactory,
                         resourceFactory);
 
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
+        when(topicClientFactory.create(any())).thenReturn(topicClient);
         when(builderFactory.create(any())).thenReturn(streamsBuilder);
         when(executorFactory.create(any())).thenReturn(streamsExecutor);
         when(resourceFactory.create(any(), any())).thenReturn(resources);
@@ -132,12 +139,16 @@ class KafkaStreamsExtensionProviderTest {
                 inOrder(
                         resourceValidator,
                         propertiesFactory,
+                        topicClientFactory,
                         builderFactory,
                         executorFactory,
                         resourceFactory);
+
         inOrder.verify(resourceValidator).validate(any());
+
         inOrder.verify(propertiesFactory).create(any(), any());
         inOrder.verify(resourceFactory).create(any(), any());
+        inOrder.verify(topicClientFactory).create(any());
         inOrder.verify(builderFactory).create(any());
         inOrder.verify(executorFactory).create(any());
     }
@@ -156,13 +167,17 @@ class KafkaStreamsExtensionProviderTest {
         assertThat(e, is(sameInstance(cause)));
     }
 
+    @SuppressWarnings({"RedundantCast", "unchecked", "rawtypes"})
     @Test
     void shouldHandleTopicResources() {
         // When:
         provider.initialize(api);
 
         // Then:
-        verify(api.components().model()).addResource(eq(KafkaTopicDescriptor.class), any());
+        verify(api.components().model())
+                .addResource(
+                        KafkaTopicDescriptor.class,
+                        (ResourceHandler) new TopicResourceHandler(topicClient));
     }
 
     @Test
@@ -185,6 +200,36 @@ class KafkaStreamsExtensionProviderTest {
 
         // Then:
         verify(propertiesFactory).create(components, userOptions);
+    }
+
+    @Test
+    void shouldBuildTopicClient() {
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(topicClientFactory).create(clustersProperties);
+    }
+
+    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
+    @Test
+    void shouldUseSuppliedTopicClient() {
+        // Given:
+        final TopicClient userClient = mock(TopicClient.class);
+        when(userOptions.topicClient()).thenReturn(Optional.of(userClient));
+
+        when(api.options().get(KafkaStreamsExtensionOptions.class))
+                .thenReturn(Optional.of(userOptions));
+
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(topicClientFactory, never()).create(any());
+        verify(api.components().model())
+                .addResource(
+                        KafkaTopicDescriptor.class,
+                        (ResourceHandler) new TopicResourceHandler(userClient));
     }
 
     @Test

@@ -16,6 +16,7 @@ module creek.kafka.streams.extension {
     requires com.github.spotbugs.annotations;
 
     exports org.creekservice.api.kafka.streams.extension;
+    exports org.creekservice.api.kafka.streams.extension.client;
     exports org.creekservice.api.kafka.streams.extension.exception;
     exports org.creekservice.api.kafka.streams.extension.observation;
     exports org.creekservice.api.kafka.streams.extension.util;

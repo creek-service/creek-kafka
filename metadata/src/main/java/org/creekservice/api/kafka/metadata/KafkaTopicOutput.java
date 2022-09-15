@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.metadata;
 
 
 import org.creekservice.api.platform.metadata.ComponentOutput;
+import org.creekservice.api.platform.metadata.UnownedResource;
 
 /**
  * An output topic that is not owned.
@@ -32,4 +33,5 @@ import org.creekservice.api.platform.metadata.ComponentOutput;
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopicOutput<K, V> extends ComponentOutput, KafkaTopicDescriptor<K, V> {}
+public interface KafkaTopicOutput<K, V>
+        extends ComponentOutput, UnownedResource, KafkaTopicDescriptor<K, V> {}
