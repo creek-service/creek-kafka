@@ -22,14 +22,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
+import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.client.KafkaTopicClient;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
@@ -78,7 +77,6 @@ public final class KafkaStreamsExtensionProvider
         this.resourcesFactory = requireNonNull(resourcesFactory, "resourcesFactory");
     }
 
-    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
     public KafkaStreamsExtension initialize(final CreekService api) {
         final List<ComponentDescriptor> components =
@@ -101,9 +99,7 @@ public final class KafkaStreamsExtensionProvider
 
         api.components()
                 .model()
-                .addResource(
-                        KafkaTopicDescriptor.class,
-                        (ResourceHandler) new TopicResourceHandler(topicClient));
+                .addResource(new HandlerTypeRef<>() {}, new TopicResourceHandler(topicClient));
 
         return extensionFactory.create(properties, resources, builder, executor);
     }
