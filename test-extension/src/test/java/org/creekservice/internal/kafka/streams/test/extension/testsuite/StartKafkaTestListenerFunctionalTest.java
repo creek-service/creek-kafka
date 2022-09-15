@@ -79,7 +79,11 @@ import org.testcontainers.DockerClientFactory;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StartKafkaTestListenerFunctionalTest {
 
-    private static final CreekSystemTestExtensionTester EXT_TESTER = extensionTester();
+    private static final CreekSystemTestExtensionTester EXT_TESTER = extensionTester()
+            // Uncomment the line below to debug the test service using attach me plugin:
+            // .withDebugServices("test-service")
+            ;
+
     private static StartKafkaTestListener listener;
     private static ConfigurableServiceInstance testService;
 
@@ -142,9 +146,6 @@ class StartKafkaTestListenerFunctionalTest {
     @Test
     void shouldBeAbleToProduceAndConsumeFromServiceNetwork() {
         // Given:
-        givenTopic(InputTopic.name());
-        givenTopic(OutputTopic.name());
-
         try (KafkaConsumer<Long, String> consumer = kafkaConsumer(OutputTopic)) {
 
             testService.start();

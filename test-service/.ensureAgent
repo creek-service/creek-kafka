@@ -1,0 +1,4 @@
+This file is intentional. 
+
+It's used to ensure the 'agent' directory exists even if the attachMe agent is not installed on the host machine.
+The 'agent' directory is required by the Dockerfile.

@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.metadata;
 
 
 import org.creekservice.api.platform.metadata.ComponentInput;
+import org.creekservice.api.platform.metadata.OwnedResource;
 
 /**
  * An input topic that is owned by the component.
@@ -30,7 +31,8 @@ import org.creekservice.api.platform.metadata.ComponentInput;
  * @param <K> key type
  * @param <V> value type
  */
-public interface OwnedKafkaTopicInput<K, V> extends ComponentInput, CreatableKafkaTopic<K, V> {
+public interface OwnedKafkaTopicInput<K, V>
+        extends ComponentInput, OwnedResource, CreatableKafkaTopic<K, V> {
 
     /**
      * Create an output topic for this input topic.

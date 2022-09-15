@@ -16,9 +16,51 @@
 
 package org.creekservice.internal.kafka.streams.extension.resource;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import org.creekservice.api.kafka.metadata.KafkaTopicInput;
+import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
+import org.creekservice.api.kafka.streams.extension.client.TopicClient;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TopicResourceHandlerTest {}
+class TopicResourceHandlerTest {
+    @Mock private TopicClient topicClient;
+    @Mock private KafkaTopicInput<?, ?> notCreatable;
+    @Mock private OwnedKafkaTopicOutput<?, ?> creatable;
+    private TopicResourceHandler handler;
+
+    @BeforeEach
+    void setUp() {
+        handler = new TopicResourceHandler(topicClient);
+    }
+
+    @Test
+    void shouldThrowIfNotCreatable() {
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> handler.ensure(List.of(notCreatable)));
+
+        // Then:
+        assertThat(e.getMessage(), startsWith("Topic descriptor is not creatable"));
+    }
+
+    @Test
+    void shouldEnsureCreatableTopicsExist() {
+        // When:
+        handler.ensure(List.of(creatable));
+
+        // Then:
+        verify(topicClient).ensure(List.of(creatable));
+    }
+}

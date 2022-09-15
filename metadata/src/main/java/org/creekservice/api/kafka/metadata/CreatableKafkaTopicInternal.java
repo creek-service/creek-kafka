@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.metadata;
 
 
 import org.creekservice.api.platform.metadata.ComponentInternal;
+import org.creekservice.api.platform.metadata.OwnedResource;
 
 /**
  * A creatable internal Kafka topic.
@@ -32,4 +33,4 @@ import org.creekservice.api.platform.metadata.ComponentInternal;
  * @param <V> value type
  */
 public interface CreatableKafkaTopicInternal<K, V>
-        extends ComponentInternal, CreatableKafkaTopic<K, V> {}
+        extends ComponentInternal, OwnedResource, CreatableKafkaTopic<K, V> {}

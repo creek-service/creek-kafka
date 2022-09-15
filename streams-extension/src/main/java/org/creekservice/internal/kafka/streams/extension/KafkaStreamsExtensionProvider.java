@@ -25,11 +25,13 @@ import org.creekservice.api.kafka.common.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
+import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
+import org.creekservice.internal.kafka.streams.extension.client.KafkaTopicClient;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistryFactory;
@@ -43,6 +45,7 @@ public final class KafkaStreamsExtensionProvider
     private final ExecutorFactory executorFactory;
     private final ExtensionFactory extensionFactory;
     private final ResourceRegistryFactory resourcesFactory;
+    private final TopicClientFactory topicClientFactory;
     private final ClustersPropertiesFactory propertiesFactory;
     private final KafkaResourceValidator resourceValidator;
 
@@ -50,6 +53,7 @@ public final class KafkaStreamsExtensionProvider
         this(
                 new KafkaResourceValidator(),
                 new ClustersPropertiesFactory(),
+                KafkaTopicClient::new,
                 KafkaStreamsBuilder::new,
                 KafkaStreamsExecutor::new,
                 StreamsExtension::new,
@@ -60,12 +64,14 @@ public final class KafkaStreamsExtensionProvider
     KafkaStreamsExtensionProvider(
             final KafkaResourceValidator resourceValidator,
             final ClustersPropertiesFactory propertiesFactory,
+            final TopicClientFactory topicClientFactory,
             final BuilderFactory builderFactory,
             final ExecutorFactory executorFactory,
             final ExtensionFactory extensionFactory,
             final ResourceRegistryFactory resourcesFactory) {
         this.resourceValidator = requireNonNull(resourceValidator, "kafkaResourceValidator");
         this.propertiesFactory = requireNonNull(propertiesFactory, "configFactory");
+        this.topicClientFactory = requireNonNull(topicClientFactory, "topicClientFactory");
         this.builderFactory = requireNonNull(builderFactory, "builderFactory");
         this.executorFactory = requireNonNull(executorFactory, "executorFactory");
         this.extensionFactory = requireNonNull(extensionFactory, "extensionFactory");
@@ -75,24 +81,29 @@ public final class KafkaStreamsExtensionProvider
     @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
     @Override
     public KafkaStreamsExtension initialize(final CreekService api) {
-        api.components()
-                .model()
-                .addResource(
-                        KafkaTopicDescriptor.class, (ResourceHandler) new TopicResourceHandler());
+        final List<ComponentDescriptor> components =
+                api.components().descriptors().stream().collect(Collectors.toList());
+
+        resourceValidator.validate(components.stream());
 
         final KafkaStreamsExtensionOptions options =
                 api.options()
                         .get(KafkaStreamsExtensionOptions.class)
                         .orElseGet(() -> KafkaStreamsExtensionOptions.builder().build());
 
-        final List<ComponentDescriptor> components =
-                api.components().descriptors().stream().collect(Collectors.toList());
-
-        resourceValidator.validate(components.stream());
         final ClustersProperties properties = propertiesFactory.create(components, options);
         final ResourceRegistry resources = resourcesFactory.create(components, properties);
+        final TopicClient topicClient =
+                options.topicClient().orElseGet(() -> topicClientFactory.create(properties));
+
         final KafkaStreamsBuilder builder = builderFactory.create(properties);
         final KafkaStreamsExecutor executor = executorFactory.create(options);
+
+        api.components()
+                .model()
+                .addResource(
+                        KafkaTopicDescriptor.class,
+                        (ResourceHandler) new TopicResourceHandler(topicClient));
 
         return extensionFactory.create(properties, resources, builder, executor);
     }
@@ -114,5 +125,11 @@ public final class KafkaStreamsExtensionProvider
                 ResourceRegistry resources,
                 KafkaStreamsBuilder builder,
                 KafkaStreamsExecutor executor);
+    }
+
+    @VisibleForTesting
+    interface TopicClientFactory {
+
+        TopicClient create(ClustersProperties properties);
     }
 }
