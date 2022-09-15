@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -35,15 +36,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.common.config.ClustersProperties;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.kafka.streams.extension.client.TopicClient;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.extension.CreekService;
+import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.common.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.streams.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
@@ -167,7 +167,7 @@ class KafkaStreamsExtensionProviderTest {
         assertThat(e, is(sameInstance(cause)));
     }
 
-    @SuppressWarnings({"RedundantCast", "unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     @Test
     void shouldHandleTopicResources() {
         // When:
@@ -175,9 +175,7 @@ class KafkaStreamsExtensionProviderTest {
 
         // Then:
         verify(api.components().model())
-                .addResource(
-                        KafkaTopicDescriptor.class,
-                        (ResourceHandler) new TopicResourceHandler(topicClient));
+                .addResource(any(HandlerTypeRef.class), eq(new TopicResourceHandler(topicClient)));
     }
 
     @Test
@@ -211,7 +209,7 @@ class KafkaStreamsExtensionProviderTest {
         verify(topicClientFactory).create(clustersProperties);
     }
 
-    @SuppressWarnings({"unchecked", "RedundantCast", "rawtypes"})
+    @SuppressWarnings("unchecked")
     @Test
     void shouldUseSuppliedTopicClient() {
         // Given:
@@ -227,9 +225,7 @@ class KafkaStreamsExtensionProviderTest {
         // Then:
         verify(topicClientFactory, never()).create(any());
         verify(api.components().model())
-                .addResource(
-                        KafkaTopicDescriptor.class,
-                        (ResourceHandler) new TopicResourceHandler(userClient));
+                .addResource(any(HandlerTypeRef.class), eq(new TopicResourceHandler(userClient)));
     }
 
     @Test
