@@ -28,6 +28,8 @@ import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +48,8 @@ class StreamsExtensionTest {
     @Mock private Properties properties;
     @Mock private Topology topology;
     @Mock private KafkaStreams app;
+    @Mock private KafkaTopicDescriptor<Long, String> topicDef;
+    @Mock private KafkaTopic<Long, String> topic;
     private StreamsExtension extension;
 
     @BeforeEach
@@ -70,6 +74,18 @@ class StreamsExtensionTest {
         // Then:
         assertThat(result, is(properties));
         verify(clientExtension).properties("cluster-bob");
+    }
+
+    @Test
+    void shouldGetTopicsFromRegistry() {
+        // Given:
+        when(clientExtension.topic(topicDef)).thenReturn(topic);
+
+        // When:
+        final KafkaTopic<Long, String> result = extension.topic(topicDef);
+
+        // Then:
+        assertThat(result, is(topic));
     }
 
     @Test

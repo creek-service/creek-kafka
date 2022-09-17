@@ -19,8 +19,10 @@ package org.creekservice.api.kafka.streams.extension;
 import static org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions.DEFAULT_STREAMS_CLOSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +30,8 @@ import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
 import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -131,7 +135,28 @@ class KafkaStreamsExtensionOptionsTest {
     }
 
     @Test
-    void shouldSetKafkaStreamsProperty() {
+    void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
+        // When:
+        final KafkaStreamsExtensionOptions options = builder.build();
+
+        // Then:
+        assertThat(options.propertyOverrides(), is(instanceOf(SystemEnvPropertyOverrides.class)));
+    }
+
+    @Test
+    void shouldLoadKafkaPropertyOverridesFromAlternateProvider() {
+        // Given:
+        final KafkaPropertyOverrides overridesProvider = mock(KafkaPropertyOverrides.class);
+
+        // When:
+        builder.withKafkaPropertiesOverrides(overridesProvider);
+
+        // Then:
+        assertThat(builder.build().propertyOverrides(), is(sameInstance(overridesProvider)));
+    }
+
+    @Test
+    void shouldSetKafkaProperty() {
         // When:
         builder.withKafkaProperty("name", "value");
 
