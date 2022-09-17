@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2022 Creek Contributors (https://github.com/creek-service)
  *
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
