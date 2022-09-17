@@ -35,7 +35,7 @@ import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Produced;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.streams.test.util.TestServiceDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
@@ -63,7 +63,7 @@ class TestTopicsTest {
         testDriver =
                 new TopologyTestDriver(
                         topology(),
-                        ctx.extension(KafkaStreamsExtension.class)
+                        ctx.extension(KafkaClientsExtension.class)
                                 .properties(DEFAULT_CLUSTER_NAME));
     }
 
@@ -114,6 +114,6 @@ class TestTopicsTest {
                 .to(OutputTopic.name(), Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build(
-                ctx.extension(KafkaStreamsExtension.class).properties(DEFAULT_CLUSTER_NAME));
+                ctx.extension(KafkaClientsExtension.class).properties(DEFAULT_CLUSTER_NAME));
     }
 }

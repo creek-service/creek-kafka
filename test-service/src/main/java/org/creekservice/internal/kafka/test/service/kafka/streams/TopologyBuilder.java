@@ -29,16 +29,16 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.processor.ProcessorContext;
-import org.creekservice.api.kafka.common.resource.KafkaTopic;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.streams.extension.util.Name;
 
 public final class TopologyBuilder {
 
-    private final KafkaStreamsExtension ext;
+    private final KafkaClientsExtension ext;
     private final Name name = Name.root();
 
-    public TopologyBuilder(final KafkaStreamsExtension ext) {
+    public TopologyBuilder(final KafkaClientsExtension ext) {
         this.ext = requireNonNull(ext, "ext");
     }
 

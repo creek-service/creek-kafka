@@ -25,8 +25,8 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ class KafkaTestExtensionTest {
         ext.initialize(api);
 
         // Then:
-        verify(api.extensions()).initialize(isA(KafkaStreamsExtensionProvider.class));
+        verify(api.extensions()).ensureExtension(KafkaClientsExtensionProvider.class);
     }
 
     @Test

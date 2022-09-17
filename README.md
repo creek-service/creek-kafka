@@ -12,10 +12,10 @@ aptly named [Example Kafka Streams Aggregate][1].
 
 ## Modules defined in this repo:
 
-* **[common](common)**: common code shared between extension implementations
 * **[metadata](metadata)**: defines types to allow your services to indicate they consume and produce to Kafka.
 * **[serde](serde)**: defines the base types used to define Kafka Serde (serializers and deserializers), 
                       and a `kafka` serialization format which uses the standard Kafka client serde.
+* **[client-extension](client-extension)**: defines a Creek extension to help with writing Kafka client based microservices.
 * **[streams-extension](streams-extension)**: defines a Creek extension to help with writing Kafka Streams based microservices.
 * **[streams-test](streams-test)**: Helpers for writing tests for Kafka streams based microservices.
 * **[test-extension](test-extension)**: Creek system-test extension to allow system testing of Kafka based microservices.

@@ -17,10 +17,13 @@
 package org.creekservice.test.kafka.test.java.nine;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProviders;
 import org.junit.jupiter.api.Test;
@@ -29,18 +32,11 @@ class ServiceExtensionTest {
 
     @Test
     void shouldLoadStreamsExtension() {
-        // When:
         final List<CreekExtensionProvider<?>> found = CreekExtensionProviders.load();
-
-        // Then:
-        final List<String> classNames =
-                found.stream()
-                        .map(Object::getClass)
-                        .map(Class::getName)
-                        .collect(Collectors.toUnmodifiableList());
         assertThat(
-                classNames,
-                hasItem(
-                        "org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider"));
+                found,
+                containsInAnyOrder(
+                        is(instanceOf(KafkaClientsExtensionProvider.class)),
+                        is(instanceOf(KafkaStreamsExtensionProvider.class))));
     }
 }

@@ -22,96 +22,79 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.common.config.ClustersProperties;
-import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
-import org.creekservice.api.kafka.streams.extension.client.TopicClient;
+import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
+import org.creekservice.api.kafka.extension.client.TopicClient;
+import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
-import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultLifecycleObserver;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultStateRestoreObserver;
 
-/** Options for the Kafka streams extension. */
+/** Options for the Kafka client extension. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions {
+public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptions {
 
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
 
-    /** More sensible Kafka client defaults: */
-    private static final Map<String, ?> CLIENT_DEFAULTS =
-            Map.of(
-                    // If not offsets exist (e.g. on first run of an application), then default to
-                    // reading data from the start.
-                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
-                    // More resilient default for replication:
-                    ProducerConfig.ACKS_CONFIG, "all",
-                    // Turn on compression by default as it's almost always quicker as it reduces
-                    // payload size and the network
-                    // is almost always the bottleneck:
-                    ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
-
-    /** More sensible Kafka Streams defaults: */
+    /** Sensible Kafka Streams defaults: */
     private static final Map<String, ?> STREAMS_DEFAULTS =
             Map.of(
-                    // Kafka default is only 1. This isn't very resilient, so up to a more sensible
-                    // 3:
+                    // Kafka default is only 1. This isn't very resilient: up to a more sensible 3:
                     StreamsConfig.REPLICATION_FACTOR_CONFIG,
                     3,
                     // Default to exactly once semantics:
                     StreamsConfig.PROCESSING_GUARANTEE_CONFIG,
                     StreamsConfig.EXACTLY_ONCE_BETA,
                     // Reduce default commit interval from 30s to 1s:
-                    // Reducing eos publishing delays and reducing the number of messages replayed
-                    // on failure.
+                    // Reducing eos publishing delays and the number of messages replayed on
+                    // failure.
                     StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,
                     1000,
                     // Configure an exception handler to log structured messages:
                     StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
                     StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class);
 
-    private final ClustersProperties.Builder properties;
-    private final KafkaPropertyOverrides overridesProvider;
+    private final KafkaClientsExtensionOptions clientOptions;
     private final Duration streamsCloseTimeout;
     private final LifecycleObserver lifecycleObserver;
     private final StateRestoreObserver restoreObserver;
     private final KafkaMetricsPublisherOptions metricsPublishing;
-    private final Optional<TopicClient> topicClient;
 
     public static Builder builder() {
         return new Builder();
     }
 
     private KafkaStreamsExtensionOptions(
-            final ClustersProperties.Builder properties,
-            final KafkaPropertyOverrides overridesProvider,
+            final KafkaClientsExtensionOptions clientOptions,
             final Duration streamsCloseTimeout,
             final LifecycleObserver lifecycleObserver,
             final StateRestoreObserver restoreObserver,
-            final KafkaMetricsPublisherOptions metricsPublishing,
-            final Optional<TopicClient> topicClient) {
-        this.properties = requireNonNull(properties, "properties");
-        this.overridesProvider = requireNonNull(overridesProvider, "overridesProvider");
+            final KafkaMetricsPublisherOptions metricsPublishing) {
+        this.clientOptions = requireNonNull(clientOptions, "clientOptions");
         this.streamsCloseTimeout = requireNonNull(streamsCloseTimeout, "streamsCloseTimeout");
         this.lifecycleObserver = requireNonNull(lifecycleObserver, "lifecycleObserver");
         this.restoreObserver = requireNonNull(restoreObserver, "restoreObserver");
         this.metricsPublishing = requireNonNull(metricsPublishing, "metricsPublishing");
-        this.topicClient = requireNonNull(topicClient, "topicClient");
     }
 
-    /** @return the Kafka client properties */
+    @Override
     public ClustersProperties.Builder propertiesBuilder() {
-        return properties;
+        return clientOptions.propertiesBuilder();
     }
 
-    /** @return the provider of Kafka client property overrides. */
+    @Override
     public KafkaPropertyOverrides propertyOverrides() {
-        return overridesProvider;
+        return clientOptions.propertyOverrides();
+    }
+
+    @Override
+    public Optional<TopicClient> topicClient() {
+        return clientOptions.topicClient();
     }
 
     /** @return the timeout used when closing the stream app. */
@@ -134,11 +117,6 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         return metricsPublishing;
     }
 
-    /** @return explicit topic client to use */
-    public Optional<TopicClient> topicClient() {
-        return topicClient;
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -148,8 +126,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
             return false;
         }
         final KafkaStreamsExtensionOptions that = (KafkaStreamsExtensionOptions) o;
-        return Objects.equals(properties, that.properties)
-                && Objects.equals(overridesProvider, that.overridesProvider)
+        return Objects.equals(clientOptions, that.clientOptions)
                 && Objects.equals(streamsCloseTimeout, that.streamsCloseTimeout)
                 && Objects.equals(lifecycleObserver, that.lifecycleObserver)
                 && Objects.equals(restoreObserver, that.restoreObserver)
@@ -159,8 +136,7 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     @Override
     public int hashCode() {
         return Objects.hash(
-                properties,
-                overridesProvider,
+                clientOptions,
                 streamsCloseTimeout,
                 lifecycleObserver,
                 restoreObserver,
@@ -170,10 +146,8 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     @Override
     public String toString() {
         return "KafkaStreamsExtensionOptions{"
-                + "properties="
-                + properties
-                + "overridesProvider="
-                + overridesProvider
+                + "clientOptions="
+                + clientOptions
                 + ", streamsCloseTimeout="
                 + streamsCloseTimeout
                 + ", lifecycleObserver="
@@ -186,77 +160,44 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public static final class Builder {
+    public static final class Builder implements ClientsExtensionOptions.Builder {
 
-        private final ClustersProperties.Builder properties =
-                ClustersProperties.propertiesBuilder();
-        private Optional<KafkaPropertyOverrides> overridesProvider = Optional.empty();
+        private final KafkaClientsExtensionOptions.Builder clientOptionsBuilder =
+                KafkaClientsExtensionOptions.builder();
+
         private Duration streamsCloseTimeout = DEFAULT_STREAMS_CLOSE_TIMEOUT;
         private Optional<LifecycleObserver> lifecycleObserver = Optional.empty();
         private Optional<StateRestoreObserver> restoreObserver = Optional.empty();
         private KafkaMetricsPublisherOptions metricsPublishing =
                 KafkaMetricsPublisherOptions.builder().build();
-        private Optional<TopicClient> topicClient = Optional.empty();
 
         private Builder() {
-            CLIENT_DEFAULTS.forEach(properties::putCommon);
-            STREAMS_DEFAULTS.forEach(properties::putCommon);
+            STREAMS_DEFAULTS.forEach(clientOptionsBuilder::withKafkaProperty);
         }
 
-        /**
-         * Set an alternate provider of Kafka property overrides.
-         *
-         * <p>The default overrides provider loads them from environment variables. See {@link
-         * SystemEnvPropertyOverrides} for more info.
-         *
-         * <p>It is intended that the provider should return, among other things, properties such as
-         * the bootstrap servers, so that these can be configured per-environment.
-         *
-         * <p>Note: the properties returned by the provider will <i>override</i> any properties set
-         * via {@link #withKafkaProperty}.
-         *
-         * <p>Note: Any custom override provider implementation may want to consider if it needs to
-         * be compatible with the system tests, as the system tests set properties via environment
-         * variables.
-         *
-         * @param overridesProvider a custom provider of Kafka overrides.
-         * @return self
-         */
+        @Override
         public Builder withKafkaPropertiesOverrides(
                 final KafkaPropertyOverrides overridesProvider) {
-            this.overridesProvider = Optional.of(overridesProvider);
+            clientOptionsBuilder.withKafkaPropertiesOverrides(overridesProvider);
             return this;
         }
 
-        /**
-         * Set a common Kafka client property.
-         *
-         * <p>This property will be set for all clusters unless overridden either via {@link
-         * #withKafkaProperty(String, String, Object)} or via {@link #withKafkaPropertiesOverrides}.
-         *
-         * @param name the name of the property
-         * @param value the value of the property
-         * @return self
-         */
+        @Override
         public Builder withKafkaProperty(final String name, final Object value) {
-            properties.putCommon(name, value);
+            clientOptionsBuilder.withKafkaProperty(name, value);
             return this;
         }
 
-        /**
-         * Set a Kafka client property for a specific cluster.
-         *
-         * <p>Note: Any value set here can be overridden by the {@link #withKafkaPropertiesOverrides
-         * overridesProvider}.
-         *
-         * @param cluster the name of the Kafka cluster this property should be scoped to.
-         * @param name the name of the property
-         * @param value the value of the property
-         * @return self
-         */
+        @Override
         public Builder withKafkaProperty(
                 final String cluster, final String name, final Object value) {
-            properties.put(cluster, name, value);
+            clientOptionsBuilder.withKafkaProperty(cluster, name, value);
+            return this;
+        }
+
+        @Override
+        public Builder withTopicClient(final TopicClient topicClient) {
+            clientOptionsBuilder.withTopicClient(topicClient);
             return this;
         }
 
@@ -305,33 +246,17 @@ public final class KafkaStreamsExtensionOptions implements CreekExtensionOptions
         }
 
         /**
-         * Set an explicit topic client to use.
-         *
-         * <p>Intended for internal use only, to allow a mock client to be installed during testing.
-         *
-         * @param topicClient the client to use.
-         * @return self.
-         */
-        public Builder withTopicClient(final TopicClient topicClient) {
-            this.topicClient = Optional.of(topicClient);
-            return this;
-        }
-
-        /**
          * Build the immutable options.
          *
          * @return the built options.
          */
         public KafkaStreamsExtensionOptions build() {
             return new KafkaStreamsExtensionOptions(
-                    properties,
-                    overridesProvider.orElseGet(
-                            SystemEnvPropertyOverrides::systemEnvPropertyOverrides),
+                    clientOptionsBuilder.build(),
                     streamsCloseTimeout,
                     lifecycleObserver.orElseGet(DefaultLifecycleObserver::new),
                     restoreObserver.orElseGet(DefaultStateRestoreObserver::new),
-                    metricsPublishing,
-                    topicClient);
+                    metricsPublishing);
         }
     }
 }

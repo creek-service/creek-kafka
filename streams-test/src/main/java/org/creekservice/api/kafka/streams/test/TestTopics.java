@@ -27,9 +27,9 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
-import org.creekservice.api.kafka.common.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.service.context.CreekContext;
 
 /**
@@ -94,7 +94,7 @@ public final class TestTopics {
 
     private static <K, V> TopicSerde<K, V> topicSerde(
             final KafkaTopicDescriptor<K, V> def, final CreekContext ctx) {
-        final KafkaStreamsExtension ext = ctx.extension(KafkaStreamsExtension.class);
+        final KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class);
         final KafkaTopic<K, V> topic = ext.topic(def);
         final TopicSerde<K, V> serde = new TopicSerde<>(topic.keySerde(), topic.valueSerde());
 

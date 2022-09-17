@@ -16,10 +16,10 @@ rootProject.name = "creek-kafka"
 
 include(
     "metadata",
+    "client-extension",
     "streams-extension",
     "streams-test",
     "serde",
-    "common",
     "test-extension",
     "test-java-eight",
     "test-java-nine",

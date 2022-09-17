@@ -24,26 +24,26 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.internals.DefaultKafkaClientSupplier;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.common.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 
 /** Builds a {@link KafkaStreams} app from a {@link Topology}. */
 public final class KafkaStreamsBuilder {
 
-    private final ClustersProperties clustersProperties;
+    private final KafkaClientsExtension clientsExtension;
     private final AppFactory appFactory;
 
-    public KafkaStreamsBuilder(final ClustersProperties clustersProperties) {
-        this(clustersProperties, KafkaStreams::new);
+    public KafkaStreamsBuilder(final KafkaClientsExtension clientsExtension) {
+        this(clientsExtension, KafkaStreams::new);
     }
 
     @VisibleForTesting
-    KafkaStreamsBuilder(final ClustersProperties clustersProperties, final AppFactory appFactory) {
-        this.clustersProperties = requireNonNull(clustersProperties, "clustersProperties");
+    KafkaStreamsBuilder(final KafkaClientsExtension clientsExtension, final AppFactory appFactory) {
+        this.clientsExtension = requireNonNull(clientsExtension, "clientsExtension");
         this.appFactory = requireNonNull(appFactory, "appFactory");
     }
 
     public KafkaStreams build(final Topology topology, final String clusterName) {
-        final Properties properties = clustersProperties.properties(clusterName);
+        final Properties properties = clientsExtension.properties(clusterName);
         final KafkaClientSupplier kafkaClientSupplier = new DefaultKafkaClientSupplier();
 
         return appFactory.create(topology, properties, kafkaClientSupplier);

@@ -19,22 +19,15 @@ package org.creekservice.api.kafka.streams.extension;
 import static org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions.DEFAULT_STREAMS_CLOSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
-import java.util.Set;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -64,11 +57,6 @@ class KafkaStreamsExtensionOptionsTest {
                                 .withStateRestoreObserver(new DefaultStateRestoreObserver())
                                 .build())
                 .addEqualityGroup(
-                        KafkaStreamsExtensionOptions.builder()
-                                .withKafkaPropertiesOverrides(
-                                        (final Set<String> clusterNames) -> null)
-                                .build())
-                .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder().withKafkaProperty("k", "v").build())
                 .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder()
@@ -96,39 +84,6 @@ class KafkaStreamsExtensionOptionsTest {
 
         tester.testAllPublicInstanceMethods(KafkaStreamsExtensionOptions.builder());
         tester.testAllPublicInstanceMethods(KafkaStreamsExtensionOptions.builder().build());
-    }
-
-    @Test
-    void shouldDefaultToEarliest() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG),
-                is("earliest"));
-    }
-
-    @Test
-    void shouldDefaultToAllAcks() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ProducerConfig.ACKS_CONFIG),
-                is("all"));
-    }
-
-    @Test
-    void shouldDefaultToSnappyCompression() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ProducerConfig.COMPRESSION_TYPE_CONFIG),
-                is("snappy"));
     }
 
     @Test
@@ -176,28 +131,7 @@ class KafkaStreamsExtensionOptionsTest {
     }
 
     @Test
-    void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
-        // When:
-        final KafkaStreamsExtensionOptions options = builder.build();
-
-        // Then:
-        assertThat(options.propertyOverrides(), is(instanceOf(SystemEnvPropertyOverrides.class)));
-    }
-
-    @Test
-    void shouldLoadKafkaPropertyOverridesFromAlternateProvider() {
-        // Given:
-        final KafkaPropertyOverrides overridesProvider = mock(KafkaPropertyOverrides.class);
-
-        // When:
-        builder.withKafkaPropertiesOverrides(overridesProvider);
-
-        // Then:
-        assertThat(builder.build().propertyOverrides(), is(sameInstance(overridesProvider)));
-    }
-
-    @Test
-    void shouldSetKafkaProperty() {
+    void shouldSetKafkaStreamsProperty() {
         // When:
         builder.withKafkaProperty("name", "value");
 

@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 
 public final class StartKafkaTestListener implements TestEnvironmentListener {
 
@@ -42,19 +42,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
     private final List<ServiceInstance> kafkaInstances = new ArrayList<>();
 
     public StartKafkaTestListener(final CreekSystemTest api) {
-        this(
-                api,
-                d ->
-                        org
-                                .creekservice
-                                .internal
-                                .kafka
-                                .common
-                                .resource
-                                .TopicCollector
-                                .collectTopics(List.of(d))
-                                .values()
-                                .stream());
+        this(api, new TopicCollector());
     }
 
     @VisibleForTesting
@@ -86,8 +74,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
         return service.descriptor()
                 .map(
                         descriptor ->
-                                topicCollector
-                                        .collectTopics(descriptor)
+                                topicCollector.collectTopics(List.of(descriptor)).values().stream()
                                         .map(KafkaTopicDescriptor::cluster)
                                         .distinct()
                                         .map(
@@ -144,10 +131,5 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
         public ConfigurableServiceInstance service() {
             return service;
         }
-    }
-
-    @VisibleForTesting
-    interface TopicCollector {
-        Stream<KafkaTopicDescriptor<?, ?>> collectTopics(ServiceDescriptor service);
     }
 }
