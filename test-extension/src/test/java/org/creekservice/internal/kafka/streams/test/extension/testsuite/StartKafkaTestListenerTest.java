@@ -22,13 +22,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener.TopicCollector;
+import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +44,9 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StartKafkaTestListenerTest {
+
+    private static final URI ID = URI.create("resource://ignored/1");
+    private static final URI ID2 = URI.create("resource://ignored/2");
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
@@ -94,7 +100,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldNotStartKafkaIfNoServiceDescriptorsHaveKafkaResources() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of());
+        when(topicCollector.collectTopics(List.of(descriptor0))).thenReturn(Map.of());
 
         // When:
         listener.beforeSuite(null);
@@ -106,8 +112,10 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldAddKafkaBrokerPerCluster() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
-        when(topicCollector.collectTopics(descriptor1)).thenReturn(Stream.of(kafkaResource1));
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
+        when(topicCollector.collectTopics(List.of(descriptor1)))
+                .thenReturn(Map.of(ID, kafkaResource1));
 
         // When:
         listener.beforeSuite(null);
@@ -120,7 +128,8 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldStartKafka() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
 
         // When:
         listener.beforeSuite(null);
@@ -132,7 +141,8 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldStopKafkaOnlyOnce() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
         listener.beforeSuite(null);
 
         // When:
@@ -146,9 +156,10 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldSetKafkaEndpointOnServicesUnderTest() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
-        when(topicCollector.collectTopics(descriptor1))
-                .thenReturn(Stream.of(kafkaResource0, kafkaResource1));
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
+        when(topicCollector.collectTopics(List.of(descriptor1)))
+                .thenReturn(Map.of(ID, kafkaResource0, ID2, kafkaResource1));
 
         when(api.tests().env().currentSuite().services().add(new KafkaContainerDef("bob")).name())
                 .thenReturn("kafka-bob-0");
@@ -167,8 +178,10 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldSetApplicationIdOnServicesUnderTest() {
         // Given:
-        when(topicCollector.collectTopics(descriptor0)).thenReturn(Stream.of(kafkaResource0));
-        when(topicCollector.collectTopics(descriptor1)).thenReturn(Stream.of(kafkaResource1));
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
+        when(topicCollector.collectTopics(List.of(descriptor1)))
+                .thenReturn(Map.of(ID, kafkaResource1));
 
         // When:
         listener.beforeSuite(null);

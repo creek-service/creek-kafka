@@ -23,14 +23,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
-import org.creekservice.api.kafka.common.config.ClustersProperties;
-import org.creekservice.api.kafka.common.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
-import org.creekservice.internal.kafka.streams.extension.resource.Topic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,30 +42,30 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StreamsExtensionTest {
 
-    @Mock private ClustersProperties clustersProperties;
-    @Mock private ResourceRegistry resources;
+    @Mock private KafkaClientsExtension clientExtension;
     @Mock private KafkaStreamsBuilder builder;
     @Mock private KafkaStreamsExecutor executor;
     @Mock private Properties properties;
     @Mock private Topology topology;
     @Mock private KafkaStreams app;
     @Mock private KafkaTopicDescriptor<Long, String> topicDef;
-    @Mock private Topic<Long, String> topic;
+    @Mock private KafkaTopic<Long, String> topic;
     private StreamsExtension extension;
 
     @BeforeEach
     void setUp() {
-        extension = new StreamsExtension(clustersProperties, resources, builder, executor);
+        extension = new StreamsExtension(clientExtension, builder, executor);
 
-        when(clustersProperties.properties(any())).thenReturn(properties);
+        when(clientExtension.properties(any())).thenReturn(properties);
         when(builder.build(any(), any())).thenReturn(app);
     }
 
     @Test
     void shouldReturnName() {
-        assertThat(extension.name(), is("Kafka-streams"));
+        assertThat(extension.name(), is("org.creekservice.kafka.streams"));
     }
 
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @Test
     void shouldReturnProperties() {
         // When:
@@ -74,7 +73,19 @@ class StreamsExtensionTest {
 
         // Then:
         assertThat(result, is(properties));
-        verify(clustersProperties).properties("cluster-bob");
+        verify(clientExtension).properties("cluster-bob");
+    }
+
+    @Test
+    void shouldGetTopicsFromRegistry() {
+        // Given:
+        when(clientExtension.topic(topicDef)).thenReturn(topic);
+
+        // When:
+        final KafkaTopic<Long, String> result = extension.topic(topicDef);
+
+        // Then:
+        assertThat(result, is(topic));
     }
 
     @Test
@@ -104,17 +115,5 @@ class StreamsExtensionTest {
         // Then:
         verify(builder).build(topology, DEFAULT_CLUSTER_NAME);
         verify(executor).execute(app);
-    }
-
-    @Test
-    void shouldGetTopicsFromRegistry() {
-        // Given:
-        when(resources.topic(topicDef)).thenReturn(topic);
-
-        // When:
-        final KafkaTopic<Long, String> result = extension.topic(topicDef);
-
-        // Then:
-        assertThat(result, is(topic));
     }
 }

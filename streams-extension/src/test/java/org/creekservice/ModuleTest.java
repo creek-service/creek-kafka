@@ -17,6 +17,7 @@
 package org.creekservice;
 
 
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers.LogAndFailProductionExceptionHandler;
 import org.creekservice.api.test.conformity.ConformityTester;
 import org.creekservice.api.test.conformity.check.CheckConstructorsPrivate;
@@ -31,7 +32,8 @@ class ModuleTest {
                         CheckConstructorsPrivate.builder()
                                 .withExcludedClasses(
                                         "Created by reflection",
-                                        LogAndFailProductionExceptionHandler.class))
+                                        LogAndFailProductionExceptionHandler.class,
+                                        KafkaStreamsExtensionProvider.class))
                 .check();
     }
 }

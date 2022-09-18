@@ -17,9 +17,9 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 
 /**
@@ -36,7 +36,7 @@ public final class KafkaTestExtension implements CreekTestExtension {
 
     @Override
     public void initialize(final CreekSystemTest api) {
-        api.extensions().initialize(new KafkaStreamsExtensionProvider());
+        api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
         api.tests().env().listeners().append(new StartKafkaTestListener(api));
     }
 }

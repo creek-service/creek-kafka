@@ -17,35 +17,13 @@
 package org.creekservice.api.kafka.streams.extension;
 
 
-import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
-import org.creekservice.api.kafka.common.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.service.extension.CreekExtension;
 
 /** Kafka streams extension to Creek. */
-public interface KafkaStreamsExtension extends CreekExtension {
-
-    /**
-     * Get the Kafka properties that should be used to build a topology.
-     *
-     * <p>Note: the properties should be considered immutable. Changing them may result in undefined
-     * behaviour.
-     *
-     * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
-     *     {@link KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}.
-     * @return the properties.
-     */
-    Properties properties(String clusterName);
-
-    /**
-     * Get a topic resource for the supplied {@code def}.
-     *
-     * @param def the topic descriptor
-     * @return the topic resource.
-     */
-    <K, V> KafkaTopic<K, V> topic(KafkaTopicDescriptor<K, V> def);
+public interface KafkaStreamsExtension extends KafkaClientsExtension {
 
     /**
      * Build a Kafka Streams app from the supplied {@code topology}.

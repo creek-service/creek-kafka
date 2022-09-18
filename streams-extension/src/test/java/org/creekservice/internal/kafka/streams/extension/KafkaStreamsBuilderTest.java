@@ -24,11 +24,12 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.internals.DefaultKafkaClientSupplier;
-import org.creekservice.api.kafka.common.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,26 +41,27 @@ class KafkaStreamsBuilderTest {
 
     @Mock private KafkaStreamsBuilder.AppFactory appFactory;
     @Mock private KafkaStreams app;
-    @Mock private ClustersProperties clustersProperties;
+    @Mock private KafkaClientsExtension clientsExtension;
     @Mock private Properties properties;
     @Mock private Topology topology;
     private KafkaStreamsBuilder builder;
 
     @BeforeEach
     void setUp() {
-        builder = new KafkaStreamsBuilder(clustersProperties, appFactory);
+        builder = new KafkaStreamsBuilder(clientsExtension, appFactory);
 
         when(appFactory.create(any(), any(), any())).thenReturn(app);
-        when(clustersProperties.properties(any())).thenReturn(properties);
+        when(clientsExtension.properties(any())).thenReturn(properties);
     }
 
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @Test
     void shouldGetPropertiesForCorrectCluster() {
         // When:
         builder.build(topology, "cluster");
 
         // Then:
-        verify(clustersProperties).properties("cluster");
+        verify(clientsExtension).properties("cluster");
     }
 
     @Test

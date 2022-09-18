@@ -21,29 +21,25 @@ import static java.util.Objects.requireNonNull;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
-import org.creekservice.api.kafka.common.config.ClustersProperties;
-import org.creekservice.api.kafka.common.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
-import org.creekservice.internal.kafka.streams.extension.resource.ResourceRegistry;
 
 /** Kafka streams Creek extension. */
-final class StreamsExtension implements KafkaStreamsExtension {
+public final class StreamsExtension implements KafkaStreamsExtension {
 
-    static final String NAME = "Kafka-streams";
+    static final String NAME = "org.creekservice.kafka.streams";
 
-    private final ClustersProperties clustersProperties;
-    private final ResourceRegistry resources;
+    private final KafkaClientsExtension clientsExtension;
     private final KafkaStreamsBuilder appBuilder;
     private final KafkaStreamsExecutor appExecutor;
 
-    StreamsExtension(
-            final ClustersProperties clustersProperties,
-            final ResourceRegistry resources,
+    public StreamsExtension(
+            final KafkaClientsExtension clientsExtension,
             final KafkaStreamsBuilder appBuilder,
             final KafkaStreamsExecutor appExecutor) {
-        this.clustersProperties = requireNonNull(clustersProperties, "clustersProperties");
-        this.resources = requireNonNull(resources, "resources");
+        this.clientsExtension = requireNonNull(clientsExtension, "clientsExtension");
         this.appBuilder = requireNonNull(appBuilder, "appBuilder");
         this.appExecutor = requireNonNull(appExecutor, "appExecutor");
     }
@@ -55,12 +51,12 @@ final class StreamsExtension implements KafkaStreamsExtension {
 
     @Override
     public Properties properties(final String clusterName) {
-        return clustersProperties.properties(clusterName);
+        return clientsExtension.properties(clusterName);
     }
 
     @Override
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
-        return resources.topic(def);
+        return clientsExtension.topic(def);
     }
 
     @Override

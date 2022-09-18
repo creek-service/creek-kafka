@@ -17,14 +17,15 @@
 package org.creekservice.test.kafka.test.java.eight;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import java.util.List;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProviders;
-import org.creekservice.internal.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.junit.jupiter.api.Test;
 
 class ServiceExtensionTest {
@@ -32,6 +33,10 @@ class ServiceExtensionTest {
     @Test
     void shouldLoadStreamsExtension() {
         final List<CreekExtensionProvider<?>> found = CreekExtensionProviders.load();
-        assertThat(found, hasItem(is(instanceOf(KafkaStreamsExtensionProvider.class))));
+        assertThat(
+                found,
+                containsInAnyOrder(
+                        is(instanceOf(KafkaClientsExtensionProvider.class)),
+                        is(instanceOf(KafkaStreamsExtensionProvider.class))));
     }
 }

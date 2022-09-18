@@ -1,0 +1,23 @@
+--add-modules
+  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers
+
+--add-reads
+  creek.kafka.clients.extension=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers
+
+--add-reads
+  creek.kafka.clients.extension=creek.observability.logging.fixtures
+
+--add-opens
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
+
+--add-opens
+  java.base/java.lang=org.junitpioneer
+
+--add-opens
+  java.base/java.util=org.junitpioneer
+
+--add-opens
+  org.junit.platform.commons/org.junit.platform.commons.util=junit.jupiter
+
+--add-opens
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=junit.jupiter

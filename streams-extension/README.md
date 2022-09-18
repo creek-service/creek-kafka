@@ -3,7 +3,7 @@
 Provides an extension to Creek to allow it to work with Kafka Streams and Kafka resources.
 
 By default, if the `creek-kafka-streams-extension.jar` is on the class or module path, Creek will load the
-extension and use it to handle any topic resources.
+extension and use it to handle any topic resources and provide functionality for Kafka Streams based apps.
 
 ## Configuration
 

@@ -29,12 +29,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
-import java.util.Set;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.common.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.common.config.SystemEnvPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -64,11 +61,6 @@ class KafkaStreamsExtensionOptionsTest {
                                 .withStateRestoreObserver(new DefaultStateRestoreObserver())
                                 .build())
                 .addEqualityGroup(
-                        KafkaStreamsExtensionOptions.builder()
-                                .withKafkaPropertiesOverrides(
-                                        (final Set<String> clusterNames) -> null)
-                                .build())
-                .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder().withKafkaProperty("k", "v").build())
                 .addEqualityGroup(
                         KafkaStreamsExtensionOptions.builder()
@@ -96,39 +88,6 @@ class KafkaStreamsExtensionOptionsTest {
 
         tester.testAllPublicInstanceMethods(KafkaStreamsExtensionOptions.builder());
         tester.testAllPublicInstanceMethods(KafkaStreamsExtensionOptions.builder().build());
-    }
-
-    @Test
-    void shouldDefaultToEarliest() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG),
-                is("earliest"));
-    }
-
-    @Test
-    void shouldDefaultToAllAcks() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ProducerConfig.ACKS_CONFIG),
-                is("all"));
-    }
-
-    @Test
-    void shouldDefaultToSnappyCompression() {
-        assertThat(
-                builder.build()
-                        .propertiesBuilder()
-                        .build()
-                        .get("any")
-                        .get(ProducerConfig.COMPRESSION_TYPE_CONFIG),
-                is("snappy"));
     }
 
     @Test
