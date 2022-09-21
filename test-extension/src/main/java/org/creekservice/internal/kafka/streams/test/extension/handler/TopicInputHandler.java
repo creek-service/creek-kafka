@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.streams.test.extension.model;
+package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 
-import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.InputHandler;
+import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 
-public final class TopicExpectation implements Expectation {}
+public final class TopicInputHandler implements InputHandler<TopicInput> {
+    @Override
+    public void process(final TopicInput input) {}
+
+    @Override
+    public void flush() {}
+}

@@ -22,11 +22,14 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
+import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +59,7 @@ class KafkaTestExtensionTest {
 
     @Test
     void shouldHaveCorrectName() {
-        assertThat(ext.name(), is("creek-kafka"));
+        assertThat(ext.name(), is("org.creekservice.kafka.test"));
     }
 
     @Test
@@ -75,5 +78,15 @@ class KafkaTestExtensionTest {
 
         // Then:
         verify(api.tests().env().listeners()).append(isA(StartKafkaTestListener.class));
+    }
+
+    @Test
+    void shouldRegisterTopicInputModel() {
+        // When:
+        ext.initialize(api);
+
+        // Then:
+        verify(api.tests().model().addInput(eq(TopicInput.class), isA(TopicInputHandler.class)))
+                .withName("creek/kafka-topic");
     }
 }

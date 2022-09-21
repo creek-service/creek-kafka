@@ -17,9 +17,13 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
+import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 
 /**
@@ -31,12 +35,19 @@ import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKaf
 public final class KafkaTestExtension implements CreekTestExtension {
     @Override
     public String name() {
-        return "creek-kafka";
+        return "org.creekservice.kafka.test";
     }
 
     @Override
     public void initialize(final CreekSystemTest api) {
         api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
         api.tests().env().listeners().append(new StartKafkaTestListener(api));
+
+        initializeModel(api.tests().model());
+    }
+
+    @VisibleForTesting
+    public static void initializeModel(final TestModelContainer model) {
+        model.addInput(TopicInput.class, new TopicInputHandler()).withName("creek/kafka-topic");
     }
 }
