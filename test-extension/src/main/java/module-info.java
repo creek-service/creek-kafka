@@ -20,9 +20,16 @@ import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension
 
 module creek.kafka.test.extension {
     requires transitive creek.system.test.extension;
+    requires transitive com.fasterxml.jackson.annotation;
+    requires transitive com.fasterxml.jackson.databind;
     requires creek.kafka.clients.extension;
     requires creek.kafka.metadata;
     requires creek.base.type;
+
+    exports org.creekservice.internal.kafka.streams.test.extension.model to
+            com.fasterxml.jackson.databind;
+    exports org.creekservice.internal.kafka.streams.test.extension.util to
+            com.fasterxml.jackson.databind;
 
     provides CreekTestExtension with
             KafkaTestExtension;
