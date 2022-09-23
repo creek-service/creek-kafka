@@ -34,6 +34,7 @@ dependencies {
     implementation("org.creekservice:creek-observability-logging:$creekObsVersion")
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
 
+    testImplementation(project(":test-service"))
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekObsVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:kafka:$testContainersVersion")

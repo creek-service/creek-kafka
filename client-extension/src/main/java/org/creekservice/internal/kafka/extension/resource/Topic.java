@@ -18,6 +18,11 @@ package org.creekservice.internal.kafka.extension.resource;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Map;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -27,14 +32,17 @@ public final class Topic<K, V> implements KafkaTopic<K, V> {
     private final KafkaTopicDescriptor<K, V> descriptor;
     private final Serde<K> keySerde;
     private final Serde<V> valueSerde;
+    private final Map<String, Object> clientProperties;
 
     public Topic(
             final KafkaTopicDescriptor<K, V> descriptor,
             final Serde<K> keySerde,
-            final Serde<V> valueSerde) {
+            final Serde<V> valueSerde,
+            final Map<String, Object> clientProperties) {
         this.descriptor = requireNonNull(descriptor, "descriptor");
         this.keySerde = requireNonNull(keySerde, "keySerde");
         this.valueSerde = requireNonNull(valueSerde, "valueSerde");
+        this.clientProperties = Map.copyOf(requireNonNull(clientProperties, "clientProperties"));
     }
 
     @Override
@@ -50,6 +58,18 @@ public final class Topic<K, V> implements KafkaTopic<K, V> {
     @Override
     public Serde<V> valueSerde() {
         return valueSerde;
+    }
+
+    @Override
+    public Producer<K, V> producer() {
+        return new KafkaProducer<>(
+                clientProperties, keySerde.serializer(), valueSerde.serializer());
+    }
+
+    @Override
+    public Consumer<K, V> consumer() {
+        return new KafkaConsumer<>(
+                clientProperties, keySerde.deserializer(), valueSerde.deserializer());
     }
 
     public KafkaTopicDescriptor<K, V> descriptor() {

@@ -17,6 +17,8 @@
 package org.creekservice.api.kafka.extension.resource;
 
 
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.serialization.Serde;
 
 /**
@@ -35,4 +37,10 @@ public interface KafkaTopic<K, V> {
 
     /** @return the serde used to (de)serialize the values stored in the topic */
     Serde<V> valueSerde();
+
+    /** @return a Kafka producer configured to produce to this topic */
+    Producer<K, V> producer();
+
+    /** @return a Kafka consumer configured to consume from this topic */
+    Consumer<K, V> consumer();
 }

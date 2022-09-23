@@ -72,23 +72,22 @@ public final class ResourceRegistryFactory {
     }
 
     private <K, V> Topic<K, V> createTopicResource(
-            final KafkaTopicDescriptor<K, V> def, final ClustersProperties properties) {
-        final Serde<K> keySerde = serde(def.key(), def.name(), def.cluster(), true, properties);
-        final Serde<V> valueSerde =
-                serde(def.value(), def.name(), def.cluster(), false, properties);
-        return topicFactory.create(def, keySerde, valueSerde);
+            final KafkaTopicDescriptor<K, V> def, final ClustersProperties allProperties) {
+        final Map<String, Object> properties = allProperties.get(def.cluster());
+        final Serde<K> keySerde = serde(def.key(), def.name(), true, properties);
+        final Serde<V> valueSerde = serde(def.value(), def.name(), false, properties);
+        return topicFactory.create(def, keySerde, valueSerde, properties);
     }
 
     private <T> Serde<T> serde(
             final KafkaTopicDescriptor.PartDescriptor<T> part,
             final String topicName,
-            final String clusterName,
             final boolean isKey,
-            final ClustersProperties properties) {
+            final Map<String, Object> clusterProperties) {
         final KafkaSerdeProvider provider = provider(part, topicName, isKey);
 
         final Serde<T> serde = provider.create(part);
-        serde.configure(properties.get(clusterName), isKey);
+        serde.configure(clusterProperties, isKey);
         return serde;
     }
 
@@ -106,7 +105,10 @@ public final class ResourceRegistryFactory {
     @VisibleForTesting
     interface TopicFactory {
         <K, V> Topic<K, V> create(
-                KafkaTopicDescriptor<K, V> def, Serde<K> keySerde, Serde<V> valueSerde);
+                KafkaTopicDescriptor<K, V> def,
+                Serde<K> keySerde,
+                Serde<V> valueSerde,
+                Map<String, Object> clientProperties);
     }
 
     @VisibleForTesting

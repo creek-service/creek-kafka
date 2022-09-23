@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
@@ -50,7 +51,7 @@ class ResourceRegistryFactoryTest {
 
     private static final SerializationFormat KEY_FORMAT = serializationFormat("key-format");
     private static final SerializationFormat VALUE_FORMAT = serializationFormat("value-format");
-    private static final Map<String, ?> SOME_CONFIG = Map.of("some", "config");
+    private static final Map<String, Object> SOME_CONFIG = Map.of("some", "config");
     private static final String CLUSTER_NAME = "bob";
 
     @Mock private Collection<? extends ComponentDescriptor> components;
@@ -99,7 +100,7 @@ class ResourceRegistryFactoryTest {
         setUpTopic(topicDefA, "a", aKeyPart, aValuePart);
         setUpTopic(topicDefB, "b", bKeyPart, bValuePart);
 
-        when(topicFactory.create(any(), any(), any())).thenReturn((Topic) topicOne);
+        when(topicFactory.create(any(), any(), any(), any())).thenReturn((Topic) topicOne);
 
         when(topicCollector.collectTopics(any()))
                 .thenReturn(Map.of(URI.create("topic://default/A"), topicDefA));
@@ -135,7 +136,7 @@ class ResourceRegistryFactoryTest {
         // Then:
         verify(serdeProviders).get(topicDefA.key().format());
         verify(keySerdeProvider).create(topicDefA.key());
-        verify(topicFactory).create(any(), eq(keySerde), any());
+        verify(topicFactory).create(any(), eq(keySerde), any(), any());
     }
 
     @Test
@@ -146,7 +147,21 @@ class ResourceRegistryFactoryTest {
         // Then:
         verify(serdeProviders).get(topicDefA.value().format());
         verify(valueSerdeProvider).create(topicDefA.value());
-        verify(topicFactory).create(any(), any(), eq(valueSerde));
+        verify(topicFactory).create(any(), any(), eq(valueSerde), any());
+    }
+
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    @Test
+    void shouldGetClientPropsFromClustersProps() {
+        // Given:
+        when(clusterProperties.get(CLUSTER_NAME)).thenReturn(SOME_CONFIG);
+
+        // When:
+        factory.create(components, clusterProperties);
+
+        // Then:
+        verify(clusterProperties).get(topicDefA.cluster());
+        verify(topicFactory).create(any(), any(), any(), eq(SOME_CONFIG));
     }
 
     @Test
@@ -161,11 +176,10 @@ class ResourceRegistryFactoryTest {
         verify(valueSerdeProvider).create(customPart);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     void shouldConfigureKeySerde() {
         // Given:
-        when(clusterProperties.get(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
+        when(clusterProperties.get(CLUSTER_NAME)).thenReturn(SOME_CONFIG);
 
         // When:
         factory.create(components, clusterProperties);
@@ -174,11 +188,10 @@ class ResourceRegistryFactoryTest {
         verify(keySerde).configure(SOME_CONFIG, true);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     void shouldConfigureValueSerde() {
         // Given:
-        when(clusterProperties.get(CLUSTER_NAME)).thenReturn((Map) SOME_CONFIG);
+        when(clusterProperties.get(CLUSTER_NAME)).thenReturn(SOME_CONFIG);
 
         // When:
         factory.create(components, clusterProperties);
@@ -193,7 +206,7 @@ class ResourceRegistryFactoryTest {
         factory.create(components, clusterProperties);
 
         // Then:
-        verify(topicFactory).create(eq(topicDefA), any(), any());
+        verify(topicFactory).create(eq(topicDefA), any(), any(), any());
     }
 
     @Test
@@ -206,7 +219,7 @@ class ResourceRegistryFactoryTest {
                                 topicDefA,
                                 URI.create("topic://default/b"),
                                 topicDefB));
-        when(topicFactory.create(eq(topicDefB), any(), any())).thenReturn(topicTwo);
+        when(topicFactory.create(eq(topicDefB), any(), any(), any())).thenReturn(topicTwo);
 
         // When:
         factory.create(components, clusterProperties);
