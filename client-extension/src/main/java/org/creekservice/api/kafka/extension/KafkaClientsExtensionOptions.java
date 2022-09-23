@@ -98,7 +98,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
 
     @Override
     public String toString() {
-        return "KafkaClientExtensionOptions{"
+        return "KafkaClientsExtensionOptions{"
                 + "properties="
                 + properties
                 + "overridesProvider="
