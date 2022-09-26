@@ -30,6 +30,13 @@ class KafkaTopicDescriptorTest {
     @Test
     void shouldCreateUniqueKafkaTopicResourceId() {
         assertThat(
+                KafkaTopicDescriptor.resourceId("cluster-a", "topic-b").toString(),
+                is("kafka-topic://cluster-a/topic-b"));
+    }
+
+    @Test
+    void shouldDefaultResourceId() {
+        assertThat(
                 descriptor("cluster-a", "topic-b").id().toString(),
                 is("kafka-topic://cluster-a/topic-b"));
     }
