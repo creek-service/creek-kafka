@@ -19,6 +19,7 @@ package org.creekservice.api.kafka.serde;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -35,6 +36,7 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
 
     private static final Map<Class<?>, Supplier<Serde<?>>> SUPPLIERS =
             Map.ofEntries(
+                    Map.entry(UUID.class, Serdes::UUID),
                     Map.entry(long.class, Serdes::Long),
                     Map.entry(Long.class, Serdes::Long),
                     Map.entry(int.class, Serdes::Integer),
