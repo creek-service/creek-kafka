@@ -302,7 +302,7 @@ class TopicInputTest {
     private static ModelParser createParser() {
         final CreekSystemTestExtensionTester.YamlParserBuilder builder =
                 CreekSystemTestExtensionTester.extensionTester().yamlParser();
-        KafkaTestExtension.initializeModel(builder.model(), mock(ClientsExtension.class));
+        KafkaTestExtension.initializeModel(builder.model());
         return builder.build();
     }
 }
