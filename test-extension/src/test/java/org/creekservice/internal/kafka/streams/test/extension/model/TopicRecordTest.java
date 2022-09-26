@@ -17,8 +17,8 @@
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
 import static java.lang.System.lineSeparator;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import java.util.Optional;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.api.system.test.test.util.ModelParser;
+import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord.RecordBuilder;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,7 @@ class TopicRecordTest {
             CreekSystemTestExtensionTester.extensionTester().yamlParser().build();
 
     @Test
-    void shouldParseFullyPopulated() {
+    void shouldParseFullyPopulated() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -44,17 +45,17 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.of("t")));
-        assertThat(result.clusterName(), is(Optional.of("c")));
-        assertThat(result.key(), is(Optional3.of(10)));
-        assertThat(result.value(), is(Optional3.of("hello")));
+        assertThat(result.clusterName, is(Optional.of("c")));
+        assertThat(result.topicName, is(Optional.of("t")));
+        assertThat(result.key, is(Optional3.of(10)));
+        assertThat(result.value, is(Optional3.of("hello")));
     }
 
     @Test
-    void shouldParseWithOutTopic() {
+    void shouldParseWithOutTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "cluster: c\n"
@@ -62,14 +63,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.empty()));
+        assertThat(result.topicName, is(Optional.empty()));
     }
 
     @Test
-    void shouldParseWithNullTopic() {
+    void shouldParseWithNullTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: ~\n"
@@ -78,14 +79,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.empty()));
+        assertThat(result.topicName, is(Optional.empty()));
     }
 
     @Test
-    void shouldParseWithOutCluster() {
+    void shouldParseWithOutCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -93,14 +94,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.clusterName(), is(Optional.empty()));
+        assertThat(result.clusterName, is(Optional.empty()));
     }
 
     @Test
-    void shouldParseWithNullCluster() {
+    void shouldParseWithNullCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -109,14 +110,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.clusterName(), is(Optional.empty()));
+        assertThat(result.clusterName, is(Optional.empty()));
     }
 
     @Test
-    void shouldParseWithOutKey() {
+    void shouldParseWithOutKey() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -124,14 +125,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.key(), is(Optional3.notProvided()));
+        assertThat(result.key, is(Optional3.notProvided()));
     }
 
     @Test
-    void shouldParseWithNullKey() {
+    void shouldParseWithNullKey() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -140,14 +141,14 @@ class TopicRecordTest {
                 + "value: hello";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.key(), is(Optional3.explicitlyNull()));
+        assertThat(result.key, is(Optional3.explicitlyNull()));
     }
 
     @Test
-    void shouldParseWithOutValue() {
+    void shouldParseWithOutValue() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -155,14 +156,14 @@ class TopicRecordTest {
                 + "key: 10";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.value(), is(Optional3.notProvided()));
+        assertThat(result.value, is(Optional3.notProvided()));
     }
 
     @Test
-    void shouldParseWithNullValue() {
+    void shouldParseWithNullValue() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
@@ -171,10 +172,10 @@ class TopicRecordTest {
                 + "value: ~";
 
         // When formatting:on:
-        final TopicRecord result = PARSER.parseOther(yaml, TopicRecord.class);
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
 
         // Then:
-        assertThat(result.value(), is(Optional3.explicitlyNull()));
+        assertThat(result.value, is(Optional3.explicitlyNull()));
     }
 
     @Test
@@ -187,14 +188,14 @@ class TopicRecordTest {
                 + "not_value: ~";
 
         // When formatting:on:
-        final Error e =
+        final Exception e =
                 assertThrows(
-                        AssertionError.class, () -> PARSER.parseOther(yaml, TopicRecord.class));
+                        JsonParseException.class,
+                        () -> PARSER.parseOther(yaml, RecordBuilder.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(JsonParseException.class)));
         assertThat(
-                e.getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "Unknown property: not_value"
                                 + lineSeparator()
@@ -210,14 +211,14 @@ class TopicRecordTest {
                 + "key: 10";
 
         // When formatting:on:
-        final Error e =
+        final Exception e =
                 assertThrows(
-                        AssertionError.class, () -> PARSER.parseOther(yaml, TopicRecord.class));
+                        JsonParseException.class,
+                        () -> PARSER.parseOther(yaml, RecordBuilder.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(JsonParseException.class)));
         assertThat(
-                e.getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "Property can not be blank: topic"
                                 + lineSeparator()
@@ -233,14 +234,14 @@ class TopicRecordTest {
                 + "key: 10";
 
         // When formatting:on:
-        final Error e =
+        final Exception e =
                 assertThrows(
-                        AssertionError.class, () -> PARSER.parseOther(yaml, TopicRecord.class));
+                        JsonParseException.class,
+                        () -> PARSER.parseOther(yaml, RecordBuilder.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(JsonParseException.class)));
         assertThat(
-                e.getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "Property can not be blank: cluster"
                                 + lineSeparator()
@@ -248,40 +249,89 @@ class TopicRecordTest {
     }
 
     @Test
-    void shouldSetTopicName() {
+    void shouldSetDefaults() {
         // Given:
-        final TopicRecord initial =
-                new TopicRecord(
-                        Optional.of("t"), Optional.of("c"), Optional3.of("k"), Optional3.of("v"));
+        final RecordBuilder builder =
+                new RecordBuilder(
+                        Optional.empty(), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
 
         // When:
-        final TopicRecord result = initial.withTopicName("new");
+        final TopicRecord result = builder.build(Optional.of("c"), Optional.of("t"));
 
         // Then:
-        assertThat(result.topicName(), is(Optional.of("new")));
-        assertThat(result.clusterName(), is(Optional.of("c")));
+        assertThat(result.clusterName(), is("c"));
+        assertThat(result.topicName(), is("t"));
         assertThat(result.key(), is(Optional3.of("k")));
         assertThat(result.value(), is(Optional3.of("v")));
-
-        assertThat(initial.topicName(), is(Optional.of("t")));
     }
 
     @Test
-    void shouldSetClusterName() {
+    void shouldNotRequireDefaults() {
         // Given:
-        final TopicRecord initial =
-                new TopicRecord(
-                        Optional.of("t"), Optional.of("c"), Optional3.of("k"), Optional3.of("v"));
+        final RecordBuilder builder =
+                new RecordBuilder(
+                        Optional.of("oc"), Optional.of("ot"), Optional3.of("k"), Optional3.of("v"));
 
         // When:
-        final TopicRecord result = initial.withClusterName("new");
+        final TopicRecord result = builder.build(Optional.empty(), Optional.empty());
 
         // Then:
-        assertThat(result.topicName(), is(Optional.of("t")));
-        assertThat(result.clusterName(), is(Optional.of("new")));
+        assertThat(result.clusterName(), is("oc"));
+        assertThat(result.topicName(), is("ot"));
         assertThat(result.key(), is(Optional3.of("k")));
         assertThat(result.value(), is(Optional3.of("v")));
+    }
 
-        assertThat(initial.topicName(), is(Optional.of("t")));
+    @Test
+    void shouldIgnoreDefaults() {
+        // Given:
+        final RecordBuilder builder =
+                new RecordBuilder(
+                        Optional.of("oc"), Optional.of("ot"), Optional3.of("k"), Optional3.of("v"));
+
+        // When:
+        final TopicRecord result = builder.build(Optional.of("c"), Optional.of("t"));
+
+        // Then:
+        assertThat(result.clusterName(), is("oc"));
+        assertThat(result.topicName(), is("ot"));
+        assertThat(result.key(), is(Optional3.of("k")));
+        assertThat(result.value(), is(Optional3.of("v")));
+    }
+
+    @Test
+    void shouldThrowIfDefaultTopicNeededButNotAvailable() {
+        // Given:
+        final RecordBuilder builder =
+                new RecordBuilder(
+                        Optional.of("c"), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> builder.build(Optional.of("c"), Optional.empty()));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("Topic not set. Topic must be supplied either at the file or record level."));
+    }
+
+    @Test
+    void shouldDefaultToDefaultCluster() {
+        // Given:
+        final RecordBuilder builder =
+                new RecordBuilder(
+                        Optional.empty(), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
+
+        // When:
+        final TopicRecord result = builder.build(Optional.empty(), Optional.of("t"));
+
+        // Then:
+        assertThat(result.clusterName(), is(DEFAULT_CLUSTER_NAME));
+        assertThat(result.topicName(), is("t"));
+        assertThat(result.key(), is(Optional3.of("k")));
+        assertThat(result.value(), is(Optional3.of("v")));
     }
 }
