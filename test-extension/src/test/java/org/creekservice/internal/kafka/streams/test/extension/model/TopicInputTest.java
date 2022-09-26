@@ -21,15 +21,14 @@ import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_C
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import java.util.Optional;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.api.system.test.test.util.ModelParser;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
@@ -41,7 +40,7 @@ class TopicInputTest {
     private static final ModelParser PARSER = createParser();
 
     @Test
-    void shouldParseFullyPopulated() {
+    void shouldParseFullyPopulated() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -58,19 +57,15 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.of("t")));
-        assertThat(result.clusterName(), is(Optional.of("c")));
-        assertThat(result.notes(), is(Optional.of("n")));
-
         assertThat(result.records(), hasSize(1));
-        assertThat(result.records().get(0).topicName(), is(Optional.of("topic-a")));
-        assertThat(result.records().get(0).clusterName(), is(Optional.of("cluster-b")));
+        assertThat(result.records().get(0).topicName(), is("topic-a"));
+        assertThat(result.records().get(0).clusterName(), is("cluster-b"));
         assertThat(result.records().get(0).key(), is(Optional3.of("k")));
         assertThat(result.records().get(0).value(), is(Optional3.of("v")));
     }
 
     @Test
-    void shouldParseWithoutFileLevelTopic() {
+    void shouldParseWithoutFileLevelTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -86,12 +81,11 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.empty()));
-        assertThat(result.records().get(0).topicName(), is(Optional.of("topic-a")));
+        assertThat(result.records().get(0).topicName(), is("topic-a"));
     }
 
     @Test
-    void shouldParseWithNullFileLevelTopic() {
+    void shouldParseWithNullFileLevelTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -108,12 +102,11 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.topicName(), is(Optional.empty()));
-        assertThat(result.records().get(0).topicName(), is(Optional.of("topic-a")));
+        assertThat(result.records().get(0).topicName(), is("topic-a"));
     }
 
     @Test
-    void shouldPopulateRecordTopicIfMissing() {
+    void shouldPopulateRecordTopicIfMissing() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -129,7 +122,7 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.records().get(0).topicName(), is(Optional.of("topic-a")));
+        assertThat(result.records().get(0).topicName(), is("topic-a"));
     }
 
     @Test
@@ -145,13 +138,14 @@ class TopicInputTest {
                 + "    value: v";
 
         // When formatting:on:
-        final Error e =
-                assertThrows(AssertionError.class, () -> PARSER.parseInput(yaml, TopicInput.class));
+        final Exception e =
+                assertThrows(
+                        ValueInstantiationException.class,
+                        () -> PARSER.parseInput(yaml, TopicInput.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(ValueInstantiationException.class)));
         assertThat(
-                e.getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "Cannot construct instance of "
                                 + "`org.creekservice.internal.kafka.streams.test.extension.model.TopicInput`, "
@@ -161,7 +155,7 @@ class TopicInputTest {
     }
 
     @Test
-    void shouldParseWithoutFileLevelCluster() {
+    void shouldParseWithoutFileLevelCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -177,12 +171,11 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.clusterName(), is(Optional.empty()));
-        assertThat(result.records().get(0).clusterName(), is(Optional.of("cluster-b")));
+        assertThat(result.records().get(0).clusterName(), is("cluster-b"));
     }
 
     @Test
-    void shouldParseWithNullFileLevelCluster() {
+    void shouldParseWithNullFileLevelCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -199,12 +192,11 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.clusterName(), is(Optional.empty()));
-        assertThat(result.records().get(0).clusterName(), is(Optional.of("cluster-b")));
+        assertThat(result.records().get(0).clusterName(), is("cluster-b"));
     }
 
     @Test
-    void shouldParseToDefaultClusterName() {
+    void shouldParseToDefaultClusterName() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -219,12 +211,11 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.clusterName(), is(Optional.empty()));
-        assertThat(result.records().get(0).clusterName(), is(Optional.of(DEFAULT_CLUSTER_NAME)));
+        assertThat(result.records().get(0).clusterName(), is(DEFAULT_CLUSTER_NAME));
     }
 
     @Test
-    void shouldParseWithoutNotes() {
+    void shouldParseWithoutNotes() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-topic\n"
@@ -240,7 +231,7 @@ class TopicInputTest {
         final TopicInput result = PARSER.parseInput(yaml, TopicInput.class);
 
         // Then:
-        assertThat(result.notes(), is(Optional.empty()));
+        assertThat(result, is(notNullValue()));
     }
 
     @Test
@@ -252,13 +243,14 @@ class TopicInputTest {
                 + "records: []";
 
         // When formatting:on:
-        final Error e =
-                assertThrows(AssertionError.class, () -> PARSER.parseInput(yaml, TopicInput.class));
+        final Exception e =
+                assertThrows(
+                        ValueInstantiationException.class,
+                        () -> PARSER.parseInput(yaml, TopicInput.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(ValueInstantiationException.class)));
         assertThat(
-                e.getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "Cannot construct instance of "
                                 + "`org.creekservice.internal.kafka.streams.test.extension.model.TopicInput`, "
@@ -276,16 +268,14 @@ class TopicInputTest {
                 + "cluster: c";
 
         // When formatting:on:
-        final Error e =
-                assertThrows(AssertionError.class, () -> PARSER.parseInput(yaml, TopicInput.class));
+        final Exception e =
+                assertThrows(
+                        MismatchedInputException.class,
+                        () -> PARSER.parseInput(yaml, TopicInput.class));
 
         // Then:
-        assertThat(e.getCause(), is(instanceOf(MismatchedInputException.class)));
-        assertThat(
-                e.getCause().getMessage(), startsWith("Null value for creator property 'records'"));
-        assertThat(
-                e.getCause().getMessage(),
-                containsString("[Source: (StringReader); line: 4, column: 11]"));
+        assertThat(e.getMessage(), startsWith("Null value for creator property 'records'"));
+        assertThat(e.getMessage(), containsString("[Source: (StringReader); line: 4, column: 11]"));
     }
 
     @Test
@@ -301,19 +291,10 @@ class TopicInputTest {
                 + "    cluster: cluster-b\n"
                 + "    key: k\n"
                 + "    value: v";
-        // When formatting:on:
-        final Error e =
-                assertThrows(
-                        AssertionError.class, () -> PARSER.parseOther(yaml, TopicRecord.class));
-
-        // Then:
-        assertThat(e.getCause(), is(instanceOf(JsonParseException.class)));
-        assertThat(
-                e.getCause().getMessage(),
-                is(
-                        "Unknown property: not_notes"
-                                + lineSeparator()
-                                + " at [Source: (StringReader); line: 5, column: 10]"));
+        // Then formatting:on:
+        assertThrows(
+                UnrecognizedPropertyException.class,
+                () -> PARSER.parseOther(yaml, TopicInput.class));
     }
 
     private static ModelParser createParser() {

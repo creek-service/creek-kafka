@@ -17,32 +17,33 @@
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-@JsonDeserialize(using = TopicRecord.TopicRecordDeserializer.class)
 public final class TopicRecord {
 
-    private final Optional<String> topicName;
-    private final Optional<String> clusterName;
+    private final String topicName;
+    private final String clusterName;
     private final Optional3<Object> key;
     private final Optional3<Object> value;
 
     @VisibleForTesting
     TopicRecord(
-            final Optional<String> topicName,
-            final Optional<String> clusterName,
+            final String clusterName,
+            final String topicName,
             final Optional3<Object> key,
             final Optional3<Object> value) {
         this.topicName = requireNonNull(topicName, "topicName");
@@ -51,37 +52,74 @@ public final class TopicRecord {
         this.value = requireNonNull(value, "value");
     }
 
-    @JsonGetter("topic")
-    public Optional<String> topicName() {
+    public String topicName() {
         return topicName;
     }
 
-    @JsonGetter("cluster")
-    public Optional<String> clusterName() {
+    public String clusterName() {
         return clusterName;
     }
 
-    @JsonGetter("key")
     public Optional3<Object> key() {
         return key;
     }
 
-    @JsonGetter("value")
     public Optional3<Object> value() {
         return value;
     }
 
-    public TopicRecord withTopicName(final String topicName) {
-        return new TopicRecord(Optional.of(topicName), clusterName, key, value);
+    @JsonDeserialize(using = TopicRecord.TopicRecordDeserializer.class)
+    public static class RecordBuilder {
+
+        private static final String TOPIC_NOT_SET_ERROR =
+                "Topic not set. Topic must be supplied either at the file or record level.";
+
+        final Optional<String> topicName;
+        final Optional<String> clusterName;
+        final Optional3<Object> key;
+        final Optional3<Object> value;
+
+        @VisibleForTesting
+        RecordBuilder(
+                final Optional<String> clusterName,
+                final Optional<String> topicName,
+                final Optional3<Object> key,
+                final Optional3<Object> value) {
+            this.topicName = requireNonNull(topicName, "topicName");
+            this.clusterName = requireNonNull(clusterName, "clusterName");
+            this.key = requireNonNull(key, "key");
+            this.value = requireNonNull(value, "value");
+        }
+
+        public TopicRecord build(
+                final Optional<String> defaultCluster, final Optional<String> defaultTopic) {
+            return new TopicRecord(
+                    clusterName.orElse(
+                            defaultCluster.orElse(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME)),
+                    topicName.orElseGet(
+                            () ->
+                                    defaultTopic.orElseThrow(
+                                            () ->
+                                                    new IllegalArgumentException(
+                                                            TOPIC_NOT_SET_ERROR))),
+                    key,
+                    value);
+        }
+
+        public static List<TopicRecord> buildRecords(
+                final Optional<String> defaultCluster,
+                final Optional<String> defaultTopic,
+                final Collection<RecordBuilder> builders) {
+
+            return builders.stream()
+                    .map(b -> b.build(defaultCluster, defaultTopic))
+                    .collect(Collectors.toUnmodifiableList());
+        }
     }
 
-    public TopicRecord withClusterName(final String clusterName) {
-        return new TopicRecord(topicName, Optional.of(clusterName), key, value);
-    }
-
-    public static final class TopicRecordDeserializer extends JsonDeserializer<TopicRecord> {
+    public static final class TopicRecordDeserializer extends JsonDeserializer<RecordBuilder> {
         @Override
-        public TopicRecord deserialize(final JsonParser parser, final DeserializationContext ctx)
+        public RecordBuilder deserialize(final JsonParser parser, final DeserializationContext ctx)
                 throws IOException {
 
             Optional<String> topic = Optional.empty();
@@ -113,7 +151,7 @@ public final class TopicRecord {
                 }
             }
 
-            return new TopicRecord(topic, cluster, key, value);
+            return new RecordBuilder(cluster, topic, key, value);
         }
 
         private static void requireNonBlank(
