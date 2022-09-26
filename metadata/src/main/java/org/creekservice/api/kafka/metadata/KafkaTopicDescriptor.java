@@ -34,11 +34,7 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
     @Override
     default URI id() {
-        try {
-            return new URI(SCHEME, cluster(), "/" + name(), null);
-        } catch (final URISyntaxException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+        return resourceId(cluster(), name());
     }
 
     /** @return name of the topic as it is in Kafka. */
@@ -82,5 +78,20 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
          * @return The part's java type.
          */
         Class<T> type();
+    }
+
+    /**
+     * Construct a unique and consistent resource id for a topic.
+     *
+     * @param cluster the logical name of the cluster the topic is on.
+     * @param topic the name of the topic.
+     * @return the unique resource id.
+     */
+    static URI resourceId(final String cluster, final String topic) {
+        try {
+            return new URI(SCHEME, cluster, "/" + topic, null);
+        } catch (final URISyntaxException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 }
