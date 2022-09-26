@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.apache.kafka.common.serialization.Serde;
@@ -85,6 +86,7 @@ class NativeKafkaSerdeProviderTest {
 
     public static Stream<Arguments> supportedTypesAndExpectedSerde() {
         return Stream.of(
+                arguments(UUID.class, Serdes.UUIDSerde.class),
                 arguments(long.class, Serdes.LongSerde.class),
                 arguments(Long.class, Serdes.LongSerde.class),
                 arguments(int.class, Serdes.IntegerSerde.class),
