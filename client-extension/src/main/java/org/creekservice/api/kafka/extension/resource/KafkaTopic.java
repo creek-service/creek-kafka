@@ -17,9 +17,8 @@
 package org.creekservice.api.kafka.extension.resource;
 
 
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.serialization.Serde;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
 /**
  * A Kafka topic resource.
@@ -32,15 +31,52 @@ public interface KafkaTopic<K, V> {
     /** @return the name of the topic */
     String name();
 
+    /** @return the value type */
+    KafkaTopicDescriptor<K, V> descriptor();
+
     /** @return the serde used to (de)serialize the keys stored in the topic */
     Serde<K> keySerde();
 
     /** @return the serde used to (de)serialize the values stored in the topic */
     Serde<V> valueSerde();
 
-    /** @return a Kafka producer configured to produce to this topic */
-    Producer<K, V> producer();
+    /**
+     * Convenience method for serializing a key instance.
+     *
+     * @param key the key to serialize.
+     * @return the binary serialized key.
+     */
+    default byte[] serializeKey(final K key) {
+        return keySerde().serializer().serialize(name(), key);
+    }
 
-    /** @return a Kafka consumer configured to consume from this topic */
-    Consumer<K, V> consumer();
+    /**
+     * Convenience method for serializing a value instance.
+     *
+     * @param value the value to serialize.
+     * @return the binary serialized value.
+     */
+    default byte[] serializeValue(final V value) {
+        return valueSerde().serializer().serialize(name(), value);
+    }
+
+    /**
+     * Convenience method for deserializing a key instance.
+     *
+     * @param key the binary key to deserialize.
+     * @return the deserialized key.
+     */
+    default K deserializeKey(final byte[] key) {
+        return keySerde().deserializer().deserialize(name(), key);
+    }
+
+    /**
+     * Convenience method for deserializing a value instance.
+     *
+     * @param value the binary value to deserialize.
+     * @return the deserialized value.
+     */
+    default V deserializeValue(final byte[] value) {
+        return valueSerde().deserializer().deserialize(name(), value);
+    }
 }

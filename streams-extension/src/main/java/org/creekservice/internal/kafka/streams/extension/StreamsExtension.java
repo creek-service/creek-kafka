@@ -18,7 +18,11 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.util.Properties;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
@@ -57,6 +61,21 @@ public final class StreamsExtension implements KafkaStreamsExtension {
     @Override
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
         return clientsExtension.topic(def);
+    }
+
+    @Override
+    public Producer<byte[], byte[]> producer(final String clusterName) {
+        return clientsExtension.producer(clusterName);
+    }
+
+    @Override
+    public Consumer<byte[], byte[]> consumer(final String clusterName) {
+        return clientsExtension.consumer(clusterName);
+    }
+
+    @Override
+    public void close(final Duration timeout) throws IOException {
+        clientsExtension.close();
     }
 
     @Override

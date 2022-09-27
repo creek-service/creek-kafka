@@ -33,16 +33,25 @@ public final class ResourceRegistry {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
-        final Topic<?, ?> found = topics.get(def.id());
-        if (found == null) {
-            throw new UnknownTopicException(def.id());
-        }
+        final Topic<?, ?> found = find(def.id());
 
         if (!KafkaTopicDescriptors.matches(found.descriptor(), def)) {
             throw new TopicDescriptorMismatchException(def, found.descriptor());
         }
 
         return (KafkaTopic) found;
+    }
+
+    public KafkaTopic<?, ?> topic(final String cluster, final String topic) {
+        return find(KafkaTopicDescriptor.resourceId(cluster, topic));
+    }
+
+    private Topic<?, ?> find(final URI id) {
+        final Topic<?, ?> found = topics.get(id);
+        if (found == null) {
+            throw new UnknownTopicException(id);
+        }
+        return found;
     }
 
     private static final class UnknownTopicException extends IllegalArgumentException {

@@ -66,9 +66,15 @@ class ResourceRegistryTest {
     }
 
     @Test
-    void shouldGetTopic() {
+    void shouldGetTopicByDef() {
         assertThat(registry.topic(topicDefA), is(topicA));
         assertThat(registry.topic(topicDefB), is(topicB));
+    }
+
+    @Test
+    void shouldGetTopicByName() {
+        assertThat(registry.topic(topicDefA.cluster(), topicDefA.name()), is(topicA));
+        assertThat(registry.topic(topicDefB.cluster(), topicDefB.name()), is(topicB));
     }
 
     @Test
