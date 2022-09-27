@@ -75,7 +75,7 @@ public final class StreamsExtension implements KafkaStreamsExtension {
 
     @Override
     public void close(final Duration timeout) throws IOException {
-        clientsExtension.close();
+        clientsExtension.close(timeout);
     }
 
     @Override
