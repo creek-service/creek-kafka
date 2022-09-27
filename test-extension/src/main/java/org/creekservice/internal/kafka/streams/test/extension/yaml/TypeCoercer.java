@@ -170,4 +170,3 @@ public final class TypeCoercer {
         }
     }
 }
-
