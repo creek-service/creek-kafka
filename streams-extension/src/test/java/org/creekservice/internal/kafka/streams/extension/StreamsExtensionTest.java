@@ -129,7 +129,7 @@ class StreamsExtensionTest {
         extension.close(duration);
 
         // Then:
-        verify(extension).close(duration);
+        verify(clientExtension).close(duration);
     }
 
     @Test
