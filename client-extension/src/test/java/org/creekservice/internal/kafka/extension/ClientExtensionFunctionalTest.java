@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.extension.resource;
+package org.creekservice.internal.kafka.extension;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.GROUP_ID_CONFIG;
@@ -24,6 +24,7 @@ import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.Inpu
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -43,6 +44,9 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.test.service.TestServiceDescriptor;
+import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
+import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.KafkaContainer;
@@ -51,7 +55,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-class ResourceRegistryFunctionalTest {
+class ClientExtensionFunctionalTest {
 
     @Container
     private static final KafkaContainer KAFKA_CLUSTER =
@@ -60,6 +64,7 @@ class ResourceRegistryFunctionalTest {
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
+    private ClientsExtension extension;
     private KafkaTopic<String, Long> topic;
 
     @BeforeEach
@@ -79,46 +84,53 @@ class ResourceRegistryFunctionalTest {
             ensureTopics(admin, InputTopic);
         }
 
+        extension = new ClientsExtension(clustersProperties, registry);
         topic = registry.topic(InputTopic);
+    }
+
+    @AfterEach
+    void tearDown() throws IOException {
+        extension.close();
     }
 
     @Test
     void shouldProduceAndConsumeToKafkaTopic() {
         // When:
         produceToTopic();
-        final ConsumerRecord<String, Long> record = consumeFromTopic();
+        final ConsumerRecord<byte[], byte[]> record = consumeFromTopic();
 
         // Then:
-        assertThat(record.key(), is("key"));
-        assertThat(record.value(), is(100L));
+        assertThat(topic.deserializeKey(record.key()), is("key"));
+        assertThat(topic.deserializeValue(record.value()), is(100L));
     }
 
     private void produceToTopic() {
-        try (Producer<String, Long> producer = topic.producer()) {
-            producer.send(new ProducerRecord<>(InputTopic.name(), "key", 100L));
-        }
+        final Producer<byte[], byte[]> producer = extension.producer();
+        producer.send(
+                new ProducerRecord<>(
+                        InputTopic.name(), topic.serializeKey("key"), topic.serializeValue(100L)));
+        producer.flush();
     }
 
-    private ConsumerRecord<String, Long> consumeFromTopic() {
-        try (Consumer<String, Long> consumer = topic.consumer()) {
-            final List<TopicPartition> tps =
-                    IntStream.range(0, InputTopic.config().partitions())
-                            .mapToObj(p -> new TopicPartition(InputTopic.name(), p))
-                            .collect(Collectors.toList());
+    private ConsumerRecord<byte[], byte[]> consumeFromTopic() {
+        final List<TopicPartition> tps =
+                IntStream.range(0, InputTopic.config().partitions())
+                        .mapToObj(p -> new TopicPartition(InputTopic.name(), p))
+                        .collect(Collectors.toList());
 
-            consumer.assign(tps);
+        final Consumer<byte[], byte[]> consumer = extension.consumer();
+        consumer.assign(tps);
 
-            for (int i = 0; i != 30; ++i) {
-                final Iterator<ConsumerRecord<String, Long>> result =
-                        consumer.poll(Duration.ofSeconds(1)).records(InputTopic.name()).iterator();
+        for (int i = 0; i != 30; ++i) {
+            final Iterator<ConsumerRecord<byte[], byte[]>> result =
+                    consumer.poll(Duration.ofSeconds(1)).records(InputTopic.name()).iterator();
 
-                if (result.hasNext()) {
-                    return result.next();
-                }
+            if (result.hasNext()) {
+                return result.next();
             }
-
-            throw new AssertionError("Timed out waiting for record");
         }
+
+        throw new AssertionError("Timed out waiting for record");
     }
 
     private void ensureTopics(final Admin admin, final CreatableKafkaTopic<?, ?>... topics) {

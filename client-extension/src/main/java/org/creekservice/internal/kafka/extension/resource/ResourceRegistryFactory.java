@@ -76,7 +76,7 @@ public final class ResourceRegistryFactory {
         final Map<String, Object> properties = allProperties.get(def.cluster());
         final Serde<K> keySerde = serde(def.key(), def.name(), true, properties);
         final Serde<V> valueSerde = serde(def.value(), def.name(), false, properties);
-        return topicFactory.create(def, keySerde, valueSerde, properties);
+        return topicFactory.create(def, keySerde, valueSerde);
     }
 
     private <T> Serde<T> serde(
@@ -105,10 +105,7 @@ public final class ResourceRegistryFactory {
     @VisibleForTesting
     interface TopicFactory {
         <K, V> Topic<K, V> create(
-                KafkaTopicDescriptor<K, V> def,
-                Serde<K> keySerde,
-                Serde<V> valueSerde,
-                Map<String, Object> clientProperties);
+                KafkaTopicDescriptor<K, V> def, Serde<K> keySerde, Serde<V> valueSerde);
     }
 
     @VisibleForTesting

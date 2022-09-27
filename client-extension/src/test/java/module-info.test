@@ -20,7 +20,7 @@
   org.junit.platform.commons/org.junit.platform.commons.util=junit.jupiter
 
 --add-opens
-  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=junit.jupiter
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension=junit.jupiter
 
 --add-opens
-  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.resource=junit.jupiter
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=junit.jupiter

@@ -20,11 +20,15 @@ import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_C
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Duration;
 import java.util.Properties;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
@@ -77,7 +81,7 @@ class StreamsExtensionTest {
     }
 
     @Test
-    void shouldGetTopicsFromRegistry() {
+    void shouldGetTopicsFromClientExt() {
         // Given:
         when(clientExtension.topic(topicDef)).thenReturn(topic);
 
@@ -86,6 +90,46 @@ class StreamsExtensionTest {
 
         // Then:
         assertThat(result, is(topic));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldGetProducerFromClientExt() {
+        // Given:
+        final Producer<byte[], byte[]> producer = mock(Producer.class);
+        when(clientExtension.producer("name")).thenReturn(producer);
+
+        // When:
+        final Producer<byte[], byte[]> result = extension.producer("name");
+
+        // Then:
+        assertThat(result, is(producer));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldGetConsumerFromClientExt() {
+        // Given:
+        final Consumer<byte[], byte[]> consumer = mock(Consumer.class);
+        when(clientExtension.consumer("name")).thenReturn(consumer);
+
+        // When:
+        final Consumer<byte[], byte[]> result = extension.consumer("name");
+
+        // Then:
+        assertThat(result, is(consumer));
+    }
+
+    @Test
+    void shouldCloseClientExtOnClose() throws Exception {
+        // Given:
+        final Duration duration = Duration.ofMillis(1535);
+
+        // When:
+        extension.close(duration);
+
+        // Then:
+        verify(clientExtension).close(duration);
     }
 
     @Test

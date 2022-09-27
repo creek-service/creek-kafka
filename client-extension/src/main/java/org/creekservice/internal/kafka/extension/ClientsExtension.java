@@ -18,7 +18,17 @@ package org.creekservice.internal.kafka.extension;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
@@ -32,6 +42,8 @@ public final class ClientsExtension implements KafkaClientsExtension {
 
     private final ClustersProperties clustersProperties;
     private final ResourceRegistry resources;
+    private final Map<String, Producer<byte[], byte[]>> producers = new ConcurrentHashMap<>();
+    private final Map<String, Consumer<byte[], byte[]>> consumers = new ConcurrentHashMap<>();
 
     public ClientsExtension(
             final ClustersProperties clustersProperties, final ResourceRegistry resources) {
@@ -52,5 +64,46 @@ public final class ClientsExtension implements KafkaClientsExtension {
     @Override
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
         return resources.topic(def);
+    }
+
+    public KafkaTopic<?, ?> topic(final String cluster, final String topic) {
+        return resources.topic(cluster, topic);
+    }
+
+    @Override
+    public Producer<byte[], byte[]> producer(final String clusterName) {
+        return producers.computeIfAbsent(clusterName, this::createProducer);
+    }
+
+    @Override
+    public Consumer<byte[], byte[]> consumer(final String clusterName) {
+        return consumers.computeIfAbsent(clusterName, this::createConsumer);
+    }
+
+    @Override
+    public void close(final Duration timeout) throws IOException {
+        for (final Producer<byte[], byte[]> producer : producers.values()) {
+            producer.close(timeout);
+        }
+        producers.clear();
+
+        for (final Consumer<byte[], byte[]> consumer : consumers.values()) {
+            consumer.close(timeout);
+        }
+        consumers.clear();
+    }
+
+    private Producer<byte[], byte[]> createProducer(final String clusterName) {
+        return new KafkaProducer<>(
+                clustersProperties.get(clusterName),
+                new ByteArraySerializer(),
+                new ByteArraySerializer());
+    }
+
+    private KafkaConsumer<byte[], byte[]> createConsumer(final String clusterName) {
+        return new KafkaConsumer<>(
+                clustersProperties.get(clusterName),
+                new ByteArrayDeserializer(),
+                new ByteArrayDeserializer());
     }
 }

@@ -16,13 +16,21 @@
 
 package org.creekservice.internal.kafka.extension;
 
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Properties;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -45,6 +53,8 @@ class ClientsExtensionTest {
     @Mock private Properties properties;
     @Mock private KafkaTopicDescriptor<Long, String> topicDef;
     @Mock private Topic<Long, String> topic;
+    private final Map<String, Object> clientProperties =
+            Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:8080");
     private ClientsExtension extension;
 
     @BeforeEach
@@ -52,6 +62,7 @@ class ClientsExtensionTest {
         extension = new ClientsExtension(clustersProperties, resources);
 
         when(clustersProperties.properties(any())).thenReturn(properties);
+        when(clustersProperties.get(any())).thenReturn(clientProperties);
     }
 
     @Test
@@ -70,7 +81,7 @@ class ClientsExtensionTest {
     }
 
     @Test
-    void shouldGetTopicsFromRegistry() {
+    void shouldGetTopicsFromRegistryByDef() {
         // Given:
         when(resources.topic(topicDef)).thenReturn(topic);
 
@@ -79,5 +90,35 @@ class ClientsExtensionTest {
 
         // Then:
         assertThat(result, is(topic));
+    }
+
+    @Test
+    void shouldGetTopicsFromRegistryByName() {
+        // Given:
+        doReturn(topic).when(resources).topic("c", "t");
+
+        // When:
+        final KafkaTopic<?, ?> result = extension.topic("c", "t");
+
+        // Then:
+        assertThat(result, is(topic));
+    }
+
+    @Test
+    void shouldReturnConfiguredKafkaProducer() {
+        // When:
+        final Producer<byte[], byte[]> producer = extension.producer();
+
+        // Then:
+        assertThat(producer, is(instanceOf(KafkaProducer.class)));
+    }
+
+    @Test
+    void shouldReturnConfiguredKafkaConsumer() {
+        // When:
+        final Consumer<byte[], byte[]> consumer = extension.consumer();
+
+        // Then:
+        assertThat(consumer, is(instanceOf(KafkaConsumer.class)));
     }
 }

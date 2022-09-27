@@ -23,22 +23,43 @@ public class ServiceMain {
                 )
                 .build();
 
-        final KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class);
-        
-        try (Consumer<Long, String> consumer = ext.topic(MyServiceDescriptor.InputTopic).consumer();
-             Producer<Long, String> producer = ext.topic(MyServiceDescriptor.OutputTopic).producer()) {
+        new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
+    }
+
+    private final KafkaTopic<Long, String> inputTopic;
+    private final KafkaTopic<Long, String> outputTopic;
+
+    private ServiceMain(KafkaClientsExtension ext) {
+        this.inputTopic = ext.topic(MyServiceDescriptor.InputTopic);
+        this.outputTopic = ext.topic(MyServiceDescriptor.OutputTopic);
+    }
+
+    private void run() {
+        try (Consumer<byte[], byte[]> consumer = ext.consumer();
+             Producer<byte[], byte[]> producer = ext.producer()) {
             
-            consumer.subscribe(List.of(MyServiceDescriptor.InputTopic.name()));
+            consumer.subscribe(List.of(inputTopic.name()));
             
             while (running()) {
-                Iterator<ConsumerRecord<Long, String>> records = consumer.poll(Duration.ofSeconds(1))
-                        .records(MyServiceDescriptor.InputTopic.name())
-                        .iterator();
-
-                records.forEachRemaining(r -> 
-                    producer.send(new ProducerRecord(MyServiceDescriptor.OutputTopic.name(), r.key(), r.value())));
+                consumer.poll(Duration.ofSeconds(1))
+                        .records(inputTopic.name())
+                        .forEach(r -> processInput(r, producer));
             }
         }
+    }
+
+    private void processInput(final ConsumerRecord<byte[], byte[]> input, 
+                              final Producer<byte[], byte[]> producer) {
+
+        long key = inputTopic.deserializeKey(input.key());
+        String value = inputTopic.deserializeValue(input.value());
+        
+        // ... do stuff with key & value.
+        
+        producer.send(new ProducerRecord(outputTopic.name(), 
+                outputTopic.serializeKey(key), 
+                outputTopic.serializeValue(value) 
+                ));
     }
 }
 ```
