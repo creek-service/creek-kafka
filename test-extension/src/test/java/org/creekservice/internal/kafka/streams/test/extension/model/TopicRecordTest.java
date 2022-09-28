@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import java.net.URI;
 import java.util.Optional;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.api.system.test.test.util.ModelParser;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 class TopicRecordTest {
 
+    private static final URI LOCATION = URI.create("some/location");
     private static final ModelParser PARSER =
             CreekSystemTestExtensionTester.extensionTester().yamlParser().build();
 
@@ -253,12 +255,17 @@ class TopicRecordTest {
         // Given:
         final RecordBuilder builder =
                 new RecordBuilder(
-                        Optional.empty(), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
+                        LOCATION,
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional3.of("k"),
+                        Optional3.of("v"));
 
         // When:
         final TopicRecord result = builder.build(Optional.of("c"), Optional.of("t"));
 
         // Then:
+        assertThat(result.location(), is(LOCATION));
         assertThat(result.clusterName(), is("c"));
         assertThat(result.topicName(), is("t"));
         assertThat(result.key(), is(Optional3.of("k")));
@@ -270,7 +277,11 @@ class TopicRecordTest {
         // Given:
         final RecordBuilder builder =
                 new RecordBuilder(
-                        Optional.of("oc"), Optional.of("ot"), Optional3.of("k"), Optional3.of("v"));
+                        LOCATION,
+                        Optional.of("oc"),
+                        Optional.of("ot"),
+                        Optional3.of("k"),
+                        Optional3.of("v"));
 
         // When:
         final TopicRecord result = builder.build(Optional.empty(), Optional.empty());
@@ -287,7 +298,11 @@ class TopicRecordTest {
         // Given:
         final RecordBuilder builder =
                 new RecordBuilder(
-                        Optional.of("oc"), Optional.of("ot"), Optional3.of("k"), Optional3.of("v"));
+                        LOCATION,
+                        Optional.of("oc"),
+                        Optional.of("ot"),
+                        Optional3.of("k"),
+                        Optional3.of("v"));
 
         // When:
         final TopicRecord result = builder.build(Optional.of("c"), Optional.of("t"));
@@ -304,7 +319,11 @@ class TopicRecordTest {
         // Given:
         final RecordBuilder builder =
                 new RecordBuilder(
-                        Optional.of("c"), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
+                        LOCATION,
+                        Optional.of("c"),
+                        Optional.empty(),
+                        Optional3.of("k"),
+                        Optional3.of("v"));
 
         // When:
         final Exception e =
@@ -315,7 +334,9 @@ class TopicRecordTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Topic not set. Topic must be supplied either at the file or record level."));
+                is(
+                        "Topic not set. Topic must be supplied either at the file or record level. location: "
+                                + LOCATION));
     }
 
     @Test
@@ -323,7 +344,11 @@ class TopicRecordTest {
         // Given:
         final RecordBuilder builder =
                 new RecordBuilder(
-                        Optional.empty(), Optional.empty(), Optional3.of("k"), Optional3.of("v"));
+                        LOCATION,
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional3.of("k"),
+                        Optional3.of("v"));
 
         // When:
         final TopicRecord result = builder.build(Optional.empty(), Optional.of("t"));

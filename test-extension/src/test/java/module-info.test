@@ -12,3 +12,6 @@
 
 --add-opens
   creek.kafka.test.extension/org.creekservice.internal.kafka.streams.test.extension.util=com.fasterxml.jackson.databind
+
+--add-opens
+  creek.kafka.test.extension/org.creekservice.internal.kafka.streams.test.extension.yaml=com.fasterxml.jackson.databind

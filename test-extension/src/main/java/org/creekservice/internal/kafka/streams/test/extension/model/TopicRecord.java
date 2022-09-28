@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,10 +32,12 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
+import org.creekservice.internal.kafka.streams.test.extension.yaml.JsonLocation;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicRecord {
 
+    private final URI location;
     private final String topicName;
     private final String clusterName;
     private final Optional3<Object> key;
@@ -42,14 +45,20 @@ public final class TopicRecord {
 
     @VisibleForTesting
     TopicRecord(
+            final URI location,
             final String clusterName,
             final String topicName,
             final Optional3<Object> key,
             final Optional3<Object> value) {
+        this.location = requireNonNull(location, "location");
         this.topicName = requireNonNull(topicName, "topicName");
         this.clusterName = requireNonNull(clusterName, "clusterName");
         this.key = requireNonNull(key, "key");
         this.value = requireNonNull(value, "value");
+    }
+
+    public URI location() {
+        return location;
     }
 
     public String topicName() {
@@ -72,8 +81,9 @@ public final class TopicRecord {
     public static class RecordBuilder {
 
         private static final String TOPIC_NOT_SET_ERROR =
-                "Topic not set. Topic must be supplied either at the file or record level.";
+                "Topic not set. Topic must be supplied either at the file or record level. location: ";
 
+        final URI location;
         final Optional<String> topicName;
         final Optional<String> clusterName;
         final Optional3<Object> key;
@@ -81,10 +91,12 @@ public final class TopicRecord {
 
         @VisibleForTesting
         RecordBuilder(
+                final URI location,
                 final Optional<String> clusterName,
                 final Optional<String> topicName,
                 final Optional3<Object> key,
                 final Optional3<Object> value) {
+            this.location = requireNonNull(location, "location");
             this.topicName = requireNonNull(topicName, "topicName");
             this.clusterName = requireNonNull(clusterName, "clusterName");
             this.key = requireNonNull(key, "key");
@@ -94,6 +106,7 @@ public final class TopicRecord {
         public TopicRecord build(
                 final Optional<String> defaultCluster, final Optional<String> defaultTopic) {
             return new TopicRecord(
+                    location,
                     clusterName.orElse(
                             defaultCluster.orElse(KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME)),
                     topicName.orElseGet(
@@ -101,7 +114,7 @@ public final class TopicRecord {
                                     defaultTopic.orElseThrow(
                                             () ->
                                                     new IllegalArgumentException(
-                                                            TOPIC_NOT_SET_ERROR))),
+                                                            TOPIC_NOT_SET_ERROR + location))),
                     key,
                     value);
         }
@@ -122,6 +135,7 @@ public final class TopicRecord {
         public RecordBuilder deserialize(final JsonParser parser, final DeserializationContext ctx)
                 throws IOException {
 
+            final URI location = JsonLocation.location(parser);
             Optional<String> topic = Optional.empty();
             Optional<String> cluster = Optional.empty();
             Optional3<Object> key = Optional3.notProvided();
@@ -151,7 +165,7 @@ public final class TopicRecord {
                 }
             }
 
-            return new RecordBuilder(cluster, topic, key, value);
+            return new RecordBuilder(location, cluster, topic, key, value);
         }
 
         private static void requireNonBlank(
