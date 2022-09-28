@@ -27,8 +27,12 @@ import static org.mockito.Mockito.when;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
+import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -154,6 +158,20 @@ class KafkaStreamsExtensionOptionsTest {
         assertThat(
                 builder.build().propertiesBuilder().build(Set.of()).get("any"),
                 not(hasEntry("name", "value")));
+    }
+
+    @Test
+    void shouldLoadKafkaPropertyOverridesFromProvider() {
+        // Given:
+        final KafkaPropertyOverrides overridesProvider = cluster -> Map.of("a", "b");
+        final KafkaStreamsExtensionOptions options =
+                builder.withKafkaPropertiesOverrides(overridesProvider).build();
+
+        // When:
+        final ClustersProperties props = options.propertiesBuilder().build(Set.of());
+
+        // Then:
+        assertThat(props.get("any"), hasEntry("a", "b"));
     }
 
     @Test

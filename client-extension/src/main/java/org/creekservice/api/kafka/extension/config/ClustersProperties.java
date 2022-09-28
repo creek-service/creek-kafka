@@ -85,18 +85,6 @@ public final class ClustersProperties {
         return clusters.getOrDefault(clusterName.toLowerCase(), Map.of());
     }
 
-    @Override
-    public String toString() {
-        return "ClustersProperties{"
-                + "common="
-                + common
-                + ", clusters="
-                + clusters
-                + ", overrides="
-                + overrides
-                + '}';
-    }
-
     public static final class Builder {
 
         private final Map<String, Object> common = new HashMap<>();
