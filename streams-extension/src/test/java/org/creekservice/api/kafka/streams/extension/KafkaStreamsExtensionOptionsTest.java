@@ -30,7 +30,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
