@@ -149,7 +149,8 @@ class TopicInputTest {
                 is(
                         "Cannot construct instance of "
                                 + "`org.creekservice.internal.kafka.streams.test.extension.model.TopicInput`, "
-                                + "problem: Topic not set. Topic must be supplied either at the file or record level."
+                                + "problem: Topic not set. Topic must be supplied either at the file or record level. "
+                                + "location: unknown"
                                 + lineSeparator()
                                 + " at [Source: (StringReader); line: 8, column: 13]"));
     }
