@@ -50,7 +50,6 @@ public final class ClustersPropertiesFactory {
                         .map(KafkaTopicDescriptor::cluster)
                         .collect(Collectors.toSet());
 
-        final ClustersProperties overrides = apiOptions.propertyOverrides().get(clusterNames);
-        return apiOptions.propertiesBuilder().putAll(overrides).build();
+        return apiOptions.propertiesBuilder().build(clusterNames);
     }
 }

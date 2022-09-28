@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -44,6 +45,7 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.test.service.TestServiceDescriptor;
+import org.creekservice.api.kafka.test.service.UpstreamAggregateDescriptor;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -74,14 +76,14 @@ class ClientExtensionFunctionalTest {
                         .putCommon(BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.getBootstrapServers())
                         .putCommon(AUTO_OFFSET_RESET_CONFIG, "earliest")
                         .putCommon(GROUP_ID_CONFIG, UUID.randomUUID().toString())
-                        .build();
+                        .build(Set.of());
 
         final ResourceRegistry registry =
                 new ResourceRegistryFactory()
                         .create(List.of(new TestServiceDescriptor()), clustersProperties);
 
         try (Admin admin = Admin.create(clustersProperties.get(DEFAULT_CLUSTER_NAME))) {
-            ensureTopics(admin, InputTopic);
+            ensureTopics(admin, UpstreamAggregateDescriptor.Output);
         }
 
         extension = new ClientsExtension(clustersProperties, registry);
@@ -114,7 +116,7 @@ class ClientExtensionFunctionalTest {
 
     private ConsumerRecord<byte[], byte[]> consumeFromTopic() {
         final List<TopicPartition> tps =
-                IntStream.range(0, InputTopic.config().partitions())
+                IntStream.range(0, UpstreamAggregateDescriptor.Output.config().partitions())
                         .mapToObj(p -> new TopicPartition(InputTopic.name(), p))
                         .collect(Collectors.toList());
 

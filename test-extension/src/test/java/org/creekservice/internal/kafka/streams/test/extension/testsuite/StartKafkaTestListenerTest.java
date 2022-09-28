@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
+import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,12 +66,13 @@ class StartKafkaTestListenerTest {
 
     @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
     @Mock private TopicCollector topicCollector;
+    @Mock private ClusterEndpointsProvider clusterEndpointsProvider;
 
     private StartKafkaTestListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new StartKafkaTestListener(api, topicCollector);
+        listener = new StartKafkaTestListener(api, clusterEndpointsProvider, topicCollector);
 
         when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
@@ -136,6 +139,40 @@ class StartKafkaTestListenerTest {
 
         // Then:
         verify(api.tests().env().currentSuite().services().add(any())).start();
+    }
+
+    @Test
+    void shouldSetClusterEndpoints() {
+        // Given:
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
+
+        final ConfigurableServiceInstance kafkaInstance = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any())).thenReturn(kafkaInstance);
+
+        when(kafkaInstance.testNetworkHostname()).thenReturn("localhost");
+        when(kafkaInstance.testNetworkPort(KafkaContainerDef.TEST_NETWORK_PORT)).thenReturn(27465);
+
+        // When:
+        listener.beforeSuite(null);
+
+        // Then:
+        verify(clusterEndpointsProvider).put("bob", Map.of("bootstrap.servers", "localhost:27465"));
+    }
+
+    @Test
+    void shouldClearClusterEndpoints() {
+        // Given:
+        when(topicCollector.collectTopics(List.of(descriptor0)))
+                .thenReturn(Map.of(ID, kafkaResource0));
+
+        listener.beforeSuite(null);
+
+        // When:
+        listener.afterSuite(null);
+
+        // Then:
+        verify(clusterEndpointsProvider).put("bob", Map.of());
     }
 
     @Test

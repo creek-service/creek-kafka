@@ -33,6 +33,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
     testImplementation(project(":test-service"))
+    testImplementation("org.creekservice:creek-system-test-executor:$creekSystemTestVersion")
     testImplementation("org.creekservice:creek-system-test-test-util:$creekSystemTestVersion")
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")

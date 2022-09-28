@@ -18,22 +18,22 @@ package org.creekservice.api.kafka.extension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
+import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.creekservice.api.kafka.extension.client.TopicClient;
+import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 class KafkaClientsExtensionOptionsTest {
 
@@ -52,8 +52,7 @@ class KafkaClientsExtensionOptionsTest {
                         KafkaClientsExtensionOptions.builder().build())
                 .addEqualityGroup(
                         KafkaClientsExtensionOptions.builder()
-                                .withKafkaPropertiesOverrides(
-                                        (final Set<String> clusterNames) -> null)
+                                .withKafkaPropertiesOverrides(clusterNames -> Map.of())
                                 .build())
                 .addEqualityGroup(
                         KafkaClientsExtensionOptions.builder().withKafkaProperty("k", "v").build())
@@ -78,7 +77,7 @@ class KafkaClientsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG),
                 is("earliest"));
@@ -89,7 +88,7 @@ class KafkaClientsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(ProducerConfig.ACKS_CONFIG),
                 is("all"));
@@ -100,31 +99,39 @@ class KafkaClientsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(ProducerConfig.COMPRESSION_TYPE_CONFIG),
                 is("snappy"));
     }
 
     @Test
+    @SetEnvironmentVariable.SetEnvironmentVariables({
+        @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:8766")
+    })
     void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
-        // When:
+        // Given:
         final KafkaClientsExtensionOptions options = builder.build();
 
+        // When:
+        final ClustersProperties props = options.propertiesBuilder().build(Set.of());
+
         // Then:
-        assertThat(options.propertyOverrides(), is(instanceOf(SystemEnvPropertyOverrides.class)));
+        assertThat(props.get("any"), hasEntry("bootstrap.servers", "localhost:8766"));
     }
 
     @Test
     void shouldLoadKafkaPropertyOverridesFromAlternateProvider() {
         // Given:
-        final KafkaPropertyOverrides overridesProvider = mock(KafkaPropertyOverrides.class);
+        final KafkaPropertyOverrides overridesProvider = cluster -> Map.of("a", "b");
+        final KafkaClientsExtensionOptions options =
+                builder.withKafkaPropertiesOverrides(overridesProvider).build();
 
         // When:
-        builder.withKafkaPropertiesOverrides(overridesProvider);
+        final ClustersProperties props = options.propertiesBuilder().build(Set.of());
 
         // Then:
-        assertThat(builder.build().propertyOverrides(), is(sameInstance(overridesProvider)));
+        assertThat(props.get("any"), hasEntry("a", "b"));
     }
 
     @Test
@@ -134,7 +141,8 @@ class KafkaClientsExtensionOptionsTest {
 
         // Then:
         assertThat(
-                builder.build().propertiesBuilder().build().get("any"), hasEntry("name", "value"));
+                builder.build().propertiesBuilder().build(Set.of()).get("any"),
+                hasEntry("name", "value"));
     }
 
     @Test
@@ -144,9 +152,10 @@ class KafkaClientsExtensionOptionsTest {
 
         // Then:
         assertThat(
-                builder.build().propertiesBuilder().build().get("bob"), hasEntry("name", "value"));
+                builder.build().propertiesBuilder().build(Set.of()).get("bob"),
+                hasEntry("name", "value"));
         assertThat(
-                builder.build().propertiesBuilder().build().get("any"),
+                builder.build().propertiesBuilder().build(Set.of()).get("any"),
                 not(hasEntry("name", "value")));
     }
 }

@@ -160,6 +160,9 @@ public final class TopicRecord {
                         parser.nextToken();
                         value = Optional3.ofNullable(parser.readValueAs(Object.class));
                         break;
+                    case "note":
+                        parser.nextToken();
+                        break;
                     default:
                         throw new JsonParseException(parser, "Unknown property: " + fieldName);
                 }

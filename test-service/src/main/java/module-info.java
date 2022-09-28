@@ -10,5 +10,6 @@ module creek.kafka.test.service {
     exports org.creekservice.api.kafka.test.service;
 
     provides ComponentDescriptor with
-            org.creekservice.api.kafka.test.service.TestServiceDescriptor;
+            org.creekservice.api.kafka.test.service.TestServiceDescriptor,
+            org.creekservice.api.kafka.test.service.UpstreamAggregateDescriptor;
 }

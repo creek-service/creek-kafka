@@ -23,6 +23,7 @@ import static org.creekservice.internal.kafka.extension.config.SystemEnvProperti
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
@@ -60,9 +61,11 @@ import org.creekservice.internal.kafka.extension.config.SystemEnvProperties;
  * <p>For example, config {@code boostrap.servers} for the {@code main-cluster} cluster can be set
  * with a variable name of {@code KAFKA_MAIN_CLUSTER_BOOTSTRAP_SERVERS}.
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class SystemEnvPropertyOverrides implements KafkaPropertyOverrides {
 
     private final Map<String, ?> env;
+    private Optional<ClustersProperties> props = Optional.empty();
 
     public static KafkaPropertyOverrides systemEnvPropertyOverrides() {
         return new SystemEnvPropertyOverrides(System.getenv());
@@ -79,7 +82,7 @@ public final class SystemEnvPropertyOverrides implements KafkaPropertyOverrides 
     }
 
     @Override
-    public ClustersProperties get(final Set<String> clusterNames) {
+    public void init(final Set<String> clusterNames) {
 
         final Set<String> specificPrefixes =
                 clusterNames.stream()
@@ -91,7 +94,13 @@ public final class SystemEnvPropertyOverrides implements KafkaPropertyOverrides 
         extractCommon(specificPrefixes, properties);
         clusterNames.forEach(name -> extractSpecific(name, specificPrefixes, properties));
 
-        return properties.build();
+        props = Optional.of(properties.build(clusterNames));
+    }
+
+    @Override
+    public Map<String, ?> get(final String clusterName) {
+        return props.orElseThrow(() -> new IllegalStateException("init not called"))
+                .get(clusterName);
     }
 
     @Override

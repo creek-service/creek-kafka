@@ -57,6 +57,26 @@ class TopicRecordTest {
     }
 
     @Test
+    void shouldIgnoreNote() throws Exception {
+        // Given formatting:off:
+        final String yaml = "---\n"
+                + "topic: t\n"
+                + "note: 101.4\n"
+                + "cluster: c\n"
+                + "key: 10\n"
+                + "value: hello";
+
+        // When formatting:on:
+        final RecordBuilder result = PARSER.parseOther(yaml, RecordBuilder.class);
+
+        // Then:
+        assertThat(result.clusterName, is(Optional.of("c")));
+        assertThat(result.topicName, is(Optional.of("t")));
+        assertThat(result.key, is(Optional3.of(10)));
+        assertThat(result.value, is(Optional3.of("hello")));
+    }
+
+    @Test
     void shouldParseWithOutTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"

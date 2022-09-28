@@ -19,19 +19,16 @@ package org.creekservice.api.kafka.streams.extension;
 import static org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions.DEFAULT_STREAMS_CLOSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
+import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -95,7 +92,7 @@ class KafkaStreamsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.REPLICATION_FACTOR_CONFIG),
                 is(3));
@@ -106,7 +103,7 @@ class KafkaStreamsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.PROCESSING_GUARANTEE_CONFIG),
                 is(StreamsConfig.EXACTLY_ONCE_BETA));
@@ -117,7 +114,7 @@ class KafkaStreamsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG),
                 is(1000));
@@ -128,31 +125,10 @@ class KafkaStreamsExtensionOptionsTest {
         assertThat(
                 builder.build()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG),
                 is(StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class));
-    }
-
-    @Test
-    void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
-        // When:
-        final KafkaStreamsExtensionOptions options = builder.build();
-
-        // Then:
-        assertThat(options.propertyOverrides(), is(instanceOf(SystemEnvPropertyOverrides.class)));
-    }
-
-    @Test
-    void shouldLoadKafkaPropertyOverridesFromAlternateProvider() {
-        // Given:
-        final KafkaPropertyOverrides overridesProvider = mock(KafkaPropertyOverrides.class);
-
-        // When:
-        builder.withKafkaPropertiesOverrides(overridesProvider);
-
-        // Then:
-        assertThat(builder.build().propertyOverrides(), is(sameInstance(overridesProvider)));
     }
 
     @Test
@@ -162,7 +138,8 @@ class KafkaStreamsExtensionOptionsTest {
 
         // Then:
         assertThat(
-                builder.build().propertiesBuilder().build().get("any"), hasEntry("name", "value"));
+                builder.build().propertiesBuilder().build(Set.of()).get("any"),
+                hasEntry("name", "value"));
     }
 
     @Test
@@ -172,9 +149,10 @@ class KafkaStreamsExtensionOptionsTest {
 
         // Then:
         assertThat(
-                builder.build().propertiesBuilder().build().get("bob"), hasEntry("name", "value"));
+                builder.build().propertiesBuilder().build(Set.of()).get("bob"),
+                hasEntry("name", "value"));
         assertThat(
-                builder.build().propertiesBuilder().build().get("any"),
+                builder.build().propertiesBuilder().build(Set.of()).get("any"),
                 not(hasEntry("name", "value")));
     }
 

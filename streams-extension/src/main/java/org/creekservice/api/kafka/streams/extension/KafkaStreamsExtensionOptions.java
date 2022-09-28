@@ -88,11 +88,6 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     }
 
     @Override
-    public KafkaPropertyOverrides propertyOverrides() {
-        return clientOptions.propertyOverrides();
-    }
-
-    @Override
     public Optional<TopicClient> topicClient() {
         return clientOptions.topicClient();
     }

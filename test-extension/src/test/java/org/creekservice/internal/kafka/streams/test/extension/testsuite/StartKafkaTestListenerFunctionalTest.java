@@ -16,12 +16,15 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.OutputTopic;
 import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,13 +39,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -64,6 +67,7 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Configu
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
+import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -86,6 +90,8 @@ class StartKafkaTestListenerFunctionalTest {
 
     private static StartKafkaTestListener listener;
     private static ConfigurableServiceInstance testService;
+    private static final ClusterEndpointsProvider clusterEndpointsProvider =
+            new ClusterEndpointsProvider();
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
@@ -104,7 +110,7 @@ class StartKafkaTestListenerFunctionalTest {
         when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(testService));
 
-        listener = new StartKafkaTestListener(api);
+        listener = new StartKafkaTestListener(api, clusterEndpointsProvider);
     }
 
     @AfterAll
@@ -122,6 +128,19 @@ class StartKafkaTestListenerFunctionalTest {
         // Then:
         assertThat(serviceInstance("kafka-default-0").running(), is(true));
         assertThat(EXT_TESTER.runningContainerIds().get("kafka-default-0"), is(running()));
+    }
+
+    @Test
+    void shouldPopulateClusterEndPoints() {
+        // Given:
+        clusterEndpointsProvider.init(Set.of());
+        final String bootstrapServers = (String) baseProps().get(BOOTSTRAP_SERVERS_CONFIG);
+        assertThat(bootstrapServers, is(notNullValue()));
+
+        // Then:
+        assertThat(
+                clusterEndpointsProvider.get(DEFAULT_CLUSTER_NAME),
+                is(Map.of(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)));
     }
 
     @Test
@@ -146,6 +165,8 @@ class StartKafkaTestListenerFunctionalTest {
     @Test
     void shouldBeAbleToProduceAndConsumeFromServiceNetwork() {
         // Given:
+        givenTopic(InputTopic.name());
+
         try (KafkaConsumer<Long, String> consumer = kafkaConsumer(OutputTopic)) {
 
             testService.start();
@@ -186,7 +207,7 @@ class StartKafkaTestListenerFunctionalTest {
                         + instance.testNetworkPort(KafkaContainerDef.TEST_NETWORK_PORT);
 
         final Map<String, Object> baseProps = new HashMap<>();
-        baseProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, testNetworkBootstrap);
+        baseProps.put(BOOTSTRAP_SERVERS_CONFIG, testNetworkBootstrap);
         return baseProps;
     }
 

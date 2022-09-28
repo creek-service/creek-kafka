@@ -21,11 +21,12 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.kafka.clients.CommonClientConfigs;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
@@ -34,21 +35,29 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Configu
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
+import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
 
 public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     private final CreekSystemTest api;
     private final TopicCollector topicCollector;
-    private final List<ServiceInstance> kafkaInstances = new ArrayList<>();
+    private final ClusterEndpointsProvider clusterEndpointsProvider;
+    private final Map<String, ServiceInstance> kafkaInstances = new HashMap<>();
 
-    public StartKafkaTestListener(final CreekSystemTest api) {
-        this(api, new TopicCollector());
+    public StartKafkaTestListener(
+            final CreekSystemTest api, final ClusterEndpointsProvider clusterEndpointsProvider) {
+        this(api, clusterEndpointsProvider, new TopicCollector());
     }
 
     @VisibleForTesting
-    StartKafkaTestListener(final CreekSystemTest api, final TopicCollector topicCollector) {
+    StartKafkaTestListener(
+            final CreekSystemTest api,
+            final ClusterEndpointsProvider clusterEndpointsProvider,
+            final TopicCollector topicCollector) {
         this.api = requireNonNull(api, "api");
         this.topicCollector = requireNonNull(topicCollector, "topicCollector");
+        this.clusterEndpointsProvider =
+                requireNonNull(clusterEndpointsProvider, "clusterEndpointsProvider");
     }
 
     @Override
@@ -66,7 +75,10 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
-        kafkaInstances.forEach(ServiceInstance::stop);
+        kafkaInstances
+                .keySet()
+                .forEach(clusterName -> clusterEndpointsProvider.put(clusterName, Map.of()));
+        kafkaInstances.values().forEach(ServiceInstance::stop);
         kafkaInstances.clear();
     }
 
@@ -90,9 +102,17 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
                 api.tests().env().currentSuite().services().add(new KafkaContainerDef(clusterName));
         kafka.start();
 
-        kafkaInstances.add(kafka);
+        kafkaInstances.put(clusterName, kafka);
 
         setEnv(clusterUsers, clusterName, kafka);
+
+        clusterEndpointsProvider.put(
+                clusterName,
+                Map.of(
+                        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,
+                        kafka.testNetworkHostname()
+                                + ":"
+                                + kafka.testNetworkPort(KafkaContainerDef.TEST_NETWORK_PORT)));
     }
 
     private void setEnv(

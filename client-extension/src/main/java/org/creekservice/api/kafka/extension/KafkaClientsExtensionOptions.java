@@ -46,7 +46,6 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
                     ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 
     private final ClustersProperties.Builder properties;
-    private final KafkaPropertyOverrides overridesProvider;
     private final Optional<TopicClient> topicClient;
 
     public static Builder builder() {
@@ -54,22 +53,14 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     }
 
     private KafkaClientsExtensionOptions(
-            final ClustersProperties.Builder properties,
-            final KafkaPropertyOverrides overridesProvider,
-            final Optional<TopicClient> topicClient) {
+            final ClustersProperties.Builder properties, final Optional<TopicClient> topicClient) {
         this.properties = requireNonNull(properties, "properties");
-        this.overridesProvider = requireNonNull(overridesProvider, "overridesProvider");
         this.topicClient = requireNonNull(topicClient, "topicClient");
     }
 
     @Override
     public ClustersProperties.Builder propertiesBuilder() {
         return properties;
-    }
-
-    @Override
-    public KafkaPropertyOverrides propertyOverrides() {
-        return overridesProvider;
     }
 
     @Override
@@ -87,13 +78,12 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         }
         final KafkaClientsExtensionOptions that = (KafkaClientsExtensionOptions) o;
         return Objects.equals(properties, that.properties)
-                && Objects.equals(overridesProvider, that.overridesProvider)
                 && Objects.equals(topicClient, that.topicClient);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(properties, overridesProvider, topicClient);
+        return Objects.hash(properties, topicClient);
     }
 
     @Override
@@ -101,8 +91,6 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         return "KafkaClientsExtensionOptions{"
                 + "properties="
                 + properties
-                + "overridesProvider="
-                + overridesProvider
                 + ", topicClient="
                 + topicClient
                 + '}';
@@ -113,17 +101,18 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
 
         private final ClustersProperties.Builder properties =
                 ClustersProperties.propertiesBuilder();
-        private Optional<KafkaPropertyOverrides> overridesProvider = Optional.empty();
         private Optional<TopicClient> topicClient = Optional.empty();
 
         private Builder() {
             CLIENT_DEFAULTS.forEach(properties::putCommon);
+            properties.withOverridesProvider(
+                    SystemEnvPropertyOverrides.systemEnvPropertyOverrides());
         }
 
         @Override
         public Builder withKafkaPropertiesOverrides(
                 final KafkaPropertyOverrides overridesProvider) {
-            this.overridesProvider = Optional.of(overridesProvider);
+            properties.withOverridesProvider(overridesProvider);
             return this;
         }
 
@@ -147,11 +136,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         }
 
         public KafkaClientsExtensionOptions build() {
-            return new KafkaClientsExtensionOptions(
-                    properties,
-                    overridesProvider.orElseGet(
-                            SystemEnvPropertyOverrides::systemEnvPropertyOverrides),
-                    topicClient);
+            return new KafkaClientsExtensionOptions(properties, topicClient);
         }
     }
 }
