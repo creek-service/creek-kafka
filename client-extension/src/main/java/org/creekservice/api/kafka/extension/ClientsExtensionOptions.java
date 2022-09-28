@@ -28,9 +28,6 @@ public interface ClientsExtensionOptions extends CreekExtensionOptions {
     /** @return the Kafka client properties */
     ClustersProperties.Builder propertiesBuilder();
 
-    /** @return the provider of Kafka client property overrides. */
-    KafkaPropertyOverrides propertyOverrides();
-
     /** @return explicit topic client to use */
     Optional<TopicClient> topicClient();
 

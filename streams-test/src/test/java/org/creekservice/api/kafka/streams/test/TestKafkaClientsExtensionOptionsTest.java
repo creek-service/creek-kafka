@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ class TestKafkaClientsExtensionOptionsTest {
         final Object stateDir =
                 TestKafkaStreamsExtensionOptions.defaults()
                         .propertiesBuilder()
-                        .build()
+                        .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.STATE_DIR_CONFIG);
 

@@ -17,6 +17,10 @@
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 
-public final class TopicExpectation implements Expectation {}
+public final class TopicExpectation implements Expectation {
+
+    public TopicExpectation(@JsonProperty("dummy") final String dummy) {}
+}

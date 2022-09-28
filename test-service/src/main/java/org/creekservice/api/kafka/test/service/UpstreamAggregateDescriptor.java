@@ -22,48 +22,21 @@ import static org.creekservice.internal.kafka.test.service.TopicDescriptors.outp
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.creekservice.api.kafka.metadata.KafkaTopicInput;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
-import org.creekservice.api.platform.metadata.ComponentInput;
-import org.creekservice.api.platform.metadata.ComponentInternal;
+import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentOutput;
-import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
-public final class TestServiceDescriptor implements ServiceDescriptor {
+/** Would normally be in a different jar, but for this test service we'll just have it here. */
+public final class UpstreamAggregateDescriptor implements AggregateDescriptor {
 
-    private static final List<ComponentInput> INPUTS = new ArrayList<>();
-    private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
     private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
 
-    public static final KafkaTopicInput<String, Long> InputTopic =
-            register(UpstreamAggregateDescriptor.Output.toInput());
-
-    public static final OwnedKafkaTopicOutput<Long, String> OutputTopic =
-            register(outputTopic("output", Long.class, String.class, withPartitions(1)));
-
-    @Override
-    public String dockerImage() {
-        return "ghcr.io/creekservice/creek-kafka-test-service";
-    }
-
-    @Override
-    public Collection<ComponentInput> inputs() {
-        return List.copyOf(INPUTS);
-    }
-
-    @Override
-    public Collection<ComponentInternal> internals() {
-        return List.copyOf(INTERNALS);
-    }
+    public static final OwnedKafkaTopicOutput<String, Long> Output =
+            register(outputTopic("input", String.class, Long.class, withPartitions(3)));
 
     @Override
     public Collection<ComponentOutput> outputs() {
         return List.copyOf(OUTPUTS);
-    }
-
-    private static <T extends ComponentInput> T register(final T input) {
-        INPUTS.add(input);
-        return input;
     }
 
     private static <T extends ComponentOutput> T register(final T output) {

@@ -19,7 +19,6 @@ package org.creekservice.internal.kafka.extension.config;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
@@ -45,13 +43,10 @@ class ClustersPropertiesFactoryTest {
     @Mock private TopicCollector topicCollector;
     @Mock private Collection<? extends ComponentDescriptor> components;
     @Mock private ClustersProperties.Builder propertiesBuilder;
-    @Mock private ClustersProperties.Builder updatedPropertiesBuilder;
-    @Mock private KafkaPropertyOverrides propertiesOverrides;
-    @Mock private ClustersProperties propertyOverrides;
     @Mock private ClientsExtensionOptions options;
     @Mock private KafkaTopicDescriptor<?, ?> topicA;
     @Mock private KafkaTopicDescriptor<?, ?> topicB;
-    @Mock private ClustersProperties buildProperties;
+    @Mock private ClustersProperties builtProperties;
     private ClustersPropertiesFactory factory;
 
     @BeforeEach
@@ -59,7 +54,6 @@ class ClustersPropertiesFactoryTest {
         factory = new ClustersPropertiesFactory(topicCollector);
 
         when(options.propertiesBuilder()).thenReturn(propertiesBuilder);
-        when(options.propertyOverrides()).thenReturn(propertiesOverrides);
 
         when(topicCollector.collectTopics(components))
                 .thenReturn(
@@ -72,22 +66,20 @@ class ClustersPropertiesFactoryTest {
         when(topicA.cluster()).thenReturn("cluster-A");
         when(topicB.cluster()).thenReturn("cluster-B");
 
-        when(propertiesOverrides.get(anySet())).thenReturn(propertyOverrides);
-        when(propertiesBuilder.putAll(any())).thenReturn(updatedPropertiesBuilder);
-        when(updatedPropertiesBuilder.build()).thenReturn(buildProperties);
+        when(propertiesBuilder.build(any())).thenReturn(builtProperties);
     }
 
     @Test
-    void shouldPassClusterNamesToOverridesProvider() {
+    void shouldPassClusterNamesToPropertiesBuilder() {
         // When:
         factory.create(components, options);
 
         // Then:
-        verify(propertiesOverrides).get(Set.of("cluster-A", "cluster-B"));
+        verify(propertiesBuilder).build(Set.of("cluster-A", "cluster-B"));
     }
 
     @Test
-    void shouldPassUniqueClusterNamesToOverridesProvider() {
+    void shouldPassUniqueClusterNames() {
         // Given:
         when(topicB.cluster()).thenReturn("cluster-A");
 
@@ -95,16 +87,7 @@ class ClustersPropertiesFactoryTest {
         factory.create(components, options);
 
         // Then:
-        verify(propertiesOverrides).get(Set.of("cluster-A"));
-    }
-
-    @Test
-    void shouldApplyOverridesToProperties() {
-        // When:
-        factory.create(components, options);
-
-        // Then:
-        verify(propertiesBuilder).putAll(propertyOverrides);
+        verify(propertiesBuilder).build(Set.of("cluster-A"));
     }
 
     @Test
@@ -113,6 +96,6 @@ class ClustersPropertiesFactoryTest {
         final ClustersProperties result = factory.create(components, options);
 
         // Then:
-        assertThat(result, is(buildProperties));
+        assertThat(result, is(builtProperties));
     }
 }

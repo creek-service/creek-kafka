@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Holds Kafka client properties for connecting to multiple Kafka clusters.
@@ -37,13 +38,17 @@ public final class ClustersProperties {
 
     private final Map<String, Object> common;
     private final Map<String, Map<String, ?>> clusters;
+    private final KafkaPropertyOverrides overrides;
 
     private ClustersProperties(
-            final Map<String, Object> common, final Map<String, Map<String, Object>> clusters) {
+            final Map<String, Object> common,
+            final Map<String, Map<String, Object>> clusters,
+            final KafkaPropertyOverrides overrides) {
         final Map<String, Map<String, Object>> copy = new HashMap<>();
         clusters.forEach((k, v) -> copy.put(k, Map.copyOf(v)));
         this.common = Map.copyOf(common);
         this.clusters = Map.copyOf(copy);
+        this.overrides = requireNonNull(overrides, "overrides");
     }
 
     public static Builder propertiesBuilder() {
@@ -59,6 +64,7 @@ public final class ClustersProperties {
     public Map<String, Object> get(final String clusterName) {
         final Map<String, Object> props = new HashMap<>(common);
         props.putAll(clusterSpecific(clusterName));
+        props.putAll(overrides.get(clusterName));
         return props;
     }
 
@@ -79,32 +85,11 @@ public final class ClustersProperties {
         return clusters.getOrDefault(clusterName.toLowerCase(), Map.of());
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final ClustersProperties that = (ClustersProperties) o;
-        return Objects.equals(common, that.common) && Objects.equals(clusters, that.clusters);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(common, clusters);
-    }
-
-    @Override
-    public String toString() {
-        return "ClustersProperties{" + "common=" + common + ", clusters=" + clusters + '}';
-    }
-
     public static final class Builder {
 
         private final Map<String, Object> common = new HashMap<>();
         private final Map<String, Map<String, Object>> clusters = new HashMap<>();
+        private KafkaPropertyOverrides overrides = cluster -> Map.of();
 
         private Builder() {}
 
@@ -128,8 +113,14 @@ public final class ClustersProperties {
             return this;
         }
 
-        public ClustersProperties build() {
-            return new ClustersProperties(common, clusters);
+        public Builder withOverridesProvider(final KafkaPropertyOverrides overridesProvider) {
+            overrides = requireNonNull(overridesProvider, "overridesProvider");
+            return this;
+        }
+
+        public ClustersProperties build(final Set<String> clusterNames) {
+            overrides.init(requireNonNull(clusterNames, "clusterNames"));
+            return new ClustersProperties(common, clusters, overrides);
         }
 
         @Override
@@ -142,17 +133,25 @@ public final class ClustersProperties {
             }
             final Builder builder = (Builder) o;
             return Objects.equals(common, builder.common)
-                    && Objects.equals(clusters, builder.clusters);
+                    && Objects.equals(clusters, builder.clusters)
+                    && Objects.equals(overrides, builder.overrides);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(common, clusters);
+            return Objects.hash(common, clusters, overrides);
         }
 
         @Override
         public String toString() {
-            return "ClusterProperties{" + "common=" + common + ", clusters=" + clusters + '}';
+            return "ClusterProperties{"
+                    + "common="
+                    + common
+                    + ", clusters="
+                    + clusters
+                    + ", overrides="
+                    + overrides
+                    + '}';
         }
     }
 }

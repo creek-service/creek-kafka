@@ -17,12 +17,16 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
+import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
+import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 
@@ -40,8 +44,17 @@ public final class KafkaTestExtension implements CreekTestExtension {
 
     @Override
     public void initialize(final CreekSystemTest api) {
+        final ClusterEndpointsProvider clusterEndpointsProvider = new ClusterEndpointsProvider();
+        api.extensions()
+                .addOption(
+                        KafkaClientsExtensionOptions.builder()
+                                .withKafkaPropertiesOverrides(clusterEndpointsProvider)
+                                .build());
         api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
-        api.tests().env().listeners().append(new StartKafkaTestListener(api));
+        api.tests()
+                .env()
+                .listeners()
+                .append(new StartKafkaTestListener(api, clusterEndpointsProvider));
 
         initializeModel(api.tests().model());
     }
@@ -49,5 +62,14 @@ public final class KafkaTestExtension implements CreekTestExtension {
     @VisibleForTesting
     public static void initializeModel(final TestModelContainer model) {
         model.addInput(TopicInput.class, new TopicInputHandler()).withName("creek/kafka-topic");
+        model.addExpectation(TopicExpectation.class, new TopicExpectationHandler())
+                .withName("creek/kafka-topic");
+    }
+
+    private static class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
+        @Override
+        public Verifier prepare(final Collection<TopicExpectation> expectations) {
+            return null;
+        }
     }
 }

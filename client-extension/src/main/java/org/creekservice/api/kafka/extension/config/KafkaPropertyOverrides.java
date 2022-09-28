@@ -17,16 +17,24 @@
 package org.creekservice.api.kafka.extension.config;
 
 
+import java.util.Map;
 import java.util.Set;
 
 /** A provider of Kafka client properties overrides */
 public interface KafkaPropertyOverrides {
 
     /**
-     * Get Kafka client property overrides.
+     * Initialize the overrides provider
      *
      * @param clusterNames the set of known Kafka cluster names.
+     */
+    default void init(Set<String> clusterNames) {}
+
+    /**
+     * Get Kafka client property overrides for a cluster.
+     *
+     * @param clusterName the name of the cluster to get the overrides for.
      * @return property overrides.
      */
-    ClustersProperties get(Set<String> clusterNames);
+    Map<String, ?> get(String clusterName);
 }

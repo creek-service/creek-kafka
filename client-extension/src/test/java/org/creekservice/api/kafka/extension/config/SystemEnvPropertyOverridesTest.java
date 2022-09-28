@@ -18,7 +18,6 @@ package org.creekservice.api.kafka.extension.config;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
-import static org.creekservice.api.kafka.extension.config.ClustersProperties.propertiesBuilder;
 import static org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides.systemEnvPropertyOverrides;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,16 +40,12 @@ class SystemEnvPropertyOverridesTest {
                                 "KAFKA_WHAT_EVER", "meh"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of());
+        provider.init(Set.of());
 
         // Then:
         assertThat(
-                properties,
-                is(
-                        propertiesBuilder()
-                                .putCommon(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-                                .putCommon("what.ever", "meh")
-                                .build()));
+                provider.get("any"),
+                is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", "what.ever", "meh")));
     }
 
     @Test
@@ -63,16 +58,12 @@ class SystemEnvPropertyOverridesTest {
                                 "KAFKA_CUSTOM_WHAT_EVER", "meh"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of("custom"));
+        provider.init(Set.of("custom"));
 
         // Then:
         assertThat(
-                properties,
-                is(
-                        propertiesBuilder()
-                                .put("custom", BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-                                .put("custom", "what.ever", "meh")
-                                .build()));
+                provider.get("custom"),
+                is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", "what.ever", "meh")));
     }
 
     @Test
@@ -86,17 +77,14 @@ class SystemEnvPropertyOverridesTest {
                                 "KAFKA_WHAT_EVER", "ha"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of("jane", "bob"));
+        provider.init(Set.of("jane", "bob"));
 
         // Then:
+        assertThat(provider.get("jane"), is(Map.of("what.ever", "meh")));
+
         assertThat(
-                properties,
-                is(
-                        propertiesBuilder()
-                                .put("bob", BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-                                .put("jane", "what.ever", "meh")
-                                .putCommon("what.ever", "ha")
-                                .build()));
+                provider.get("bob"),
+                is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", "what.ever", "ha")));
     }
 
     @Test
@@ -109,16 +97,10 @@ class SystemEnvPropertyOverridesTest {
                                 "KAFKA_BOB_TWO_WHAT_EVER", "meh"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of("bob", "bob-two"));
+        provider.init(Set.of("bob", "bob-two"));
 
         // Then:
-        assertThat(
-                properties,
-                is(
-                        propertiesBuilder()
-                                .put("bob", BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-                                .put("bob-two", "what.ever", "meh")
-                                .build()));
+        assertThat(provider.get("bob"), is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")));
     }
 
     @Test
@@ -128,10 +110,11 @@ class SystemEnvPropertyOverridesTest {
                 new SystemEnvPropertyOverrides(Map.of("KAFKA_", "blah", "KAFKA_SPECIFIC_", "blah"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of("specific"));
+        provider.init(Set.of("specific"));
 
         // Then:
-        assertThat(properties, is(propertiesBuilder().build()));
+        assertThat(provider.get("any"), is(Map.of()));
+        assertThat(provider.get("specific"), is(Map.of()));
     }
 
     @Test
@@ -141,10 +124,10 @@ class SystemEnvPropertyOverridesTest {
                 new SystemEnvPropertyOverrides(Map.of("NOT_KAFKA_PREFIXED", "blah"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of());
+        provider.init(Set.of("c"));
 
         // Then:
-        assertThat(properties, is(propertiesBuilder().build()));
+        assertThat(provider.get("c"), is(Map.of()));
     }
 
     @Test
@@ -155,16 +138,10 @@ class SystemEnvPropertyOverridesTest {
                         Map.of("KAFKA_PROP", "v1", "KAFKA__WEIRD_PROP", "v2"));
 
         // When:
-        final ClustersProperties properties = provider.get(Set.of());
+        provider.init(Set.of());
 
         // Then:
-        assertThat(
-                properties,
-                is(
-                        propertiesBuilder()
-                                .putCommon("prop", "v1")
-                                .putCommon(".weird.prop", "v2")
-                                .build()));
+        assertThat(provider.get("any"), is(Map.of("prop", "v1", ".weird.prop", "v2")));
     }
 
     @Test
@@ -174,13 +151,14 @@ class SystemEnvPropertyOverridesTest {
     })
     void shouldLoadPropertiesFromEnvironment() {
         // When:
-        final ClustersProperties properties = systemEnvPropertyOverrides().get(Set.of("Custom"));
+        final KafkaPropertyOverrides provider = systemEnvPropertyOverrides();
+        provider.init(Set.of("Custom"));
 
         // Then:
-        assertThat(properties.get(""), is(Map.of(GROUP_ID_CONFIG, "a-group")));
+        assertThat(provider.get("any"), is(Map.of(GROUP_ID_CONFIG, "a-group")));
 
         assertThat(
-                properties.get("Custom"),
+                provider.get("Custom"),
                 is(Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", GROUP_ID_CONFIG, "a-group")));
     }
 }
