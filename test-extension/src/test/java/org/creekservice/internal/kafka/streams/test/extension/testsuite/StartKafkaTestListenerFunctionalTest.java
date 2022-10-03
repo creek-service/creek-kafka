@@ -191,7 +191,7 @@ class StartKafkaTestListenerFunctionalTest {
         final String kafkaContainerId = EXT_TESTER.runningContainerIds().get("kafka-default-0");
 
         // When:
-        listener.afterSuite(null);
+        listener.afterSuite(null, null);
 
         // Then:
         assertThat(serviceInstance("kafka-default-0").running(), is(false));

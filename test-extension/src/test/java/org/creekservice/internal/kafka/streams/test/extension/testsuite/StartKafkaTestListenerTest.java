@@ -169,7 +169,7 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // When:
-        listener.afterSuite(null);
+        listener.afterSuite(null, null);
 
         // Then:
         verify(clusterEndpointsProvider).put("bob", Map.of());
@@ -183,8 +183,8 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(null);
 
         // When:
-        listener.afterSuite(null);
-        listener.afterSuite(null);
+        listener.afterSuite(null, null);
+        listener.afterSuite(null, null);
 
         // Then:
         verify(api.tests().env().currentSuite().services().add(any())).stop();

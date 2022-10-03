@@ -16,11 +16,32 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
-public final class TopicExpectation implements Expectation {
+public final class TopicExpectation implements Expectation, LocationAware<TopicExpectation> {
 
-    public TopicExpectation(@JsonProperty("dummy") final String dummy) {}
+    private final URI location;
+
+    public TopicExpectation(@JsonProperty("dummy") final String dummy) {
+        this(LocationAware.UNKNOWN_LOCATION);
+    }
+
+    private TopicExpectation(final URI location) {
+        this.location = requireNonNull(location, "location");
+    }
+
+    @Override
+    public URI location() {
+        return location;
+    }
+
+    @Override
+    public TopicExpectation withLocation(final URI location) {
+        return new TopicExpectation(location);
+    }
 }

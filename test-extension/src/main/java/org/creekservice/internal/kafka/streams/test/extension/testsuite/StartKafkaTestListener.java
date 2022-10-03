@@ -34,6 +34,7 @@ import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironm
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
 
@@ -74,7 +75,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
     }
 
     @Override
-    public void afterSuite(final CreekTestSuite suite) {
+    public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
         kafkaInstances
                 .keySet()
                 .forEach(clusterName -> clusterEndpointsProvider.put(clusterName, Map.of()));

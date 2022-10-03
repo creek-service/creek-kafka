@@ -20,26 +20,35 @@ import static java.util.Objects.requireNonNull;
 import static org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord.RecordBuilder.buildRecords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Input;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class TopicInput implements Input {
+public final class TopicInput implements Input, LocationAware<TopicInput> {
 
+    private final URI location;
     private final List<TopicRecord> records;
 
+    @SuppressWarnings("unused") // Invoked by Jackson via reflection
     public TopicInput(
             @JsonProperty(value = "topic") final Optional<String> topicName,
             @JsonProperty(value = "cluster") final Optional<String> clusterName,
             @JsonProperty(value = "notes") final Optional<String> ignored,
             @JsonProperty(value = "records") final List<TopicRecord.RecordBuilder> records) {
-        this.records =
+        this(
                 buildRecords(
                         requireNonNull(clusterName, "clusterName"),
                         requireNonNull(topicName, "topicName"),
-                        requireNonNull(records, "records"));
+                        requireNonNull(records, "records")),
+                LocationAware.UNKNOWN_LOCATION);
+    }
 
+    private TopicInput(final List<TopicRecord> records, final URI location) {
+        this.location = requireNonNull(location, "location");
+        this.records = List.copyOf(requireNonNull(records, "records"));
         if (records.isEmpty()) {
             throw new IllegalArgumentException("At least one record is required");
         }
@@ -47,5 +56,15 @@ public final class TopicInput implements Input {
 
     public List<TopicRecord> records() {
         return List.copyOf(records);
+    }
+
+    @Override
+    public URI location() {
+        return location;
+    }
+
+    @Override
+    public TopicInput withLocation(final URI location) {
+        return new TopicInput(records, location);
     }
 }
