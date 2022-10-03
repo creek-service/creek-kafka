@@ -44,7 +44,7 @@ public final class TopicRecord {
     private final Optional3<Object> value;
 
     @VisibleForTesting
-    TopicRecord(
+    public TopicRecord(
             final URI location,
             final String clusterName,
             final String topicName,

@@ -24,10 +24,13 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
+import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
@@ -36,18 +39,29 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaTestExtensionTest {
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    private CreekSystemTest.ExtensionAccessor extensions;
+
+    @Mock private ClientsExtension clientEx;
 
     private KafkaTestExtension ext;
 
     @BeforeEach
     void setUp() {
         ext = new KafkaTestExtension();
+
+        when(api.extensions()).thenReturn(extensions);
+        doReturn(clientEx).when(extensions).ensureExtension(KafkaClientsExtensionProvider.class);
     }
 
     @Test

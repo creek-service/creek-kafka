@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Primitives;
 
 /**
@@ -164,7 +165,8 @@ public final class TypeCoercer {
         }
     }
 
-    public static final class CoercionFailureException extends RuntimeException {
+    @VisibleForTesting
+    static final class CoercionFailureException extends RuntimeException {
         CoercionFailureException(final String msg) {
             super(msg);
         }

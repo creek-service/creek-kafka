@@ -25,6 +25,7 @@ import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
@@ -50,18 +51,24 @@ public final class KafkaTestExtension implements CreekTestExtension {
                         KafkaClientsExtensionOptions.builder()
                                 .withKafkaPropertiesOverrides(clusterEndpointsProvider)
                                 .build());
-        api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
+
+        final ClientsExtension clientsExt =
+                (ClientsExtension)
+                        api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
+
         api.tests()
                 .env()
                 .listeners()
                 .append(new StartKafkaTestListener(api, clusterEndpointsProvider));
 
-        initializeModel(api.tests().model());
+        initializeModel(api.tests().model(), clientsExt);
     }
 
     @VisibleForTesting
-    public static void initializeModel(final TestModelContainer model) {
-        model.addInput(TopicInput.class, new TopicInputHandler()).withName("creek/kafka-topic");
+    public static void initializeModel(
+            final TestModelContainer model, final ClientsExtension clientsExt) {
+        model.addInput(TopicInput.class, new TopicInputHandler(clientsExt))
+                .withName("creek/kafka-topic");
         model.addExpectation(TopicExpectation.class, new TopicExpectationHandler())
                 .withName("creek/kafka-topic");
     }
@@ -69,7 +76,7 @@ public final class KafkaTestExtension implements CreekTestExtension {
     private static class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
         @Override
         public Verifier prepare(final Collection<TopicExpectation> expectations) {
-            return null;
+            return () -> {};
         }
     }
 }
