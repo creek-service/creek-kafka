@@ -79,9 +79,7 @@ public final class KafkaTestExtension implements CreekTestExtension {
     private static class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
 
         @Override
-        public Verifier prepare(
-                final Collection<? extends TopicExpectation> expectations,
-                final ExpectationOptions options) {
+        public Verifier prepare(final Collection<TopicExpectation> expectations) {
             return () -> {};
         }
     }
