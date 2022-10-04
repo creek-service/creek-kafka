@@ -30,6 +30,7 @@ import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInput
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.TearDownTestListener;
 
 /**
  * A Creek system test extension for testing Kafka Streams based microservices.
@@ -61,6 +62,8 @@ public final class KafkaTestExtension implements CreekTestExtension {
                 .listeners()
                 .append(new StartKafkaTestListener(api, clusterEndpointsProvider));
 
+        api.tests().env().listeners().append(new TearDownTestListener(clientsExt));
+
         initializeModel(api.tests().model(), clientsExt);
     }
 
@@ -74,6 +77,7 @@ public final class KafkaTestExtension implements CreekTestExtension {
     }
 
     private static class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
+
         @Override
         public Verifier prepare(final Collection<TopicExpectation> expectations) {
             return () -> {};

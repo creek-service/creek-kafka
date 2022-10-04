@@ -34,6 +34,7 @@ import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.TearDownTestListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,6 +93,15 @@ class KafkaTestExtensionTest {
 
         // Then:
         verify(api.tests().env().listeners()).append(isA(StartKafkaTestListener.class));
+    }
+
+    @Test
+    void shouldAppendTestListenerToTearDownClients() {
+        // When:
+        ext.initialize(api);
+
+        // Then:
+        verify(api.tests().env().listeners()).append(isA(TearDownTestListener.class));
     }
 
     @Test

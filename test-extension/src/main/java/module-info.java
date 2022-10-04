@@ -25,6 +25,7 @@ module creek.kafka.test.extension {
     requires creek.kafka.clients.extension;
     requires creek.kafka.metadata;
     requires creek.base.type;
+    requires org.slf4j;
 
     exports org.creekservice.internal.kafka.streams.test.extension.model to
             com.fasterxml.jackson.databind;
