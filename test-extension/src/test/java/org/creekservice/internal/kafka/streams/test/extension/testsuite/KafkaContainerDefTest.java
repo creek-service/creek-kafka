@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance.ExecResult;
@@ -69,6 +70,15 @@ class KafkaContainerDefTest {
         when(instance.testNetworkPort(9093)).thenReturn(123456);
         when(instance.addEnv(any(), any())).thenReturn(instance);
         when(instance.addExposedPorts(anyInt())).thenReturn(instance);
+    }
+
+    @Test
+    void shouldImplementHashCodeAndEquals() {
+        new EqualsTester()
+                .addEqualityGroup(
+                        new KafkaContainerDef(CLUSTER_NAME), new KafkaContainerDef(CLUSTER_NAME))
+                .addEqualityGroup(new KafkaContainerDef("diff"))
+                .testEquals();
     }
 
     @Test

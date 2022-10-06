@@ -90,6 +90,7 @@ class KafkaTopicDescriptorsTest {
     void shouldNotMatchUnownedIfNameDifferent() {
         // Given:
         final KafkaTopicDescriptor<?, ?> spy = spy(unowned);
+        when(spy.id()).thenReturn(unowned.id());
         when(spy.name()).thenReturn("diff");
 
         // Then:
@@ -100,6 +101,7 @@ class KafkaTopicDescriptorsTest {
     void shouldNotMatchUnownedIfClusterDifferent() {
         // Given:
         final KafkaTopicDescriptor<?, ?> spy = spy(unowned);
+        when(spy.id()).thenReturn(unowned.id());
         when(spy.cluster()).thenReturn("diff");
 
         // Then:
