@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -120,8 +121,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
             final Collection<ConfigurableServiceInstance> clusterUsers,
             final String clusterName,
             final ServiceInstance kafka) {
-        final String prefix =
-                clusterName.isBlank() ? "KAFKA_" : "KAFKA_" + clusterName.toUpperCase() + "_";
+        final String prefix = "KAFKA_" + clusterName.toUpperCase() + "_";
 
         clusterUsers.forEach(
                 instance ->
@@ -141,7 +141,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
         private final ConfigurableServiceInstance service;
 
         ClusterInstance(final String clusterName, final ConfigurableServiceInstance service) {
-            this.clusterName = requireNonNull(clusterName, "cluster");
+            this.clusterName = requireNonBlank(clusterName, "cluster");
             this.service = requireNonNull(service, "service");
         }
 

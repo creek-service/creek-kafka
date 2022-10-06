@@ -17,7 +17,7 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static java.lang.System.lineSeparator;
-import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,10 +38,7 @@ final class KafkaContainerDef implements ServiceDefinition {
     private final String name;
 
     KafkaContainerDef(final String clusterName) {
-        this.name =
-                requireNonNull(clusterName, "clusterName").isBlank()
-                        ? "kafka"
-                        : "kafka-" + clusterName;
+        this.name = "kafka-" + requireNonBlank(clusterName, "clusterName");
     }
 
     @Override
