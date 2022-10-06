@@ -150,7 +150,7 @@ class KafkaResourceValidatorTest {
     @Test
     void shouldThrowOnInvalidClusterName() {
         // Given:
-        when(topic.cluster()).thenReturn("invalid_name");
+        when(topic.cluster()).thenReturn("invalid-123!x");
 
         // When:
         final Exception e =
@@ -161,7 +161,7 @@ class KafkaResourceValidatorTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Invalid topic descriptor: cluster() is invalid: illegal character '_'. Only alpha-numerics and '-' are supported."));
+                        "Invalid topic descriptor: cluster() is invalid: illegal character '!'. Only alpha-numerics and '-' are supported."));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
     }
 

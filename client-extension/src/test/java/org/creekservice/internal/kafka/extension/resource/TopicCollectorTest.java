@@ -153,7 +153,8 @@ class TopicCollectorTest {
     void shouldPreferDescriptorsWithConfig() {
         // Given:
         when(creatableTopic.name()).thenReturn("topicDef");
-        when(componentA.resources()).thenReturn(Stream.of(topic, creatableTopic, topic));
+        when(componentA.resources())
+                .thenReturn(Stream.of(topic, creatableTopic, creatableTopic, topic));
 
         // When:
         final Map<URI, KafkaTopicDescriptor<?, ?>> result =
