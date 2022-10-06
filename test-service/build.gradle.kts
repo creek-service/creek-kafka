@@ -30,7 +30,7 @@ dependencies {
     implementation(project(":streams-extension"))
 
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j18-impl:$log4jVersion")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 
 application {
