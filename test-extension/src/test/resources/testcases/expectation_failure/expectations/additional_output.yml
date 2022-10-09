@@ -1,0 +1,9 @@
+---
+!creek/kafka-topic
+topic: output
+records:
+  - key: 1
+    value: hello
+    notes: record with key 2 is missing form this list, meaning it will be reported as extra.
+  - key: 3
+    value: hello

@@ -1,0 +1,11 @@
+---
+!creek/kafka-topic
+topic: output
+records:
+  - key: 1
+    value: hello
+  - notes: this has the wrong value
+    key: 2
+    value: dad
+  - key: 3
+    value: hello

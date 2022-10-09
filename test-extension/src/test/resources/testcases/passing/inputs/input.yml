@@ -6,3 +6,11 @@ records:
     value: 1
   - key: mum
     value: 2
+  - key: some
+    value: 3
+  - key: any
+    value: 4
+  - notes: null key
+    value: 5
+  - notes: null value
+    key: no_v

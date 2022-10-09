@@ -1,0 +1,30 @@
+---
+name: expectation failures
+services:
+  - test-service
+tests:
+  - name: additional output
+    inputs:
+      - input
+    expectations:
+      - additional_output
+  - name: wrong key
+    inputs:
+      - input
+    expectations:
+      - wrong_key
+  - name: wrong null key
+    inputs:
+      - input
+    expectations:
+      - wrong_null_key
+  - name: wrong value
+    inputs:
+      - input
+    expectations:
+      - wrong_value
+  - name: wrong null value
+    inputs:
+      - input
+    expectations:
+      - wrong_null_value

@@ -57,11 +57,11 @@ class TopicRecordTest {
     }
 
     @Test
-    void shouldIgnoreNote() throws Exception {
+    void shouldIgnoreNotes() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "topic: t\n"
-                + "note: 101.4\n"
+                + "notes: 101.4\n"
                 + "cluster: c\n"
                 + "key: 10\n"
                 + "value: hello";
@@ -378,5 +378,21 @@ class TopicRecordTest {
         assertThat(result.topicName(), is("t"));
         assertThat(result.key(), is(Optional3.of("k")));
         assertThat(result.value(), is(Optional3.of("v")));
+    }
+
+    @Test
+    void shouldUpdateWithCoercedKeyAndValue() {
+        // Given:
+        final TopicRecord record =
+                new TopicRecord(LOCATION, "c", "t", Optional3.of("k"), Optional3.of("v"));
+
+        // When:
+        final TopicRecord result = record.with(Optional3.of("new-k"), Optional3.of("new-v"));
+
+        // Then:
+        assertThat(result.clusterName(), is("c"));
+        assertThat(result.topicName(), is("t"));
+        assertThat(result.key(), is(Optional3.of("new-k")));
+        assertThat(result.value(), is(Optional3.of("new-v")));
     }
 }

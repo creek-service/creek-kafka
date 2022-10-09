@@ -8,13 +8,3 @@ tests:
       - input
     expectations:
       - output
-  - name: test 2
-    inputs:
-      - input
-    expectations:
-      - output
-  - name: test 3
-    inputs:
-      - input
-    expectations:
-      - output

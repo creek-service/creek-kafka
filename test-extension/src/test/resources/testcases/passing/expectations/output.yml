@@ -2,7 +2,17 @@
 !creek/kafka-topic
 topic: output
 records:
-  - key: 1
+  - notes: record expectation without a key, i.e. don't care what key is
     value: hello
-  - key: 2
+  - notes: record expectation with key and value
+    key: 2
     value: mum
+  - notes: record expectation without a value, i.e. don't care what value is
+    key: 3
+  - notes: record expectation without a key or value, i.e. don't care what either is
+  - notes: matched explicitly against a null value
+    key: 5
+    value: ~
+  - notes: matched explicitly ageint a null key
+    key: ~
+    value: no_v
