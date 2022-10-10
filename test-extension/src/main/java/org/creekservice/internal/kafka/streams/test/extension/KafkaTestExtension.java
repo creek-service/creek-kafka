@@ -17,15 +17,14 @@
 package org.creekservice.internal.kafka.streams.test.extension;
 
 
-import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
@@ -72,17 +71,7 @@ public final class KafkaTestExtension implements CreekTestExtension {
             final TestModelContainer model, final ClientsExtension clientsExt) {
         model.addInput(TopicInput.class, new TopicInputHandler(clientsExt))
                 .withName("creek/kafka-topic");
-        model.addExpectation(TopicExpectation.class, new TopicExpectationHandler())
+        model.addExpectation(TopicExpectation.class, new TopicExpectationHandler(clientsExt))
                 .withName("creek/kafka-topic");
-    }
-
-    private static class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
-
-        @Override
-        public Verifier prepare(
-                final Collection<? extends TopicExpectation> expectations,
-                final ExpectationOptions options) {
-            return () -> {};
-        }
     }
 }

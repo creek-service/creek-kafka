@@ -1,0 +1,29 @@
+---
+name: errors
+services:
+  - test-service
+tests:
+  - name: unknown input topic
+    notes: attempting to write input to an unknown topic should cause the test to fail
+    inputs:
+      - unknown_input
+    expectations:
+      - output
+  - name: unknown output topic
+    notes: attempting to read output to an unknown topic should cause the test to fail
+    inputs:
+      - input
+    expectations:
+      - unknown_output
+  - name: bad key
+    notes: attempting to write with the wrong key type
+    inputs:
+      - bad_key
+    expectations:
+      - output
+  - name: bad value
+    notes: attempting to write with the wrong value type
+    inputs:
+      - bad_value
+    expectations:
+      - output

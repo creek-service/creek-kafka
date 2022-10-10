@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic
+notes: expectation of an output on an unknown topic
+topic: unknown-output
+records:
+  - key: 1
+    value: hello

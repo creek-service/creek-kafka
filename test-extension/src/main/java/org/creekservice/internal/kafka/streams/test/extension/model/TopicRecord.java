@@ -77,6 +77,28 @@ public final class TopicRecord {
         return value;
     }
 
+    public TopicRecord with(final Optional3<Object> newKey, final Optional3<Object> newValue) {
+        return new TopicRecord(location, clusterName, topicName, newKey, newValue);
+    }
+
+    @Override
+    public String toString() {
+        return "TopicRecord{"
+                + "clusterName='"
+                + clusterName
+                + '\''
+                + ", topicName='"
+                + topicName
+                + '\''
+                + ", key="
+                + key.orElse("<null>", "<any>")
+                + ", value="
+                + value.orElse("<null>", "<any>")
+                + ", location="
+                + location
+                + '}';
+    }
+
     @JsonDeserialize(using = TopicRecord.TopicRecordDeserializer.class)
     public static class RecordBuilder {
 
@@ -160,7 +182,7 @@ public final class TopicRecord {
                         parser.nextToken();
                         value = Optional3.ofNullable(parser.readValueAs(Object.class));
                         break;
-                    case "note":
+                    case "notes":
                         parser.nextToken();
                         break;
                     default:

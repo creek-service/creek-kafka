@@ -354,24 +354,6 @@ class TopicInputHandlerTest {
     }
 
     @Test
-    void shouldThrowOnUnknownCluster() {
-        // Given:
-        final RuntimeException cause = new RuntimeException("boom");
-        when(clientsExt.producer(any())).thenThrow(cause);
-
-        // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
-
-        // Then:
-        assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record0:///location"));
-        assertThat(e.getCause().getCause(), is(cause));
-    }
-
-    @Test
     void shouldThrowOnUnknownTopic() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
@@ -382,11 +364,11 @@ class TopicInputHandlerTest {
 
         // Then:
         assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record0:///location"));
-        assertThat(e.getCause().getCause(), is(cause));
+                e.getMessage(),
+                is(
+                        "The record's cluster or topic is not known. "
+                                + "cluster: cluster-a, topic: topic-a, location: record0:///location"));
+        assertThat(e.getCause(), is(cause));
     }
 
     @Test
@@ -400,16 +382,12 @@ class TopicInputHandlerTest {
 
         // Then:
         assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record1:///location"));
-        assertThat(
-                e.getCause().getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "The record's key is not compatible with the topic's key type. "
-                                + "key: 123, topic_key_type: java.lang.Integer, topic: topic-b"));
-        assertThat(e.getCause().getCause().getCause(), is(cause));
+                                + "key: 123, key_type: java.lang.Long, topic_key_type: java.lang.Integer, "
+                                + "topic: topic-b, location: record1:///location"));
+        assertThat(e.getCause(), is(cause));
     }
 
     @Test
@@ -423,16 +401,12 @@ class TopicInputHandlerTest {
 
         // Then:
         assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record0:///location"));
-        assertThat(
-                e.getCause().getCause().getMessage(),
+                e.getMessage(),
                 is(
                         "The record's value is not compatible with the topic's value type. "
-                                + "value: 0, topic_value_type: java.lang.String, topic: topic-a"));
-        assertThat(e.getCause().getCause().getCause(), is(cause));
+                                + "value: 0, value_type: java.lang.Integer, topic_value_type: java.lang.String, "
+                                + "topic: topic-a, location: record0:///location"));
+        assertThat(e.getCause(), is(cause));
     }
 
     @Test
@@ -446,14 +420,9 @@ class TopicInputHandlerTest {
 
         // Then:
         assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record1:///location"));
-        assertThat(
-                e.getCause().getCause().getMessage(),
-                is("Failed to serialize the record's key: 124"));
-        assertThat(e.getCause().getCause().getCause(), is(cause));
+                e.getMessage(),
+                is("Failed to serialize the record's key: 124, location: record1:///location"));
+        assertThat(e.getCause(), is(cause));
     }
 
     @Test
@@ -467,14 +436,10 @@ class TopicInputHandlerTest {
 
         // Then:
         assertThat(
-                e.getMessage(), is("Failed to process topic input. location: input:///location"));
-        assertThat(
-                e.getCause().getMessage(),
-                is("Failed to send Kafka record. location: record1:///location"));
-        assertThat(
-                e.getCause().getCause().getMessage(),
-                is("Failed to serialize the record's value: coerced-1"));
-        assertThat(e.getCause().getCause().getCause(), is(cause));
+                e.getMessage(),
+                is(
+                        "Failed to serialize the record's value: coerced-1, location: record1:///location"));
+        assertThat(e.getCause(), is(cause));
     }
 
     @Test
