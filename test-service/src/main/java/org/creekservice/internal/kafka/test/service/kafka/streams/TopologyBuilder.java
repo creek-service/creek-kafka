@@ -21,19 +21,21 @@ import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_C
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.OutputTopic;
 
+import java.util.Objects;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.Branched;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.Transformer;
-import org.apache.kafka.streams.kstream.TransformerSupplier;
-import org.apache.kafka.streams.processor.ProcessorContext;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.streams.extension.util.Name;
 
 public final class TopologyBuilder {
+
+    private static final String PRODUCE_BAD_KEY = "produce-bad-key";
 
     private final KafkaClientsExtension ext;
     private final Name name = Name.root();
@@ -46,36 +48,53 @@ public final class TopologyBuilder {
         final StreamsBuilder builder = new StreamsBuilder();
 
         final KafkaTopic<String, Long> inputTopic = ext.topic(InputTopic);
-        final KafkaTopic<Long, String> outputTopic = ext.topic(OutputTopic);
 
         builder.stream(
                         inputTopic.name(),
                         Consumed.with(inputTopic.keySerde(), inputTopic.valueSerde())
                                 .withName(name.name("ingest-" + inputTopic.name())))
                 .peek((k, v) -> System.out.println("received " + k + "-> " + v))
-                .transform(switchKeyAndValue(), name.named("switch"))
-                .peek((k, v) -> System.out.println("producing " + k + "-> " + v))
-                .to(
-                        outputTopic.name(),
-                        Produced.with(outputTopic.keySerde(), outputTopic.valueSerde())
-                                .withName(name.name("egress-" + outputTopic.name())));
+                .split(name.named("branch-"))
+                .branch(
+                        this::shouldProduceBadOutput,
+                        Branched.withConsumer(this::handleBadOutput).withName("bad-output"))
+                .defaultBranch(
+                        Branched.withConsumer(this::handleGoodOutput).withName("good-output"));
 
         return builder.build(ext.properties(DEFAULT_CLUSTER_NAME));
     }
 
-    private TransformerSupplier<String, Long, KeyValue<Long, String>> switchKeyAndValue() {
-        return () ->
-                new Transformer<>() {
-                    @Override
-                    public void init(final ProcessorContext context) {}
+    private void handleGoodOutput(final KStream<String, Long> branch) {
+        final KafkaTopic<Long, String> outputTopic = ext.topic(OutputTopic);
 
-                    @Override
-                    public KeyValue<Long, String> transform(final String key, final Long value) {
-                        return new KeyValue<>(value, key);
-                    }
+        branch.map((k, v) -> new KeyValue<>(v, k), name.named("fliparoo"))
+                .peek((k, v) -> System.out.println("producing good output: " + k + "-> " + v))
+                .to(
+                        outputTopic.name(),
+                        Produced.with(outputTopic.keySerde(), outputTopic.valueSerde())
+                                .withName(name.name("good-egress-" + outputTopic.name())));
+    }
 
-                    @Override
-                    public void close() {}
-                };
+    private void handleBadOutput(final KStream<String, Long> branch) {
+        final KafkaTopic<Long, String> outputTopic = ext.topic(OutputTopic);
+
+        branch.map(this::generateBadOutput, name.named("generate-bad-output"))
+                .peek((k, v) -> System.out.println("producing bad output: " + k + "-> " + v))
+                .to(
+                        outputTopic.name(),
+                        // Note: serde deliberately wrong way round:
+                        Produced.with(outputTopic.valueSerde(), outputTopic.keySerde())
+                                .withName(name.name("bad-egress-" + outputTopic.name())));
+    }
+
+    private KeyValue<String, Long> generateBadOutput(final String key, final Long value) {
+        // Don't flip key & value, causing a string to be serialized as the key,
+        // where a long is expected. Note, doing the same for the value won't
+        // cause a deserialization as String constructor accepts any byte sequence.
+        return new KeyValue<>(key, null);
+    }
+
+    private boolean shouldProduceBadOutput(final String key, final Long value) {
+        return Objects.equals(key, PRODUCE_BAD_KEY);
     }
 }
