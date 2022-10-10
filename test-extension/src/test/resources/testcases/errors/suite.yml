@@ -15,15 +15,21 @@ tests:
       - input
     expectations:
       - unknown_output
-  - name: bad key
+  - name: bad input key
     notes: attempting to write with the wrong key type
     inputs:
-      - bad_key
+      - bad_input_key
     expectations:
       - output
-  - name: bad value
+  - name: bad input value
     notes: attempting to write with the wrong value type
     inputs:
-      - bad_value
+      - bad_input_value
+    expectations:
+      - output
+  - name: bad output key
+    notes: the test service will deliberatly produce a record with an invalid key, which the system tests will fail to deserialize
+    inputs:
+      - bad_output_key
     expectations:
       - output

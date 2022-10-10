@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic
+topic: input
+notes: produce a record that will cause the test-service to write a record with an invalid key to the output topic
+records:
+  - key: produce-bad-key
+    value: 1

@@ -110,7 +110,7 @@ class KafkaTestExtensionFunctionalTest {
         assertThat(
                 errorMessage(result, 2),
                 containsString(
-                        "Test run failed for test case: bad key, cause: "
+                        "Test run failed for test case: bad input key, cause: "
                                 + "The record's key is not compatible with the topic's key type. "
                                 + "key: [not a string], key_type: java.util.ArrayList, "
                                 + "topic_key_type: java.lang.String, topic: input"));
@@ -118,16 +118,28 @@ class KafkaTestExtensionFunctionalTest {
         assertThat(
                 errorMessage(result, 3),
                 containsString(
-                        "Test run failed for test case: bad value, cause: "
+                        "Test run failed for test case: bad input value, cause: "
                                 + "The record's value is not compatible with the topic's value type. "
                                 + "value: not a number, value_type: java.lang.String, "
                                 + "topic_value_type: java.lang.Long, topic: input"));
+
+        assertThat(
+                errorMessage(result, 4),
+                containsString(
+                        "Test run failed for test case: bad output key, cause: "
+                                + "Failed to deserialize record key. topic: output, partition: 0, offset: 0"));
     }
 
     private static String failureMessage(final TestExecutionResult result, final int index) {
-        assertThat(result.results(), hasSize(1));
-        assertThat(result.results().get(0).testCases(), hasSize(greaterThan(index)));
-        assertThat(result.results().get(0).testCases().get(index).failure(), not(Optional.empty()));
+        assertThat(result.toString(), result.results(), hasSize(1));
+        assertThat(
+                result.toString(),
+                result.results().get(0).testCases(),
+                hasSize(greaterThan(index)));
+        assertThat(
+                result.toString(),
+                result.results().get(0).testCases().get(index).failure(),
+                not(Optional.empty()));
         return result.results()
                 .get(0)
                 .testCases()
@@ -138,9 +150,15 @@ class KafkaTestExtensionFunctionalTest {
     }
 
     private static String errorMessage(final TestExecutionResult result, final int index) {
-        assertThat(result.results(), hasSize(1));
-        assertThat(result.results().get(0).testCases(), hasSize(greaterThan(index)));
-        assertThat(result.results().get(0).testCases().get(index).error(), not(Optional.empty()));
+        assertThat(result.toString(), result.results(), hasSize(1));
+        assertThat(
+                result.toString(),
+                result.results().get(0).testCases(),
+                hasSize(greaterThan(index)));
+        assertThat(
+                result.toString(),
+                result.results().get(0).testCases().get(index).error(),
+                not(Optional.empty()));
         return result.results()
                 .get(0)
                 .testCases()
