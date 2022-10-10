@@ -20,7 +20,6 @@ import static java.util.Objects.requireNonNull;
 import static org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord.RecordBuilder.buildRecords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Input;
@@ -36,10 +35,12 @@ public final class TopicInput implements Input {
             @JsonProperty(value = "cluster") final Optional<String> clusterName,
             @JsonProperty(value = "notes") final Optional<String> ignored,
             @JsonProperty(value = "records") final List<TopicRecord.RecordBuilder> records) {
-        this.records = List.copyOf(buildRecords(
-                requireNonNull(clusterName, "clusterName"),
-                requireNonNull(topicName, "topicName"),
-                requireNonNull(records, "records")));
+        this.records =
+                List.copyOf(
+                        buildRecords(
+                                requireNonNull(clusterName, "clusterName"),
+                                requireNonNull(topicName, "topicName"),
+                                requireNonNull(records, "records")));
 
         if (records.isEmpty()) {
             throw new IllegalArgumentException("At least one record is required");
