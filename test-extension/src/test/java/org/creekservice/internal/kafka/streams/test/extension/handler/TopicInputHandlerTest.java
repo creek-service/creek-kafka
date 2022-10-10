@@ -93,7 +93,6 @@ class TopicInputHandlerTest {
                         Optional3.of("1"));
 
         when(input.records()).thenReturn(List.of(record0, record1));
-        when(input.location()).thenReturn(URI.create("input:///location"));
 
         when(clientsExt.producer("cluster-a")).thenReturn(producerA);
         when(clientsExt.producer("cluster-b")).thenReturn(producerB);

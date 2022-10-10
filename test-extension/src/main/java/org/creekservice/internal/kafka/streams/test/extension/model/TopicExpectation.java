@@ -27,9 +27,8 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class TopicExpectation implements Expectation, LocationAware<TopicExpectation> {
+public final class TopicExpectation implements Expectation {
 
-    private final URI location;
     private final List<TopicRecord> records;
 
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
@@ -38,17 +37,11 @@ public final class TopicExpectation implements Expectation, LocationAware<TopicE
             @JsonProperty(value = "cluster") final Optional<String> clusterName,
             @JsonProperty(value = "notes") final Optional<String> ignored,
             @JsonProperty(value = "records") final List<TopicRecord.RecordBuilder> records) {
-        this(
-                buildRecords(
-                        requireNonNull(clusterName, "clusterName"),
-                        requireNonNull(topicName, "topicName"),
-                        requireNonNull(records, "records")),
-                LocationAware.UNKNOWN_LOCATION);
-    }
+        this.records = List.copyOf(buildRecords(
+                requireNonNull(clusterName, "clusterName"),
+                requireNonNull(topicName, "topicName"),
+                requireNonNull(records, "records")));
 
-    public TopicExpectation(final List<TopicRecord> records, final URI location) {
-        this.location = requireNonNull(location, "location");
-        this.records = List.copyOf(requireNonNull(records, "records"));
         if (records.isEmpty()) {
             throw new IllegalArgumentException("At least one record is required");
         }
@@ -56,15 +49,5 @@ public final class TopicExpectation implements Expectation, LocationAware<TopicE
 
     public List<TopicRecord> records() {
         return List.copyOf(records);
-    }
-
-    @Override
-    public URI location() {
-        return location;
-    }
-
-    @Override
-    public TopicExpectation withLocation(final URI location) {
-        return new TopicExpectation(records, location);
     }
 }
