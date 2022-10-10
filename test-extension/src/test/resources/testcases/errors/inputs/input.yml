@@ -1,0 +1,6 @@
+---
+!creek/kafka-topic
+topic: input
+records:
+  - key: hello
+    value: 1

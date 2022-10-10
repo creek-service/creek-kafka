@@ -16,12 +16,19 @@
 
 package org.creekservice.internal.kafka.streams.test.extension;
 
+import static org.creekservice.api.test.hamcrest.PathMatchers.regularFile;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
+import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,14 +41,113 @@ class KafkaTestExtensionFunctionalTest {
     @TempDir private Path resultsDir;
 
     @Test
-    void shouldRunTests() {
+    void shouldDetectSuccess() {
         final ExecutorOptions options = executorOptions("passing");
 
         // When:
-        final boolean allPassed = SystemTestExecutor.run(options);
+        final TestExecutionResult result = SystemTestExecutor.run(options);
 
         // Then:
-        assertThat(allPassed, is(true));
+        assertThat(result.toString(), result.passed(), is(true));
+        assertThat(resultsDir.resolve("TEST-passing_suite.xml"), is(regularFile()));
+    }
+
+    @Test
+    void shouldDetectExpectationFailures() {
+        final ExecutorOptions options = executorOptions("expectation_failure");
+
+        // When:
+        final TestExecutionResult result = SystemTestExecutor.run(options);
+
+        // Then:
+        assertThat(result.toString(), result.passed(), is(false));
+        assertThat(resultsDir.resolve("TEST-expectation_failures.xml"), is(regularFile()));
+        assertThat(failureMessage(result, 0), containsString("Additional records"));
+        assertThat(failureMessage(result, 1), containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, 1),
+                containsString("(Mismatch@key@char5, expected: Long(-2), actual: Long(2))"));
+        assertThat(failureMessage(result, 2), containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, 2),
+                containsString("(Mismatch@key@char0, expected: <empty>, actual: Long(2))"));
+        assertThat(failureMessage(result, 3), containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, 3),
+                containsString(
+                        "(Mismatch@value@char7, expected: String(dad), actual: String(mum))"));
+        assertThat(failureMessage(result, 4), containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, 4),
+                containsString("(Mismatch@value@char0, expected: <empty>, actual: String(mum))"));
+    }
+
+    @Test
+    void shouldDetectErrors() {
+        final ExecutorOptions options = executorOptions("errors");
+
+        // When:
+        final TestExecutionResult result = SystemTestExecutor.run(options);
+
+        // Then:
+        assertThat(result.toString(), result.passed(), is(false));
+        assertThat(resultsDir.resolve("TEST-errors.xml"), is(regularFile()));
+
+        assertThat(
+                errorMessage(result, 0),
+                containsString(
+                        "Test run failed for test case: unknown input topic, cause: "
+                                + "The record's cluster or topic is not known. "
+                                + "cluster: default, topic: unknown-input"));
+
+        assertThat(
+                errorMessage(result, 1),
+                containsString(
+                        "Test run failed for test case: unknown output topic, cause: "
+                                + "The expected record's cluster or topic is not known. "
+                                + "cluster: default, topic: unknown-output"));
+
+        assertThat(
+                errorMessage(result, 2),
+                containsString(
+                        "Test run failed for test case: bad key, cause: "
+                                + "The record's key is not compatible with the topic's key type. "
+                                + "key: [not a string], key_type: java.util.ArrayList, "
+                                + "topic_key_type: java.lang.String, topic: input"));
+
+        assertThat(
+                errorMessage(result, 3),
+                containsString(
+                        "Test run failed for test case: bad value, cause: "
+                                + "The record's value is not compatible with the topic's value type. "
+                                + "value: not a number, value_type: java.lang.String, "
+                                + "topic_value_type: java.lang.Long, topic: input"));
+    }
+
+    private static String failureMessage(final TestExecutionResult result, final int index) {
+        assertThat(result.results(), hasSize(1));
+        assertThat(result.results().get(0).testCases(), hasSize(greaterThan(index)));
+        assertThat(result.results().get(0).testCases().get(index).failure(), not(Optional.empty()));
+        return result.results()
+                .get(0)
+                .testCases()
+                .get(index)
+                .failure()
+                .map(Throwable::getMessage)
+                .orElse("");
+    }
+
+    private static String errorMessage(final TestExecutionResult result, final int index) {
+        assertThat(result.results(), hasSize(1));
+        assertThat(result.results().get(0).testCases(), hasSize(greaterThan(index)));
+        assertThat(result.results().get(0).testCases().get(index).error(), not(Optional.empty()));
+        return result.results()
+                .get(0)
+                .testCases()
+                .get(index)
+                .error()
+                .map(Throwable::getMessage)
+                .orElse("");
     }
 
     private ExecutorOptions executorOptions(final String suite) {

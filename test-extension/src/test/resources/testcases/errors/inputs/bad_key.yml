@@ -1,0 +1,6 @@
+---
+!creek/kafka-topic
+topic: input
+records:
+  - key: ["not a string"]
+    value: 1

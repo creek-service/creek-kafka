@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic
+notes: input to an unknown topic
+topic: unknown-input
+records:
+  - key: hello
+    value: 1

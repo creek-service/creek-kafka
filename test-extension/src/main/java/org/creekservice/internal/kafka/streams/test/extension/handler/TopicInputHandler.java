@@ -48,12 +48,7 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
 
     @Override
     public void process(final TopicInput input) {
-        try {
-            input.records().forEach(this::process);
-        } catch (final Exception e) {
-            throw new TopicInputException(
-                    "Failed to process topic input. " + "location: " + input.location(), e);
-        }
+        input.records().forEach(this::process);
     }
 
     @Override
@@ -63,25 +58,20 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     }
 
     private void process(final TopicRecord record) {
-        try {
-            send(record, clientsExt.topic(record.clusterName(), record.topicName()));
-        } catch (final Exception e) {
-            throw new TopicInputException(
-                    "Failed to send Kafka record. " + "location: " + record.location(), e);
-        }
+        send(record, kafkaTopic(record));
     }
 
     private <K, V> void send(final TopicRecord record, final KafkaTopic<K, V> topic) {
         final byte[] key =
                 record.key()
-                        .map(k -> coerceKey(k, topic))
-                        .map(k -> serializeKey(k, topic))
+                        .map(k -> coerceKey(k, topic, record))
+                        .map(k -> serializeKey(k, topic, record))
                         .orElse(null, null);
 
         final byte[] value =
                 record.value()
-                        .map(v -> coerceValue(v, topic))
-                        .map(v -> serializeValue(v, topic))
+                        .map(v -> coerceValue(v, topic, record))
+                        .map(v -> serializeValue(v, topic, record))
                         .orElse(null, null);
 
         final Producer<byte[], byte[]> producer = clientsExt.producer(record.clusterName());
@@ -91,7 +81,24 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
         toFlush.add(producer);
     }
 
-    private <K> K coerceKey(final Object key, final KafkaTopic<K, ?> topic) {
+    private KafkaTopic<?, ?> kafkaTopic(final TopicRecord record) {
+        try {
+            return clientsExt.topic(record.clusterName(), record.topicName());
+        } catch (final Exception e) {
+            throw new TopicInputException(
+                    "The record's cluster or topic is not known."
+                            + " cluster: "
+                            + record.clusterName()
+                            + ", topic: "
+                            + record.topicName()
+                            + ", location: "
+                            + record.location(),
+                    e);
+        }
+    }
+
+    private <K> K coerceKey(
+            final Object key, final KafkaTopic<K, ?> topic, final TopicRecord record) {
         try {
             return coercer.coerce(key, topic.descriptor().key().type());
         } catch (final Exception e) {
@@ -99,15 +106,20 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
                     "The record's key is not compatible with the topic's key type."
                             + " key: "
                             + key
+                            + ", key_type: "
+                            + key.getClass().getName()
                             + ", topic_key_type: "
                             + topic.descriptor().key().type().getName()
                             + ", topic: "
-                            + topic.name(),
+                            + topic.name()
+                            + ", location: "
+                            + record.location(),
                     e);
         }
     }
 
-    private <V> V coerceValue(final Object value, final KafkaTopic<?, V> topic) {
+    private <V> V coerceValue(
+            final Object value, final KafkaTopic<?, V> topic, final TopicRecord record) {
         try {
             return coercer.coerce(value, topic.descriptor().value().type());
         } catch (final Exception e) {
@@ -115,27 +127,43 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
                     "The record's value is not compatible with the topic's value type."
                             + " value: "
                             + value
+                            + ", value_type: "
+                            + value.getClass().getName()
                             + ", topic_value_type: "
                             + topic.descriptor().value().type().getName()
                             + ", topic: "
-                            + topic.name(),
+                            + topic.name()
+                            + ", location: "
+                            + record.location(),
                     e);
         }
     }
 
-    private <K> byte[] serializeKey(final K key, final KafkaTopic<K, ?> topic) {
+    private <K> byte[] serializeKey(
+            final K key, final KafkaTopic<K, ?> topic, final TopicRecord record) {
         try {
             return topic.serializeKey(key);
         } catch (final Exception e) {
-            throw new TopicInputException("Failed to serialize the record's key: " + key, e);
+            throw new TopicInputException(
+                    "Failed to serialize the record's key: "
+                            + key
+                            + ", location: "
+                            + record.location(),
+                    e);
         }
     }
 
-    private <V> byte[] serializeValue(final V value, final KafkaTopic<?, V> topic) {
+    private <V> byte[] serializeValue(
+            final V value, final KafkaTopic<?, V> topic, final TopicRecord record) {
         try {
             return topic.serializeValue(value);
         } catch (final Exception e) {
-            throw new TopicInputException("Failed to serialize the record's value: " + value, e);
+            throw new TopicInputException(
+                    "Failed to serialize the record's value: "
+                            + value
+                            + ", location: "
+                            + record.location(),
+                    e);
         }
     }
 
