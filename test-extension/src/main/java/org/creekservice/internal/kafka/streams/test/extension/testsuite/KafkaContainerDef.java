@@ -49,7 +49,7 @@ final class KafkaContainerDef implements ServiceDefinition {
     @Override
     public String dockerImage() {
         // Should be configurable: https://github.com/creek-service/creek-kafka/issues/82
-        return "confluentinc/cp-kafka:6.2.4";
+        return "confluentinc/cp-kafka:6.2.7";
     }
 
     @Override

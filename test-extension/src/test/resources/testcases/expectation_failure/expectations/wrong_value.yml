@@ -7,5 +7,5 @@ records:
   - notes: this has the wrong value
     key: 2
     value: dad
-  - key: 3
-    value: hello
+  - key: 1
+    value: bye

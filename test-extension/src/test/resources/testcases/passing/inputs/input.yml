@@ -14,3 +14,5 @@ records:
     value: 5
   - notes: null value
     key: no_v
+  - key: bye
+    value: 1

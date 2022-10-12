@@ -18,12 +18,12 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.internal.kafka.streams.test.extension.util.ErrorMsgUtil.formatList;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
@@ -31,6 +31,7 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
 
 final class TopicVerifier implements ExpectationHandler.Verifier {
+
     private static final Duration EXTRA_RECORD_TIMEOUT = Duration.ofSeconds(1);
 
     private final Clock clock;
@@ -97,10 +98,10 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
                         + " expected record(s) not found."
                         + lineSeparator()
                         + "Unmatched records: "
-                        + formattedArray(unmatched)
+                        + formatList(unmatched)
                         + lineSeparator()
                         + "Matched records: "
-                        + formattedArray(result.matched()));
+                        + formatList(result.matched()));
     }
 
     private static AssertionError extrasError(final List<ConsumedRecord> extras) {
@@ -108,7 +109,7 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
                 "Additional records were produced."
                         + lineSeparator()
                         + "Unmatched records: "
-                        + formattedArray(extras));
+                        + formatList(extras));
     }
 
     private static String format(final Unmatched unmatched) {
@@ -122,19 +123,6 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
                 + unmatched.expected()
                 + lineSeparator()
                 + "\tActual: "
-                + formattedArray(mismatchReasons, 2);
-    }
-
-    static String formattedArray(final List<?> list) {
-        return formattedArray(list, 1);
-    }
-
-    private static String formattedArray(final List<?> list, final int indentLevel) {
-        final String indent = "\t".repeat(indentLevel);
-        final String finalIndent = "\t".repeat(indentLevel - 1);
-        return list.stream()
-                .map(Objects::toString)
-                .map(s -> lineSeparator() + indent + s)
-                .collect(Collectors.joining(",", "[", lineSeparator() + finalIndent + "]"));
+                + formatList(mismatchReasons, 1);
     }
 }

@@ -2,6 +2,9 @@
 !creek/kafka-topic
 topic: output
 records:
+  - notes: expectation out of order, but this should not cause a failure as ordering is not enabled.
+    key: 1
+    value: bye
   - notes: record expectation without a key, i.e. don't care what key is
     value: hello
   - notes: record expectation with key and value

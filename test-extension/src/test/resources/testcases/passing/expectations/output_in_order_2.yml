@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic
+topic: output
+notes: having this in a separate file tests that the records from two files are combined in the right order.
+records:
+  - key: 1
+    value: bye

@@ -47,7 +47,7 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     }
 
     @Override
-    public void process(final TopicInput input) {
+    public void process(final TopicInput input, final InputOptions options) {
         input.records().forEach(this::process);
     }
 

@@ -34,6 +34,7 @@ import java.util.List;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
@@ -62,6 +63,7 @@ class TopicInputHandlerTest {
 
     @Mock private TypeCoercer coercer;
     @Mock private TopicInput input;
+    @Mock private InputOptions options;
     @Mock private Producer<byte[], byte[]> producerA;
     @Mock private Producer<byte[], byte[]> producerB;
 
@@ -133,7 +135,7 @@ class TopicInputHandlerTest {
         when(input.records()).thenReturn(List.of());
 
         // When:
-        handler.process(input);
+        handler.process(input, options);
         handler.flush();
 
         // Then:
@@ -143,7 +145,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldGetTopic() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(clientsExt).topic("cluster-a", "topic-a");
@@ -153,7 +155,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldGetProducer() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(clientsExt).producer("cluster-a");
@@ -163,7 +165,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldCoerceKeys() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(coercer).coerce(87, Integer.class);
@@ -173,7 +175,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldCoerceValues() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(coercer).coerce(0, String.class);
@@ -183,7 +185,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldSerializeKeys() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(topicA).serializeKey(88);
@@ -193,7 +195,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldSerializeValues() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(topicA).serializeValue("coerced-0");
@@ -203,7 +205,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldSendByCluster() {
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(producerA)
@@ -232,7 +234,7 @@ class TopicInputHandlerTest {
         when(input.records()).thenReturn(List.of(record0, record1));
 
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(producerA)
@@ -244,7 +246,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldFlushByCluster() {
         // Given:
-        handler.process(input);
+        handler.process(input, options);
 
         // When:
         handler.flush();
@@ -274,7 +276,7 @@ class TopicInputHandlerTest {
         when(input.records()).thenReturn(List.of(record0, record1));
 
         // Given:
-        handler.process(input);
+        handler.process(input, options);
 
         // When:
         handler.flush();
@@ -287,7 +289,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldFlushOnlyOnce() {
         // Given:
-        handler.process(input);
+        handler.process(input, options);
         handler.flush();
         clearInvocations(producerA);
 
@@ -318,7 +320,7 @@ class TopicInputHandlerTest {
         when(input.records()).thenReturn(List.of(record0, record1));
 
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(producerA).send(new ProducerRecord<>("topic-a", null, SERIALIZED_VALUE_A));
@@ -345,7 +347,7 @@ class TopicInputHandlerTest {
         when(input.records()).thenReturn(List.of(record0, record1));
 
         // When:
-        handler.process(input);
+        handler.process(input, options);
 
         // Then:
         verify(producerA).send(new ProducerRecord<>("topic-a", SERIALIZED_KEY_A, null));
@@ -359,7 +361,8 @@ class TopicInputHandlerTest {
         when(clientsExt.topic(any(), any())).thenThrow(cause);
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> handler.process(input, options));
 
         // Then:
         assertThat(
@@ -377,7 +380,8 @@ class TopicInputHandlerTest {
         doThrow(cause).when(coercer).coerce(eq(123L), any());
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> handler.process(input, options));
 
         // Then:
         assertThat(
@@ -396,7 +400,8 @@ class TopicInputHandlerTest {
         doThrow(cause).when(coercer).coerce(any(), eq(String.class));
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> handler.process(input, options));
 
         // Then:
         assertThat(
@@ -415,7 +420,8 @@ class TopicInputHandlerTest {
         doThrow(cause).when(topicB).serializeKey(any());
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> handler.process(input, options));
 
         // Then:
         assertThat(
@@ -431,7 +437,8 @@ class TopicInputHandlerTest {
         doThrow(cause).when(topicB).serializeValue(any());
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> handler.process(input));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> handler.process(input, options));
 
         // Then:
         assertThat(
@@ -444,7 +451,7 @@ class TopicInputHandlerTest {
     @Test
     void shouldThrowIfFlushThrows() {
         // Given:
-        handler.process(input);
+        handler.process(input, options);
 
         final RuntimeException cause = new RuntimeException("boom");
         doThrow(cause).when(producerA).flush();

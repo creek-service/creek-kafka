@@ -62,24 +62,28 @@ class KafkaTestExtensionFunctionalTest {
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
         assertThat(resultsDir.resolve("TEST-expectation_failures.xml"), is(regularFile()));
-        assertThat(failureMessage(result, 0), containsString("Additional records"));
-        assertThat(failureMessage(result, 1), containsString("1 expected record(s) not found"));
+        assertThat(failureMessage(result, 0, 0), containsString("Additional records"));
+        assertThat(failureMessage(result, 0, 1), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 1),
+                failureMessage(result, 0, 1),
                 containsString("(Mismatch@key@char5, expected: Long(-2), actual: Long(2))"));
-        assertThat(failureMessage(result, 2), containsString("1 expected record(s) not found"));
+        assertThat(failureMessage(result, 0, 2), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 2),
+                failureMessage(result, 0, 2),
                 containsString("(Mismatch@key@char0, expected: <empty>, actual: Long(2))"));
-        assertThat(failureMessage(result, 3), containsString("1 expected record(s) not found"));
+        assertThat(failureMessage(result, 0, 3), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 3),
+                failureMessage(result, 0, 3),
                 containsString(
                         "(Mismatch@value@char7, expected: String(dad), actual: String(mum))"));
-        assertThat(failureMessage(result, 4), containsString("1 expected record(s) not found"));
+        assertThat(failureMessage(result, 0, 4), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 4),
+                failureMessage(result, 0, 4),
                 containsString("(Mismatch@value@char0, expected: <empty>, actual: String(mum))"));
+        assertThat(failureMessage(result, 1, 0), containsString("1 expected record(s) not found."));
+        assertThat(
+                failureMessage(result, 1, 0),
+                containsString("(Records match, but the order is wrong)"));
     }
 
     @Test
@@ -130,20 +134,21 @@ class KafkaTestExtensionFunctionalTest {
                                 + "Failed to deserialize record key. topic: output, partition: 0, offset: 0"));
     }
 
-    private static String failureMessage(final TestExecutionResult result, final int index) {
-        assertThat(result.toString(), result.results(), hasSize(1));
+    private static String failureMessage(
+            final TestExecutionResult result, final int suiteIndex, final int caseIndex) {
+        assertThat(result.toString(), result.results(), hasSize(greaterThan(suiteIndex)));
         assertThat(
                 result.toString(),
-                result.results().get(0).testCases(),
-                hasSize(greaterThan(index)));
+                result.results().get(suiteIndex).testCases(),
+                hasSize(greaterThan(caseIndex)));
         assertThat(
                 result.toString(),
-                result.results().get(0).testCases().get(index).failure(),
+                result.results().get(suiteIndex).testCases().get(caseIndex).failure(),
                 not(Optional.empty()));
         return result.results()
-                .get(0)
+                .get(suiteIndex)
                 .testCases()
-                .get(index)
+                .get(caseIndex)
                 .failure()
                 .map(Throwable::getMessage)
                 .orElse("");
