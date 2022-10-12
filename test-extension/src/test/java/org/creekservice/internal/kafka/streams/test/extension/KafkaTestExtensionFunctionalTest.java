@@ -29,6 +29,7 @@ import java.util.Optional;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,28 +62,39 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
-        assertThat(resultsDir.resolve("TEST-expectation_failures.xml"), is(regularFile()));
-        assertThat(failureMessage(result, 0, 0), containsString("Additional records"));
-        assertThat(failureMessage(result, 0, 1), containsString("1 expected record(s) not found"));
+        assertThat(resultsDir.resolve("TEST-main.xml"), is(regularFile()));
+        assertThat(resultsDir.resolve("TEST-order_by_key.xml"), is(regularFile()));
+        assertThat(failureMessage(result, "main", 0), containsString("Additional records"));
         assertThat(
-                failureMessage(result, 0, 1),
+                failureMessage(result, "main", 1),
+                containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, "main", 1),
                 containsString("(Mismatch@key@char5, expected: Long(-2), actual: Long(2))"));
-        assertThat(failureMessage(result, 0, 2), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 0, 2),
+                failureMessage(result, "main", 2),
+                containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, "main", 2),
                 containsString("(Mismatch@key@char0, expected: <empty>, actual: Long(2))"));
-        assertThat(failureMessage(result, 0, 3), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 0, 3),
+                failureMessage(result, "main", 3),
+                containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, "main", 3),
                 containsString(
                         "(Mismatch@value@char7, expected: String(dad), actual: String(mum))"));
-        assertThat(failureMessage(result, 0, 4), containsString("1 expected record(s) not found"));
         assertThat(
-                failureMessage(result, 0, 4),
+                failureMessage(result, "main", 4),
+                containsString("1 expected record(s) not found"));
+        assertThat(
+                failureMessage(result, "main", 4),
                 containsString("(Mismatch@value@char0, expected: <empty>, actual: String(mum))"));
-        assertThat(failureMessage(result, 1, 0), containsString("1 expected record(s) not found."));
         assertThat(
-                failureMessage(result, 1, 0),
+                failureMessage(result, "order by key", 0),
+                containsString("1 expected record(s) not found."));
+        assertThat(
+                failureMessage(result, "order by key", 0),
                 containsString("(Records match, but the order is wrong)"));
     }
 
@@ -135,23 +147,20 @@ class KafkaTestExtensionFunctionalTest {
     }
 
     private static String failureMessage(
-            final TestExecutionResult result, final int suiteIndex, final int caseIndex) {
-        assertThat(result.toString(), result.results(), hasSize(greaterThan(suiteIndex)));
+            final TestExecutionResult result, final String suiteName, final int caseIndex) {
+        final TestSuiteResult suite =
+                result.results().stream()
+                        .filter(r -> r.testSuite().name().equals(suiteName))
+                        .findFirst()
+                        .orElseThrow(
+                                () -> new AssertionError("No result for suite named " + suiteName));
+
+        assertThat(suite.toString(), suite.testCases(), hasSize(greaterThan(caseIndex)));
         assertThat(
-                result.toString(),
-                result.results().get(suiteIndex).testCases(),
-                hasSize(greaterThan(caseIndex)));
-        assertThat(
-                result.toString(),
-                result.results().get(suiteIndex).testCases().get(caseIndex).failure(),
+                suite.toString(),
+                suite.testCases().get(caseIndex).failure(),
                 not(Optional.empty()));
-        return result.results()
-                .get(suiteIndex)
-                .testCases()
-                .get(caseIndex)
-                .failure()
-                .map(Throwable::getMessage)
-                .orElse("");
+        return suite.testCases().get(caseIndex).failure().map(Throwable::getMessage).orElse("");
     }
 
     private static String errorMessage(final TestExecutionResult result, final int index) {
