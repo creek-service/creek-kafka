@@ -38,6 +38,8 @@ import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TestOptionsAccessor;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 
 public final class StartKafkaTestListener implements TestEnvironmentListener {
 
@@ -64,6 +66,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
+        final KafkaOptions options = TestOptionsAccessor.get(suite);
         final Map<String, List<ConfigurableServiceInstance>> clusterServices =
                 api.tests().env().currentSuite().services().stream()
                         .flatMap(this::requiredClusters)
@@ -72,7 +75,8 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
                                         ClusterInstance::clusterName,
                                         mapping(ClusterInstance::service, toList())));
 
-        clusterServices.forEach(this::createCluster);
+        clusterServices.forEach(
+                (clusterName, clusterUsers) -> createCluster(clusterName, clusterUsers, options));
     }
 
     @Override
@@ -98,10 +102,17 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
     }
 
     private void createCluster(
-            final String clusterName, final Collection<ConfigurableServiceInstance> clusterUsers) {
+            final String clusterName,
+            final Collection<ConfigurableServiceInstance> clusterUsers,
+            final KafkaOptions options) {
 
         final ServiceInstance kafka =
-                api.tests().env().currentSuite().services().add(new KafkaContainerDef(clusterName));
+                api.tests()
+                        .env()
+                        .currentSuite()
+                        .services()
+                        .add(new KafkaContainerDef(clusterName, options.kafkaDockerImage()));
+
         kafka.start();
 
         kafkaInstances.put(clusterName, kafka);

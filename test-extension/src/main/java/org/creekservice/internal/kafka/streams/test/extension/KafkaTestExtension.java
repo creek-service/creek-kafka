@@ -26,7 +26,7 @@ import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
@@ -74,6 +74,6 @@ public final class KafkaTestExtension implements CreekTestExtension {
                 .withName(TopicInput.NAME);
         model.addExpectation(TopicExpectation.class, new TopicExpectationHandler(clientsExt))
                 .withName(TopicExpectation.NAME);
-        model.addOption(TestOptions.class).withName(TestOptions.NAME);
+        model.addOption(KafkaOptions.class).withName(KafkaOptions.NAME);
     }
 }

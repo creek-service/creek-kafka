@@ -66,8 +66,10 @@ import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -122,12 +124,21 @@ class StartKafkaTestListenerFunctionalTest {
     @Test
     @Order(1)
     void shouldStartKafka() {
+        // Given:
+        final CreekTestSuite suite = mock(CreekTestSuite.class);
+        final KafkaOptions options = mock(KafkaOptions.class);
+        when(suite.options(KafkaOptions.class)).thenReturn(List.of(options));
+        when(options.kafkaDockerImage()).thenReturn("confluentinc/cp-kafka:7.1.4");
+
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         assertThat(serviceInstance("kafka-default-0").running(), is(true));
         assertThat(EXT_TESTER.runningContainerIds().get("kafka-default-0"), is(running()));
+        assertThat(
+                dockerImageName(EXT_TESTER.runningContainerIds().get("kafka-default-0")),
+                is("confluentinc/cp-kafka:7.1.4"));
     }
 
     @Test
@@ -295,6 +306,13 @@ class StartKafkaTestListenerFunctionalTest {
                                                 + EXT_TESTER.dockerServicesContainer().stream()
                                                         .map(ServiceInstance::name)
                                                         .collect(Collectors.toList())));
+    }
+
+    private String dockerImageName(final String containerId) {
+        final InspectContainerResponse response =
+                dockerClient.inspectContainerCmd(containerId).exec();
+
+        return response.getConfig().getImage();
     }
 
     private Matcher<String> running() {

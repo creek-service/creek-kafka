@@ -61,7 +61,7 @@ class ClientExtensionFunctionalTest {
 
     @Container
     private static final KafkaContainer KAFKA_CLUSTER =
-            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.7"))
+            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.2"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");

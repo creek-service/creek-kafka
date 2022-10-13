@@ -49,6 +49,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaContainerDefTest {
 
+    private static final String DOCKER_IMAGE = "kafka-docker-image";
     private static final String CLUSTER_NAME = "bob";
     private static final String SERVICE_NWK_NAME = "kafka-bob-2";
     private static final String TEST_NWK_NAME = "localhost";
@@ -63,7 +64,7 @@ class KafkaContainerDefTest {
 
     @BeforeEach
     void setUp() {
-        def = new KafkaContainerDef(CLUSTER_NAME);
+        def = new KafkaContainerDef(CLUSTER_NAME, DOCKER_IMAGE);
 
         when(instance.serviceNetworkHostname()).thenReturn(SERVICE_NWK_NAME);
         when(instance.testNetworkHostname()).thenReturn(TEST_NWK_NAME);
@@ -76,8 +77,10 @@ class KafkaContainerDefTest {
     void shouldImplementHashCodeAndEquals() {
         new EqualsTester()
                 .addEqualityGroup(
-                        new KafkaContainerDef(CLUSTER_NAME), new KafkaContainerDef(CLUSTER_NAME))
-                .addEqualityGroup(new KafkaContainerDef("diff"))
+                        new KafkaContainerDef(CLUSTER_NAME, DOCKER_IMAGE),
+                        new KafkaContainerDef(CLUSTER_NAME, DOCKER_IMAGE))
+                .addEqualityGroup(new KafkaContainerDef("diff", DOCKER_IMAGE))
+                .addEqualityGroup(new KafkaContainerDef(CLUSTER_NAME, "diff"))
                 .testEquals();
     }
 
@@ -89,7 +92,7 @@ class KafkaContainerDefTest {
     @Test
     void shouldSupportDefaultName() {
         // Given:
-        def = new KafkaContainerDef(DEFAULT_CLUSTER_NAME);
+        def = new KafkaContainerDef(DEFAULT_CLUSTER_NAME, DOCKER_IMAGE);
 
         // Then:
         assertThat(def.name(), is("kafka-default"));
@@ -97,7 +100,7 @@ class KafkaContainerDefTest {
 
     @Test
     void shouldUseRightDockerImage() {
-        assertThat(def.dockerImage(), is("confluentinc/cp-kafka:6.2.7"));
+        assertThat(def.dockerImage(), is(DOCKER_IMAGE));
     }
 
     @Test

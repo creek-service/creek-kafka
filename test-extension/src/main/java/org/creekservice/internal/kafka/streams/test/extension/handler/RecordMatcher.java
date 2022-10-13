@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
 import static org.creekservice.internal.kafka.streams.test.extension.handler.MismatchDescription.mismatchDescription;
-import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.BY_KEY;
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering.BY_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Mismatched;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 
@@ -42,11 +42,10 @@ import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 final class RecordMatcher {
 
     private final List<TopicRecord> expectedRecords;
-    private final TestOptions.OutputOrdering outputOrdering;
+    private final OutputOrdering outputOrdering;
 
     RecordMatcher(
-            final Collection<TopicRecord> expectedRecords,
-            final TestOptions.OutputOrdering outputOrdering) {
+            final Collection<TopicRecord> expectedRecords, final OutputOrdering outputOrdering) {
         this.expectedRecords = List.copyOf(requireNonNull(expectedRecords, "expectedRecords"));
         this.outputOrdering = requireNonNull(outputOrdering, "outputOrdering");
     }
