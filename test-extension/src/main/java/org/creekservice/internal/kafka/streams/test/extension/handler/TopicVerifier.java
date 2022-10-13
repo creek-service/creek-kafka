@@ -27,25 +27,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
-import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
 
 final class TopicVerifier implements ExpectationHandler.Verifier {
-
-    private static final Duration EXTRA_RECORD_TIMEOUT = Duration.ofSeconds(1);
 
     private final Clock clock;
     private final String topicName;
     private final TopicConsumers consumers;
     private final RecordMatcher matcher;
-    private final ExpectationOptions options;
+    private final Duration verifyTimeout;
+    private final Duration extraRecordTimeout;
 
     TopicVerifier(
             final String topicName,
             final TopicConsumers consumers,
             final RecordMatcher matcher,
-            final ExpectationOptions options) {
-        this(topicName, consumers, matcher, options, Clock.systemUTC());
+            final Duration verifyTimeout,
+            final Duration extraRecordTimeout) {
+        this(topicName, consumers, matcher, verifyTimeout, extraRecordTimeout, Clock.systemUTC());
     }
 
     @VisibleForTesting
@@ -53,12 +52,14 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
             final String topicName,
             final TopicConsumers consumers,
             final RecordMatcher matcher,
-            final ExpectationOptions options,
+            final Duration verifyTimeout,
+            final Duration extraRecordTimeout,
             final Clock clock) {
         this.topicName = requireNonNull(topicName, "topicName");
         this.consumers = requireNonNull(consumers, "consumer");
         this.matcher = requireNonNull(matcher, "matcher");
-        this.options = requireNonNull(options, "options");
+        this.verifyTimeout = requireNonNull(verifyTimeout, "Duration");
+        this.extraRecordTimeout = requireNonNull(extraRecordTimeout, "extraRecordTimeout");
         this.clock = requireNonNull(clock, "clock");
     }
 
@@ -71,9 +72,8 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
         final TopicConsumer consumer = consumers.get(topicName);
         final List<ConsumedRecord> consumed = new ArrayList<>();
         consumed.addAll(
-                consumer.consume(matcher.minRecords(), clock.instant().plus(options.timeout())));
-        consumed.addAll(
-                consumer.consume(Long.MAX_VALUE, clock.instant().plus(EXTRA_RECORD_TIMEOUT)));
+                consumer.consume(matcher.minRecords(), clock.instant().plus(verifyTimeout)));
+        consumed.addAll(consumer.consume(Long.MAX_VALUE, clock.instant().plus(extraRecordTimeout)));
         return consumed;
     }
 

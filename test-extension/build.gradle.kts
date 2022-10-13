@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":streams-extension"))
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
     testImplementation(project(":test-service"))
     testImplementation("org.creekservice:creek-system-test-executor:$creekSystemTestVersion")

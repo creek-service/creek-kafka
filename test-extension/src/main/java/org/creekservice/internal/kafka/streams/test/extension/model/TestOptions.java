@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.creekservice.api.system.test.extension.test.model.Option;
@@ -29,8 +30,10 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 public final class TestOptions implements Option, LocationAware<TestOptions> {
 
     public static final String NAME = "creek/kafka-options@1";
+    public static final Duration DEFAULT_EXTRA_TIMEOUT = Duration.ofSeconds(1);
 
-    private static final TestOptions DEFAULTS = new TestOptions(Optional.empty());
+    private static final TestOptions DEFAULTS =
+            new TestOptions(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
     public enum OutputOrdering {
         /** Topic records can be in any order. */
@@ -45,6 +48,8 @@ public final class TestOptions implements Option, LocationAware<TestOptions> {
 
     private final URI location;
     private final OutputOrdering outputOrdering;
+    private final Optional<Duration> verifierTimeout;
+    private final Duration extraTimeout;
 
     public static TestOptions defaults() {
         return DEFAULTS;
@@ -52,22 +57,60 @@ public final class TestOptions implements Option, LocationAware<TestOptions> {
 
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
     public TestOptions(
-            @JsonProperty("outputOrdering") final Optional<OutputOrdering> outputOrdering) {
-        this(outputOrdering.orElse(OutputOrdering.BY_KEY), LocationAware.UNKNOWN_LOCATION);
+            @JsonProperty("outputOrdering") final Optional<OutputOrdering> outputOrdering,
+            @JsonProperty("verifierTimeout") final Optional<Duration> verifierTimeout,
+            @JsonProperty("extraTimeout") final Optional<Duration> extraTimeout,
+            @JsonProperty("notes") final Optional<String> notes) {
+
+        this(
+                outputOrdering.orElse(OutputOrdering.BY_KEY),
+                verifierTimeout,
+                extraTimeout.orElse(DEFAULT_EXTRA_TIMEOUT),
+                LocationAware.UNKNOWN_LOCATION);
     }
 
-    private TestOptions(final OutputOrdering outputOrdering, final URI location) {
+    private TestOptions(
+            final OutputOrdering outputOrdering,
+            final Optional<Duration> verifierTimeout,
+            final Duration extraTimeout,
+            final URI location) {
         this.outputOrdering = requireNonNull(outputOrdering, "outputOrdering");
+        this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
+        this.extraTimeout = requireNonNull(extraTimeout, "extraTimeout");
         this.location = requireNonNull(location, "location");
     }
 
+    /** @return ordering requirements for records that share the same cluster, topic and key. */
     public OutputOrdering outputOrdering() {
         return outputOrdering;
     }
 
+    /**
+     * An optional custom verifier timeout.
+     *
+     * <p>The verifier timeout is the maximum amount of time the system tests will wait for a topic
+     * records to be consumed. A longer timeout will mean tests have more time for expectations to
+     * be met, but may run slower as a consequence.
+     *
+     * <p>If set, this timeout will override any global timeout set at the test run level.
+     *
+     * @return time to wait for expected records to be consumed, per topic.
+     */
+    public Optional<Duration> verifierTimeout() {
+        return verifierTimeout;
+    }
+
+    /**
+     * @return time to wait for extra records to be consumed, i.e. records beyond what was expected,
+     *     per topic.
+     */
+    public Duration extraTimeout() {
+        return extraTimeout;
+    }
+
     @Override
     public TestOptions withLocation(final URI location) {
-        return new TestOptions(outputOrdering, location);
+        return new TestOptions(outputOrdering, verifierTimeout, extraTimeout, location);
     }
 
     @Override

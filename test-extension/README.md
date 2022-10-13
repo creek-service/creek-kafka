@@ -11,9 +11,12 @@ The extension registers the following model subtypes to support system testing o
 The behaviour of the Kafka test extension can be controlled via the `creek/kafka-option@1` option type.  
 This option type defines the following:
 
-| Property name    | Property type           | Description                                                                                                                                                                                                                                                              |
-|------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `outputOrdering` | Enum (`NONE`, `BY_KEY`) | Controls the ordering requirements for the expected output records on the same topic. Valid values are:<br>`None`: records can be in any order.<br>`BY_KEY`: record expectations that share the same key must be received in the order defined.<br>**Default**: `BY_KEY` |
+| Property name    | Property type            | Description                                                                                                                                                                                                                                                                         |
+|------------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| outputOrdering   | Enum (`NONE`, `BY_KEY`)  | (Optional) Controls the ordering requirements for the expected output records on the same topic. Valid values are:<br>`None`: records can be in any order.<br>`BY_KEY`: record expectations that share the same key must be received in the order defined.<br>**Default**: `BY_KEY` |
+| verifierTimeout  | Duration (String/Number) | (Optional) Overrides the global verifier timeout. Can be set to number of seconds, e.g. `60` or a string that can be parsed by Java `Duration` type, e.g. `PT2M`.                                                                                                                   |
+| extraTimeout     | Duration (String/Number) | (Optional) Sets the time the tests will wait for extra, unexpected, records to be produced. Can be set to number of seconds, e.g. `60` or a string that can be parsed by Java `Duration` type, e.g. `PT2M`. **Default**: 1 second.                                                  |
+| notes            | String                   | (Optional) A notes field. Ignored by the system tests. Can be used to document intent.                                                                                                                                                                                              |
 
 For example, the following defines a suite that turns off ordering requirements for expectation records:
 
@@ -24,6 +27,7 @@ name: Test suite with expectation ordering disabled
 options:
   - !creek/kafka-options@1
     outputOrdering: NONE
+    notes: ordering turned off because blah blah.
 services:
   - some-service
 tests:

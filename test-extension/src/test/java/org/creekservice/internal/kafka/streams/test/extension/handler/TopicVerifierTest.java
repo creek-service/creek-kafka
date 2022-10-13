@@ -30,7 +30,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Mismatched;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
@@ -45,10 +44,11 @@ class TopicVerifierTest {
 
     private static final String TOPIC_NAME = "topic-a";
     private static final Instant START = Instant.now();
+    private static final Duration VERIFY_TIMEOUT = Duration.ofSeconds(465);
+    private static final Duration EXTRA_TIMEOUT = Duration.ofSeconds(12);
 
     @Mock private TopicConsumers consumers;
     @Mock private RecordMatcher matcher;
-    @Mock private ExpectationOptions options;
     @Mock private Clock clock;
     @Mock private TopicConsumer consumer;
     @Mock private MatchResult result;
@@ -59,10 +59,12 @@ class TopicVerifierTest {
 
     @BeforeEach
     void setUp() {
-        verifier = new TopicVerifier(TOPIC_NAME, consumers, matcher, options, clock);
+        verifier =
+                new TopicVerifier(
+                        TOPIC_NAME, consumers, matcher, VERIFY_TIMEOUT, EXTRA_TIMEOUT, clock);
 
         when(consumers.get(any())).thenReturn(consumer);
-        when(clock.instant()).thenReturn(START, START.plusSeconds(1));
+        when(clock.instant()).thenReturn(START, START.plus(VERIFY_TIMEOUT));
         when(matcher.match(any())).thenReturn(result);
     }
 
@@ -79,30 +81,22 @@ class TopicVerifierTest {
     void shouldAttemptToConsumeAtLeastRequiredNumOfRecordsWithinTimeout() {
         // Given:
         final long minRecords = 8765L;
-        final Duration timeout = Duration.ofSeconds(465);
         when(matcher.minRecords()).thenReturn(minRecords);
-        when(options.timeout()).thenReturn(timeout);
 
         // When:
         verifier.verify();
 
         // Then:
-        verify(consumer).consume(minRecords, START.plus(timeout));
+        verify(consumer).consume(minRecords, START.plus(VERIFY_TIMEOUT));
     }
 
     @Test
     void shouldDoFinalConsumeToCheckForExtraRecords() {
-        // Given:
-        final long minRecords = 8765L;
-        final Duration timeout = Duration.ofSeconds(465);
-        when(matcher.minRecords()).thenReturn(minRecords);
-        when(options.timeout()).thenReturn(timeout);
-
         // When:
         verifier.verify();
 
         // Then:
-        verify(consumer).consume(Long.MAX_VALUE, START.plusSeconds(2));
+        verify(consumer).consume(Long.MAX_VALUE, START.plus(VERIFY_TIMEOUT).plus(EXTRA_TIMEOUT));
     }
 
     @Test

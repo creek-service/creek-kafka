@@ -1,0 +1,10 @@
+---
+!creek/kafka-topic@1
+topic: output
+records:
+  - key: 1
+    value: hello
+  - key: 2
+    value: mum
+  - key: 1
+    value: bye

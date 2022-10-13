@@ -1,0 +1,15 @@
+---
+name: timeout
+options:
+  - !creek/kafka-options@1
+    verifierTimeout: PT0.000001S
+    extraTimeout: PT0.000001S
+    notes: very short timeouts to force verifier timeouts.
+services:
+  - test-service
+tests:
+  - name: test
+    inputs:
+      - input
+    expectations:
+      - output
