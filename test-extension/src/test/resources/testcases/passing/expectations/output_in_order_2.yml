@@ -1,5 +1,5 @@
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 topic: output
 notes: having this in a separate file tests that the records from two files are combined in the right order.
 records:

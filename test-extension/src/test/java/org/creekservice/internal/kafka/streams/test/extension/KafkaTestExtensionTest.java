@@ -114,7 +114,7 @@ class KafkaTestExtensionTest {
 
         // Then:
         verify(api.tests().model().addInput(eq(TopicInput.class), isA(TopicInputHandler.class)))
-                .withName("creek/kafka-topic");
+                .withName("creek/kafka-topic@1");
     }
 
     @Test
@@ -129,7 +129,7 @@ class KafkaTestExtensionTest {
                                 .addExpectation(
                                         eq(TopicExpectation.class),
                                         isA(TopicExpectationHandler.class)))
-                .withName("creek/kafka-topic");
+                .withName("creek/kafka-topic@1");
     }
 
     @Test

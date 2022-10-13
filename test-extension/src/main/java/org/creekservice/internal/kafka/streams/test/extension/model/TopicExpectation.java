@@ -27,7 +27,7 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicExpectation implements Expectation {
 
-    public static final String NAME = "creek/kafka-topic";
+    public static final String NAME = "creek/kafka-topic@1";
 
     private final List<TopicRecord> records;
 
