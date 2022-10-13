@@ -105,7 +105,7 @@ class KafkaTestExtensionFunctionalTest {
                 containsString("(Records match, but the order is wrong)"));
         assertThat(
                 failureMessage(result, "timeout", 0),
-                containsString("expected records(s) not found"));
+                containsString("expected record(s) not found"));
     }
 
     @Test
