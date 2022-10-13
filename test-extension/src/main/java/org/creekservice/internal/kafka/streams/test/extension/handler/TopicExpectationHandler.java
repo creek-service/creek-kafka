@@ -111,7 +111,8 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                 topicName,
                 topicConsumers,
                 new RecordMatcher(coercedExpected, testOptions.outputOrdering()),
-                options);
+                testOptions.verifierTimeout().orElse(options.timeout()),
+                testOptions.extraTimeout());
     }
 
     private KafkaTopic<?, ?> kafkaTopic(

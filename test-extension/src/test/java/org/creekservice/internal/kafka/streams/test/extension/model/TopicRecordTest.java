@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.test.extension.model;
 
 import static java.lang.System.lineSeparator;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.internal.kafka.streams.test.extension.model.ModelUtil.createParser;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.core.JsonParseException;
 import java.net.URI;
 import java.util.Optional;
-import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.api.system.test.test.util.ModelParser;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord.RecordBuilder;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
@@ -33,9 +33,8 @@ import org.junit.jupiter.api.Test;
 
 class TopicRecordTest {
 
+    private static final ModelParser PARSER = createParser();
     private static final URI LOCATION = URI.create("some/location");
-    private static final ModelParser PARSER =
-            CreekSystemTestExtensionTester.extensionTester().yamlParser().build();
 
     @Test
     void shouldParseFullyPopulated() throws Exception {

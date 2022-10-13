@@ -31,15 +31,22 @@ import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.test.util.TestPaths;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 class KafkaTestExtensionFunctionalTest {
 
     private static final Path TESTCASES =
             TestPaths.moduleRoot("test-extension").resolve("src/test/resources/testcases");
 
-    @TempDir private Path resultsDir;
+    private static final Path RESULTS_DIR =
+            TestPaths.moduleRoot("test-extension").resolve("build/test-results/system-test");
+
+    @BeforeAll
+    static void beforeAll() {
+        TestPaths.delete(RESULTS_DIR);
+        TestPaths.ensureDirectories(RESULTS_DIR);
+    }
 
     @Test
     void shouldDetectSuccess() {
@@ -50,7 +57,7 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(true));
-        assertThat(resultsDir.resolve("TEST-passing_suite.xml"), is(regularFile()));
+        assertThat(RESULTS_DIR.resolve("TEST-passing_suite.xml"), is(regularFile()));
     }
 
     @Test
@@ -62,8 +69,8 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
-        assertThat(resultsDir.resolve("TEST-main.xml"), is(regularFile()));
-        assertThat(resultsDir.resolve("TEST-order_by_key.xml"), is(regularFile()));
+        assertThat(RESULTS_DIR.resolve("TEST-main.xml"), is(regularFile()));
+        assertThat(RESULTS_DIR.resolve("TEST-order_by_key.xml"), is(regularFile()));
         assertThat(failureMessage(result, "main", 0), containsString("Additional records"));
         assertThat(
                 failureMessage(result, "main", 1),
@@ -96,6 +103,9 @@ class KafkaTestExtensionFunctionalTest {
         assertThat(
                 failureMessage(result, "order by key", 0),
                 containsString("(Records match, but the order is wrong)"));
+        assertThat(
+                failureMessage(result, "timeout", 0),
+                containsString("expected record(s) not found"));
     }
 
     @Test
@@ -107,7 +117,7 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
-        assertThat(resultsDir.resolve("TEST-errors.xml"), is(regularFile()));
+        assertThat(RESULTS_DIR.resolve("TEST-errors.xml"), is(regularFile()));
 
         assertThat(
                 errorMessage(result, 0),
@@ -155,27 +165,27 @@ class KafkaTestExtensionFunctionalTest {
                         .orElseThrow(
                                 () -> new AssertionError("No result for suite named " + suiteName));
 
-        assertThat(suite.toString(), suite.testCases(), hasSize(greaterThan(caseIndex)));
+        assertThat(suite.toString(), suite.testResults(), hasSize(greaterThan(caseIndex)));
         assertThat(
                 suite.toString(),
-                suite.testCases().get(caseIndex).failure(),
+                suite.testResults().get(caseIndex).failure(),
                 not(Optional.empty()));
-        return suite.testCases().get(caseIndex).failure().map(Throwable::getMessage).orElse("");
+        return suite.testResults().get(caseIndex).failure().map(Throwable::getMessage).orElse("");
     }
 
     private static String errorMessage(final TestExecutionResult result, final int index) {
         assertThat(result.toString(), result.results(), hasSize(1));
         assertThat(
                 result.toString(),
-                result.results().get(0).testCases(),
+                result.results().get(0).testResults(),
                 hasSize(greaterThan(index)));
         assertThat(
                 result.toString(),
-                result.results().get(0).testCases().get(index).error(),
+                result.results().get(0).testResults().get(index).error(),
                 not(Optional.empty()));
         return result.results()
                 .get(0)
-                .testCases()
+                .testResults()
                 .get(index)
                 .error()
                 .map(Throwable::getMessage)
@@ -191,7 +201,7 @@ class KafkaTestExtensionFunctionalTest {
 
             @Override
             public Path resultDirectory() {
-                return resultsDir;
+                return RESULTS_DIR;
             }
         };
     }
