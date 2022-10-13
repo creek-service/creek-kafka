@@ -1,5 +1,5 @@
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 notes: expectation of an output on an unknown topic
 topic: unknown-output
 records:

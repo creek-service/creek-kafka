@@ -45,7 +45,7 @@ class TopicInputTest {
     void shouldParseFullyPopulated() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "cluster: c\n"
                 + "notes: n\n"
@@ -70,7 +70,7 @@ class TopicInputTest {
     void shouldParseWithoutFileLevelTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "cluster: c\n"
                 + "notes: n\n"
                 + "records:\n"
@@ -90,7 +90,7 @@ class TopicInputTest {
     void shouldParseWithNullFileLevelTopic() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: ~\n"
                 + "cluster: c\n"
                 + "notes: n\n"
@@ -111,7 +111,7 @@ class TopicInputTest {
     void shouldPopulateRecordTopicIfMissing() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: topic-a\n"
                 + "cluster: c\n"
                 + "notes: n\n"
@@ -131,7 +131,7 @@ class TopicInputTest {
     void shouldThrowIfNothingDefinesTopicName() {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "cluster: c\n"
                 + "notes: n\n"
                 + "records:\n"
@@ -161,7 +161,7 @@ class TopicInputTest {
     void shouldParseWithoutFileLevelCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "notes: n\n"
                 + "records:\n"
@@ -181,7 +181,7 @@ class TopicInputTest {
     void shouldParseWithNullFileLevelCluster() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "cluster: ~\n"
                 + "notes: n\n"
@@ -202,7 +202,7 @@ class TopicInputTest {
     void shouldParseToDefaultClusterName() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "notes: n\n"
                 + "records:\n"
@@ -221,7 +221,7 @@ class TopicInputTest {
     void shouldParseWithoutNotes() throws Exception {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "cluster: c\n"
                 + "records:\n"
@@ -241,7 +241,7 @@ class TopicInputTest {
     void shouldThrowOnNoRecords() {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "cluster: c\n"
                 + "records: []";
 
@@ -266,7 +266,7 @@ class TopicInputTest {
     void shouldThrowOnMissingRecords() {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "cluster: c";
 
@@ -285,7 +285,7 @@ class TopicInputTest {
     void shouldThrowOnUnknownProperty() {
         // Given formatting:off:
         final String yaml = "---\n"
-                + "!creek/kafka-topic\n"
+                + "!creek/kafka-topic@1\n"
                 + "topic: t\n"
                 + "cluster: c\n"
                 + "not_notes: n\n"

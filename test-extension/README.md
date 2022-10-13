@@ -36,7 +36,7 @@ tests:
 
 ### Input model extensions
 
-The Kafka test extension registers a `creek/kafka-topic` input model extension. 
+The Kafka test extension registers a `creek/kafka-topic@1` input model extension. 
 This can be used to define seed and input records to be produced to Kafka.
 It supports the following properties:
 
@@ -62,7 +62,7 @@ For example, the following defines an input that will produce two records to an 
 ##### **`inputs/produce_input.yml`**
 ```yaml
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 topic: input
 records:
   - key: 1
@@ -73,7 +73,7 @@ records:
 
 ### Expectation model extensions
 
-The Kafka test extension registers a `creek/kafka-topic` expectation model extension.
+The Kafka test extension registers a `creek/kafka-topic@1` expectation model extension.
 This can be used to define the records services are expected to produce to Kafka.
 It supports the following properties:
 
@@ -99,7 +99,7 @@ For example, the following defines an expectation that two records will be produ
 ##### **`inputs/produce_input.yml`**
 ```yaml
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 topic: input
 cluster: primary
 records:

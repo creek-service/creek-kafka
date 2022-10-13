@@ -27,7 +27,7 @@ import org.creekservice.api.system.test.extension.test.model.Input;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicInput implements Input {
 
-    public static final String NAME = "creek/kafka-topic";
+    public static final String NAME = "creek/kafka-topic@1";
 
     private final List<TopicRecord> records;
 

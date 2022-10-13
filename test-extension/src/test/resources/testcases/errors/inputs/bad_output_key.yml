@@ -1,5 +1,5 @@
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 topic: input
 notes: produce a record that will cause the test-service to write a record with an invalid key to the output topic
 records:

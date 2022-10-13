@@ -1,5 +1,5 @@
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 topic: input
 records:
   - key: hello

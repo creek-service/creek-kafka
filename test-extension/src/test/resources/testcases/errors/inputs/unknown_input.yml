@@ -1,5 +1,5 @@
 ---
-!creek/kafka-topic
+!creek/kafka-topic@1
 notes: input to an unknown topic
 topic: unknown-input
 records:
