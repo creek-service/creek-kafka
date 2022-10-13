@@ -29,7 +29,7 @@ import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 
@@ -105,14 +105,14 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
 
         final KafkaTopicDescriptor<?, ?> topic = topics.get(topicName).descriptor();
         final List<TopicRecord> coercedExpected = recordCoercer.coerce(expectedRecords, topic);
-        final TestOptions testOptions = TestOptionsAccessor.get(options);
+        final KafkaOptions kafkaOptions = TestOptionsAccessor.get(options);
 
         return new TopicVerifier(
                 topicName,
                 topicConsumers,
-                new RecordMatcher(coercedExpected, testOptions.outputOrdering()),
-                testOptions.verifierTimeout().orElse(options.timeout()),
-                testOptions.extraTimeout());
+                new RecordMatcher(coercedExpected, kafkaOptions.outputOrdering()),
+                kafkaOptions.verifierTimeout().orElse(options.timeout()),
+                kafkaOptions.extraTimeout());
     }
 
     private KafkaTopic<?, ?> kafkaTopic(

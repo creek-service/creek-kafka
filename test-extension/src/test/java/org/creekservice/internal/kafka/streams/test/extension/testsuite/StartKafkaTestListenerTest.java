@@ -32,8 +32,10 @@ import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +51,7 @@ class StartKafkaTestListenerTest {
 
     private static final URI ID = URI.create("resource://ignored/1");
     private static final URI ID2 = URI.create("resource://ignored/2");
+    private static final String KAFKA_DOCKER_IMAGE = "some-kafka-docker-image";
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
@@ -67,6 +70,7 @@ class StartKafkaTestListenerTest {
     @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
     @Mock private TopicCollector topicCollector;
     @Mock private ClusterEndpointsProvider clusterEndpointsProvider;
+    @Mock private CreekTestSuite suite;
 
     private StartKafkaTestListener listener;
 
@@ -85,6 +89,10 @@ class StartKafkaTestListenerTest {
         when(descriptor1.name()).thenReturn("service-1");
         when(kafkaResource0.cluster()).thenReturn("bob");
         when(kafkaResource1.cluster()).thenReturn("janet");
+
+        final KafkaOptions testOption = mock(KafkaOptions.class);
+        when(testOption.kafkaDockerImage()).thenReturn(KAFKA_DOCKER_IMAGE);
+        when(suite.options(KafkaOptions.class)).thenReturn(List.of(testOption));
     }
 
     @Test
@@ -94,7 +102,7 @@ class StartKafkaTestListenerTest {
         when(serviceInstance1.descriptor()).thenReturn(Optional.empty());
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(api.tests().env().currentSuite().services(), never()).add(any());
@@ -106,7 +114,7 @@ class StartKafkaTestListenerTest {
         when(topicCollector.collectTopics(List.of(descriptor0))).thenReturn(Map.of());
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(api.tests().env().currentSuite().services(), never()).add(any());
@@ -121,11 +129,13 @@ class StartKafkaTestListenerTest {
                 .thenReturn(Map.of(ID, kafkaResource1));
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
-        verify(api.tests().env().currentSuite().services()).add(new KafkaContainerDef("bob"));
-        verify(api.tests().env().currentSuite().services()).add(new KafkaContainerDef("janet"));
+        verify(api.tests().env().currentSuite().services())
+                .add(new KafkaContainerDef("bob", KAFKA_DOCKER_IMAGE));
+        verify(api.tests().env().currentSuite().services())
+                .add(new KafkaContainerDef("janet", KAFKA_DOCKER_IMAGE));
     }
 
     @Test
@@ -135,7 +145,7 @@ class StartKafkaTestListenerTest {
                 .thenReturn(Map.of(ID, kafkaResource0));
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(api.tests().env().currentSuite().services().add(any())).start();
@@ -154,7 +164,7 @@ class StartKafkaTestListenerTest {
         when(kafkaInstance.testNetworkPort(KafkaContainerDef.TEST_NETWORK_PORT)).thenReturn(27465);
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(clusterEndpointsProvider).put("bob", Map.of("bootstrap.servers", "localhost:27465"));
@@ -166,7 +176,7 @@ class StartKafkaTestListenerTest {
         when(topicCollector.collectTopics(List.of(descriptor0)))
                 .thenReturn(Map.of(ID, kafkaResource0));
 
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // When:
         listener.afterSuite(null, null);
@@ -180,7 +190,7 @@ class StartKafkaTestListenerTest {
         // Given:
         when(topicCollector.collectTopics(List.of(descriptor0)))
                 .thenReturn(Map.of(ID, kafkaResource0));
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // When:
         listener.afterSuite(null, null);
@@ -198,13 +208,23 @@ class StartKafkaTestListenerTest {
         when(topicCollector.collectTopics(List.of(descriptor1)))
                 .thenReturn(Map.of(ID, kafkaResource0, ID2, kafkaResource1));
 
-        when(api.tests().env().currentSuite().services().add(new KafkaContainerDef("bob")).name())
+        when(api.tests()
+                        .env()
+                        .currentSuite()
+                        .services()
+                        .add(new KafkaContainerDef("bob", KAFKA_DOCKER_IMAGE))
+                        .name())
                 .thenReturn("kafka-bob-0");
-        when(api.tests().env().currentSuite().services().add(new KafkaContainerDef("janet")).name())
+        when(api.tests()
+                        .env()
+                        .currentSuite()
+                        .services()
+                        .add(new KafkaContainerDef("janet", KAFKA_DOCKER_IMAGE))
+                        .name())
                 .thenReturn("kafka-janet-0");
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(serviceInstance0).addEnv("KAFKA_BOB_BOOTSTRAP_SERVERS", "kafka-bob-0:9092");
@@ -221,7 +241,7 @@ class StartKafkaTestListenerTest {
                 .thenReturn(Map.of(ID, kafkaResource1));
 
         // When:
-        listener.beforeSuite(null);
+        listener.beforeSuite(suite);
 
         // Then:
         verify(serviceInstance0).addEnv("KAFKA_BOB_APPLICATION_ID", "service-0");

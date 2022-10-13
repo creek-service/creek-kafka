@@ -17,6 +17,7 @@
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
@@ -27,13 +28,19 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 
 /** Test model extension to allow users to customise how this test extension operates. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class TestOptions implements Option, LocationAware<TestOptions> {
+public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
 
     public static final String NAME = "creek/kafka-options@1";
     public static final Duration DEFAULT_EXTRA_TIMEOUT = Duration.ofSeconds(1);
+    public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.2.2";
 
-    private static final TestOptions DEFAULTS =
-            new TestOptions(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+    private static final KafkaOptions DEFAULTS =
+            new KafkaOptions(
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty());
 
     public enum OutputOrdering {
         /** Topic records can be in any order. */
@@ -50,33 +57,38 @@ public final class TestOptions implements Option, LocationAware<TestOptions> {
     private final OutputOrdering outputOrdering;
     private final Optional<Duration> verifierTimeout;
     private final Duration extraTimeout;
+    private final String kafkaDockerImage;
 
-    public static TestOptions defaults() {
+    public static KafkaOptions defaults() {
         return DEFAULTS;
     }
 
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
-    public TestOptions(
+    public KafkaOptions(
             @JsonProperty("outputOrdering") final Optional<OutputOrdering> outputOrdering,
             @JsonProperty("verifierTimeout") final Optional<Duration> verifierTimeout,
             @JsonProperty("extraTimeout") final Optional<Duration> extraTimeout,
+            @JsonProperty("kafkaDockerImage") final Optional<String> kafkaDockerImage,
             @JsonProperty("notes") final Optional<String> notes) {
 
         this(
                 outputOrdering.orElse(OutputOrdering.BY_KEY),
                 verifierTimeout,
                 extraTimeout.orElse(DEFAULT_EXTRA_TIMEOUT),
+                kafkaDockerImage.orElse(DEFAULT_KAFKA_DOCKER_IMAGE),
                 LocationAware.UNKNOWN_LOCATION);
     }
 
-    private TestOptions(
+    private KafkaOptions(
             final OutputOrdering outputOrdering,
             final Optional<Duration> verifierTimeout,
             final Duration extraTimeout,
+            final String kafkaDockerImage,
             final URI location) {
         this.outputOrdering = requireNonNull(outputOrdering, "outputOrdering");
         this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
         this.extraTimeout = requireNonNull(extraTimeout, "extraTimeout");
+        this.kafkaDockerImage = requireNonBlank(kafkaDockerImage, "kafkaDockerImage");
         this.location = requireNonNull(location, "location");
     }
 
@@ -108,9 +120,15 @@ public final class TestOptions implements Option, LocationAware<TestOptions> {
         return extraTimeout;
     }
 
+    /** @return the docker image name to use for the Kafka server. */
+    public String kafkaDockerImage() {
+        return kafkaDockerImage;
+    }
+
     @Override
-    public TestOptions withLocation(final URI location) {
-        return new TestOptions(outputOrdering, verifierTimeout, extraTimeout, location);
+    public KafkaOptions withLocation(final URI location) {
+        return new KafkaOptions(
+                outputOrdering, verifierTimeout, extraTimeout, kafkaDockerImage, location);
     }
 
     @Override

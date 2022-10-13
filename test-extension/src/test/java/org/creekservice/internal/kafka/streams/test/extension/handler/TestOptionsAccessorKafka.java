@@ -23,46 +23,60 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.List;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TestOptionsAccessorTest {
+class TestOptionsAccessorKafka {
 
     @Mock private ExpectationOptions options;
-    @Mock private TestOptions testOptions;
+    @Mock private CreekTestSuite suite;
+    @Mock private KafkaOptions kafkaOptions;
 
     @Test
     void shouldReturnDefaultOptions() {
         // When:
-        final TestOptions result = TestOptionsAccessor.get(options);
+        final KafkaOptions result = TestOptionsAccessor.get(options);
 
         // Then:
-        assertThat(result, is(TestOptions.defaults()));
+        assertThat(result, is(KafkaOptions.defaults()));
     }
 
     @Test
     void shouldReturnUserSuppliedOptions() {
         // Given:
-        when(options.get(TestOptions.class)).thenReturn(List.of(testOptions));
+        when(options.get(KafkaOptions.class)).thenReturn(List.of(kafkaOptions));
 
         // When:
-        final TestOptions result = TestOptionsAccessor.get(options);
+        final KafkaOptions result = TestOptionsAccessor.get(options);
 
         // Then:
-        assertThat(result, is(testOptions));
+        assertThat(result, is(kafkaOptions));
+    }
+
+    @Test
+    void shouldGetFromSuite() {
+        // Given:
+        when(suite.options(KafkaOptions.class)).thenReturn(List.of(kafkaOptions));
+
+        // When:
+        final KafkaOptions result = TestOptionsAccessor.get(suite);
+
+        // Then:
+        assertThat(result, is(kafkaOptions));
     }
 
     @Test
     void shouldThrowOnDuplicateOptions() {
         // Given:
-        when(options.get(TestOptions.class)).thenReturn(List.of(testOptions, testOptions));
+        when(options.get(KafkaOptions.class)).thenReturn(List.of(kafkaOptions, kafkaOptions));
 
-        when(testOptions.location())
+        when(kafkaOptions.location())
                 .thenReturn(URI.create("file:///loc0"), URI.create("file:///loc1"));
 
         // When:

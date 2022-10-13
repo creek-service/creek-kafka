@@ -16,8 +16,9 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.DEFAULT_EXTRA_TIMEOUT;
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.DEFAULT_KAFKA_DOCKER_IMAGE;
 import static org.creekservice.internal.kafka.streams.test.extension.model.ModelUtil.createParser;
-import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.DEFAULT_EXTRA_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -25,10 +26,10 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
 import org.creekservice.api.system.test.test.util.ModelParser;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering;
 import org.junit.jupiter.api.Test;
 
-class TestOptionsTest {
+class TestOptionsKafka {
 
     private static final ModelParser PARSER = createParser();
 
@@ -40,12 +41,13 @@ class TestOptionsTest {
                 + "notes: ignored\n";
 
         // When formatting:on:
-        final TestOptions result = PARSER.parseOther(yaml, TestOptions.class);
+        final KafkaOptions result = PARSER.parseOther(yaml, KafkaOptions.class);
 
         // Then:
         assertThat(result.outputOrdering(), is(OutputOrdering.BY_KEY));
         assertThat(result.verifierTimeout(), is(Optional.empty()));
         assertThat(result.extraTimeout(), is(DEFAULT_EXTRA_TIMEOUT));
+        assertThat(result.kafkaDockerImage(), is(DEFAULT_KAFKA_DOCKER_IMAGE));
     }
 
     @Test
@@ -56,15 +58,17 @@ class TestOptionsTest {
                 + "outputOrdering: NONE\n"
                 + "verifierTimeout: PT49.1S\n"
                 + "extraTimeout: PT2S\n"
+                + "kafkaDockerImage: custom-image\n"
                 + "notes: ignored";
 
         // When formatting:on:
-        final TestOptions result = PARSER.parseOther(yaml, TestOptions.class);
+        final KafkaOptions result = PARSER.parseOther(yaml, KafkaOptions.class);
 
         // Then:
         assertThat(result.outputOrdering(), is(OutputOrdering.NONE));
         assertThat(result.verifierTimeout(), is(Optional.of(Duration.ofSeconds(49, 100000000))));
         assertThat(result.extraTimeout(), is(Duration.ofSeconds(2)));
+        assertThat(result.kafkaDockerImage(), is("custom-image"));
     }
 
     @Test
@@ -72,16 +76,13 @@ class TestOptionsTest {
         // Given formatting:off:
         final String yaml = "---\n"
                 + "!creek/kafka-options@1\n"
-                + "outputOrdering: NONE\n"
                 + "verifierTimeout: 120\n"
-                + "extraTimeout: 2\n"
-                + "notes: ignored";
+                + "extraTimeout: 2";
 
         // When formatting:on:
-        final TestOptions result = PARSER.parseOther(yaml, TestOptions.class);
+        final KafkaOptions result = PARSER.parseOther(yaml, KafkaOptions.class);
 
         // Then:
-        assertThat(result.outputOrdering(), is(OutputOrdering.NONE));
         assertThat(result.verifierTimeout(), is(Optional.of(Duration.ofSeconds(120))));
         assertThat(result.extraTimeout(), is(Duration.ofSeconds(2)));
     }
@@ -91,20 +92,22 @@ class TestOptionsTest {
         // Given:
         final URI location = URI.create("loc:///1");
 
-        final TestOptions initial =
-                new TestOptions(
+        final KafkaOptions initial =
+                new KafkaOptions(
                         Optional.of(OutputOrdering.NONE),
                         Optional.of(Duration.ofSeconds(1)),
                         Optional.of(Duration.ofSeconds(2)),
+                        Optional.of("kafka:6.2"),
                         Optional.empty());
 
         // When:
-        final TestOptions result = initial.withLocation(location);
+        final KafkaOptions result = initial.withLocation(location);
 
         // Then:
         assertThat(result.location(), is(location));
         assertThat(result.outputOrdering(), is(OutputOrdering.NONE));
         assertThat(result.verifierTimeout(), is(Optional.of(Duration.ofSeconds(1))));
         assertThat(result.extraTimeout(), is(Duration.ofSeconds(2)));
+        assertThat(result.kafkaDockerImage(), is("kafka:6.2"));
     }
 }

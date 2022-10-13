@@ -36,9 +36,11 @@ final class KafkaContainerDef implements ServiceDefinition {
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private final String name;
+    private final String kafkaDockerImage;
 
-    KafkaContainerDef(final String clusterName) {
+    KafkaContainerDef(final String clusterName, final String kafkaDockerImage) {
         this.name = "kafka-" + requireNonBlank(clusterName, "clusterName");
+        this.kafkaDockerImage = requireNonBlank(kafkaDockerImage, "kafkaDockerImage");
     }
 
     @Override
@@ -48,8 +50,7 @@ final class KafkaContainerDef implements ServiceDefinition {
 
     @Override
     public String dockerImage() {
-        // Should be configurable: https://github.com/creek-service/creek-kafka/issues/82
-        return "confluentinc/cp-kafka:6.2.7";
+        return kafkaDockerImage;
     }
 
     @Override
@@ -100,12 +101,13 @@ final class KafkaContainerDef implements ServiceDefinition {
             return false;
         }
         final KafkaContainerDef that = (KafkaContainerDef) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(name, that.name)
+                && Objects.equals(kafkaDockerImage, that.kafkaDockerImage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(name, kafkaDockerImage);
     }
 
     private static List<String> setUpZooKeeper(final ConfigurableServiceInstance instance) {

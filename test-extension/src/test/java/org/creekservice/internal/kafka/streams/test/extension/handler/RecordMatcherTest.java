@@ -16,8 +16,8 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
-import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.BY_KEY;
-import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.NONE;
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering.BY_KEY;
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering.NONE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Mismatched;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.OutputOrdering;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.hamcrest.Description;

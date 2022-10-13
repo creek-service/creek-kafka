@@ -19,29 +19,40 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import java.net.URI;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 
 public final class TestOptionsAccessor {
 
     private TestOptionsAccessor() {}
 
-    public static TestOptions get(final ExpectationOptions options) {
-        final List<TestOptions> userSupplied = options.get(TestOptions.class);
+    public static KafkaOptions get(final ExpectationOptions options) {
+        return get(options::get);
+    }
+
+    public static KafkaOptions get(final CreekTestSuite suite) {
+        return get(suite::options);
+    }
+
+    private static KafkaOptions get(
+            final Function<Class<KafkaOptions>, List<KafkaOptions>> provider) {
+        final List<KafkaOptions> userSupplied = provider.apply(KafkaOptions.class);
         switch (userSupplied.size()) {
             case 0:
-                return TestOptions.defaults();
+                return KafkaOptions.defaults();
             case 1:
                 return userSupplied.get(0);
             default:
                 final List<URI> locations =
                         userSupplied.stream()
-                                .map(TestOptions::location)
+                                .map(KafkaOptions::location)
                                 .collect(Collectors.toList());
                 throw new IllegalArgumentException(
                         "Test suite should only define single '"
-                                + TestOptions.NAME
+                                + KafkaOptions.NAME
                                 + "' option. locations: "
                                 + locations);
         }

@@ -33,7 +33,7 @@ import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
-import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
+import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
@@ -138,7 +138,7 @@ class KafkaTestExtensionTest {
         ext.initialize(api);
 
         // Then:
-        verify(api.tests().model().addOption(eq(TestOptions.class)))
+        verify(api.tests().model().addOption(eq(KafkaOptions.class)))
                 .withName("creek/kafka-options@1");
     }
 }
