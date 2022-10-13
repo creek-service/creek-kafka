@@ -32,6 +32,7 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
 
     public static final String NAME = "creek/kafka-options@1";
     public static final Duration DEFAULT_EXTRA_TIMEOUT = Duration.ofSeconds(1);
+    // https://hub.docker.com/r/confluentinc/cp-kafka/tags
     public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.2.2";
 
     private static final KafkaOptions DEFAULTS =
