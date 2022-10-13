@@ -1,0 +1,16 @@
+---
+!creek/kafka-topic
+topic: output
+records:
+  - key: 1
+    value: hello
+  - key: 2
+    value: mum
+  - key: 3
+    value: some
+  - key: 4
+    value: any
+  - key: 5
+    value: ~
+  - key: ~
+    value: no_v

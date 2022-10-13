@@ -97,7 +97,7 @@ class KafkaContainerDefTest {
 
     @Test
     void shouldUseRightDockerImage() {
-        assertThat(def.dockerImage(), is("confluentinc/cp-kafka:6.2.4"));
+        assertThat(def.dockerImage(), is("confluentinc/cp-kafka:6.2.7"));
     }
 
     @Test

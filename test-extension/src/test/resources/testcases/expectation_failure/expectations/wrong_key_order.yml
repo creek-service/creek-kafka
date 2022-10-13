@@ -1,0 +1,12 @@
+---
+!creek/kafka-topic
+topic: output
+records:
+  - notes: this should not cause any issues as its the only record on this key
+    key: 2
+    value: mum
+  - notes: expectation out of order, so should fail on ordering.
+    key: 1
+    value: bye
+  - key: 1
+    value: hello

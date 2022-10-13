@@ -1,5 +1,5 @@
 ---
-name: expectation failures
+name: main
 services:
   - test-service
 tests:

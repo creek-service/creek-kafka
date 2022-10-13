@@ -17,26 +17,38 @@
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
 import static org.creekservice.internal.kafka.streams.test.extension.handler.MismatchDescription.mismatchDescription;
+import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.BY_KEY;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Mismatched;
+import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
+import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 final class RecordMatcher {
-    private final List<TopicRecord> expectedRecords;
 
-    RecordMatcher(final Collection<TopicRecord> expectedRecords) {
+    private final List<TopicRecord> expectedRecords;
+    private final TestOptions.OutputOrdering outputOrdering;
+
+    RecordMatcher(
+            final Collection<TopicRecord> expectedRecords,
+            final TestOptions.OutputOrdering outputOrdering) {
         this.expectedRecords = List.copyOf(requireNonNull(expectedRecords, "expectedRecords"));
+        this.outputOrdering = requireNonNull(outputOrdering, "outputOrdering");
     }
 
     long minRecords() {
@@ -44,33 +56,69 @@ final class RecordMatcher {
     }
 
     MatchResult match(final List<ConsumedRecord> consumedRecords) {
+        final Map<Optional3<?>, List<TopicRecord>> remaining =
+                expectedRecords.stream()
+                        .collect(groupingBy(TopicRecord::key, LinkedHashMap::new, toList()));
+
         final List<ConsumedRecord> matched = new ArrayList<>();
-        final List<TopicRecord> remaining = new ArrayList<>(expectedRecords);
+        final List<TopicRecord> skipped = new ArrayList<>();
         final List<ConsumedRecord> extras = new ArrayList<>();
 
         for (final ConsumedRecord consumed : consumedRecords) {
-            final Optional<TopicRecord> match =
-                    remaining.stream()
-                            .filter(
-                                    expected ->
-                                            recordMismatchDescription(expected, consumed).isEmpty())
-                            .findFirst();
+            int foundIndex;
+            List<TopicRecord> candidates;
+            boolean trimToSkipped = outputOrdering.equals(BY_KEY);
 
-            if (match.isPresent()) {
-                remaining.remove(match.get());
-                matched.add(consumed);
+            if (consumed.key().isEmpty()) {
+                candidates = remaining.getOrDefault(Optional3.explicitlyNull(), List.of());
+                foundIndex = findMatch(consumed, candidates).orElse(-1);
             } else {
+                candidates = remaining.getOrDefault(Optional3.of(consumed.key().get()), List.of());
+                foundIndex = findMatch(consumed, candidates).orElse(-1);
+
+                if (foundIndex == -1) {
+                    candidates = remaining.getOrDefault(Optional3.notProvided(), List.of());
+                    foundIndex = findMatch(consumed, candidates).orElse(-1);
+                    trimToSkipped = false;
+                }
+            }
+
+            if (foundIndex == -1) {
                 extras.add(consumed);
+            } else {
+                if (trimToSkipped) {
+                    final List<TopicRecord> toSkip = candidates.subList(0, foundIndex);
+                    skipped.addAll(toSkip);
+                    toSkip.clear();
+                    foundIndex = 0;
+                }
+                candidates.remove(foundIndex);
+                matched.add(consumed);
             }
         }
 
         final List<Unmatched> unmatched =
-                remaining.stream().map(expected -> unmatched(expected, extras)).collect(toList());
+                Stream.concat(skipped.stream(), remaining.values().stream().flatMap(List::stream))
+                        .map(expected -> unmatched(expected, extras))
+                        .collect(toList());
 
         return new MatchResult(matched, unmatched, extras);
     }
 
-    private Unmatched unmatched(final TopicRecord expected, final List<ConsumedRecord> extras) {
+    private static OptionalInt findMatch(
+            final ConsumedRecord consumed, final List<TopicRecord> candidates) {
+        for (int i = 0; i < candidates.size(); i++) {
+            final TopicRecord candidate = candidates.get(i);
+            if (recordMismatchDescription(candidate, consumed).isEmpty()) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
+    }
+
+    private static Unmatched unmatched(
+            final TopicRecord expected, final List<ConsumedRecord> extras) {
         final Stream<ConsumedRecord> s =
                 expected.key().isPresent()
                         ? extras.stream().sorted(matchingKeyFirst(expected.key().get()))
@@ -82,13 +130,16 @@ final class RecordMatcher {
                                         new Mismatched(
                                                 actual,
                                                 recordMismatchDescription(expected, actual)
-                                                        .orElseThrow()))
+                                                        .map(MismatchDescription::toString)
+                                                        .orElse(
+                                                                "Records match, but the order is wrong")))
                         .collect(toList());
 
         return new Unmatched(expected, mismatched);
     }
 
-    private Comparator<? super ConsumedRecord> matchingKeyFirst(final Optional<?> expectedKey) {
+    private static Comparator<? super ConsumedRecord> matchingKeyFirst(
+            final Optional<?> expectedKey) {
         return (Comparator<ConsumedRecord>)
                 (o1, o2) -> {
                     if (!Objects.equals(o1.key(), expectedKey)) {

@@ -16,6 +16,8 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
+import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.BY_KEY;
+import static org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering.NONE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -28,14 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Mismatched;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
+import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions.OutputOrdering;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,15 +55,16 @@ class RecordMatcherTest {
     private List<TopicRecord> expected;
     private RecordMatcher matcher;
 
-    @BeforeEach
-    void setUp() {
-        givenMatcherFor(List.of(expectedRecord(1, "a"), expectedRecord(2, "b")));
-    }
-
-    @Test
-    void shouldMatch() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchInOrder(final OutputOrdering outputOrdering) {
         // Given:
-        final List<ConsumedRecord> actual = List.of(actualRecord(1, "a"), actualRecord(2, "b"));
+        givenMatcherFor(
+                List.of(expectedRecord(1, "a"), expectedRecord(1, "b"), expectedRecord(2, "c")),
+                outputOrdering);
+
+        final List<ConsumedRecord> actual =
+                List.of(actualRecord(1, "a"), actualRecord(1, "b"), actualRecord(2, "c"));
 
         // When:
         final MatchResult result = matcher.match(actual);
@@ -71,9 +76,58 @@ class RecordMatcherTest {
     }
 
     @Test
-    void shouldMatchWithNoKeyExpectation() {
+    void shouldMatchOutOfOrderIfNoOrderingRequested() {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.notProvided(), Optional3.of("a"))));
+        givenMatcherFor(
+                List.of(expectedRecord(1, "a"), expectedRecord(1, "b"), expectedRecord(2, "c")),
+                NONE);
+
+        final List<ConsumedRecord> actual =
+                List.of(actualRecord(1, "b"), actualRecord(2, "c"), actualRecord(1, "a"));
+
+        // When:
+        final MatchResult result = matcher.match(actual);
+
+        // Then:
+        assertThat(result.matched(), is(actual));
+        assertThat(result.unmatched(), is(empty()));
+        assertThat(result.extras(), is(empty()));
+    }
+
+    @Test
+    void shouldNotMatchOutOfOrderIfOrderingByKeyRequested() {
+        // Given:
+        givenMatcherFor(
+                List.of(expectedRecord(1, "a"), expectedRecord(1, "b"), expectedRecord(2, "c")),
+                BY_KEY);
+
+        final List<ConsumedRecord> actual =
+                List.of(actualRecord(1, "b"), actualRecord(2, "c"), actualRecord(1, "a"));
+
+        // When:
+        final MatchResult result = matcher.match(actual);
+
+        // Then:
+        assertThat(result.matched(), is(List.of(actual.get(0), actual.get(1))));
+        assertThat(
+                result.unmatched(),
+                contains(
+                        unmatched(
+                                expected.get(0),
+                                contains(
+                                        mismatched(
+                                                actual.get(2),
+                                                "Records match, but the order is wrong")))));
+        assertThat(result.extras(), is(List.of(actual.get(2))));
+    }
+
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchWithNoKeyExpectation(final OutputOrdering outputOrdering) {
+        // Given:
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.notProvided(), Optional3.of("a"))),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(1, "a"));
 
@@ -87,9 +141,32 @@ class RecordMatcherTest {
     }
 
     @Test
-    void shouldMatchWithNullKeyExpectation() {
+    void shouldNotEnforceOrderingWhereNoKeyProvided() {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))));
+        givenMatcherFor(
+                List.of(
+                        expectedRecord(Optional3.notProvided(), Optional3.of("a")),
+                        expectedRecord(Optional3.notProvided(), Optional3.of("b"))),
+                BY_KEY);
+
+        final List<ConsumedRecord> actual = List.of(actualRecord(1, "b"), actualRecord(2, "a"));
+
+        // When:
+        final MatchResult result = matcher.match(actual);
+
+        // Then:
+        assertThat(result.matched(), is(actual));
+        assertThat(result.unmatched(), is(empty()));
+        assertThat(result.extras(), is(empty()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchWithNullKeyExpectation(final OutputOrdering outputOrdering) {
+        // Given:
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(null, "a"));
 
@@ -102,10 +179,13 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(empty()));
     }
 
-    @Test
-    void shouldNotMatchWithNullKeyExpectation() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldNotMatchWithNullKeyExpectation(final OutputOrdering outputOrdering) {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))));
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord("not null", "a"));
 
@@ -126,10 +206,12 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(actual));
     }
 
-    @Test
-    void shouldMatchWithNoValueExpectation() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchWithNoValueExpectation(final OutputOrdering outputOrdering) {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.of(1), Optional3.notProvided())));
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.of(1), Optional3.notProvided())), outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(1, "a"));
 
@@ -142,10 +224,13 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(empty()));
     }
 
-    @Test
-    void shouldMatchWithNullValueExpectation() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchWithNullValueExpectation(final OutputOrdering outputOrdering) {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.of(1), Optional3.explicitlyNull())));
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.of(1), Optional3.explicitlyNull())),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(1, null));
 
@@ -158,10 +243,13 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(empty()));
     }
 
-    @Test
-    void shouldNotMatchWithNullValueExpectation() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldNotMatchWithNullValueExpectation(final OutputOrdering outputOrdering) {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(Optional3.of(1), Optional3.explicitlyNull())));
+        givenMatcherFor(
+                List.of(expectedRecord(Optional3.of(1), Optional3.explicitlyNull())),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(1, "not null"));
 
@@ -182,10 +270,11 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(actual));
     }
 
-    @Test
-    void shouldMatchDuplicates() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldMatchDuplicates(final OutputOrdering outputOrdering) {
         // Given:
-        givenMatcherFor(List.of(expectedRecord(1, "a"), expectedRecord(1, "a")));
+        givenMatcherFor(List.of(expectedRecord(1, "a"), expectedRecord(1, "a")), outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(1, "a"), actualRecord(1, "a"));
 
@@ -198,23 +287,12 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(empty()));
     }
 
-    @Test
-    void shouldMatchOutOfOrder() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldDetectExtra(final OutputOrdering outputOrdering) {
         // Given:
-        final List<ConsumedRecord> actual = List.of(actualRecord(2, "b"), actualRecord(1, "a"));
+        givenMatcherFor(List.of(expectedRecord(1, "a"), expectedRecord(2, "b")), outputOrdering);
 
-        // When:
-        final MatchResult result = matcher.match(actual);
-
-        // Then:
-        assertThat(result.matched(), is(actual));
-        assertThat(result.unmatched(), is(empty()));
-        assertThat(result.extras(), is(empty()));
-    }
-
-    @Test
-    void shouldDetectExtra() {
-        // Given:
         final List<ConsumedRecord> actual =
                 List.of(
                         actualRecord(2, "a"),
@@ -231,9 +309,12 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(List.of(actual.get(0), actual.get(3))));
     }
 
-    @Test
-    void shouldDetectUnmatchedWithWithMatchingKeyAtTop() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldDetectUnmatchedWithWithMatchingKeyAtTop(final OutputOrdering outputOrdering) {
         // Given:
+        givenMatcherFor(List.of(expectedRecord(1, "a"), expectedRecord(2, "b")), outputOrdering);
+
         final List<ConsumedRecord> actual =
                 List.of(
                         actualRecord(2, "a"),
@@ -282,15 +363,17 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(actual));
     }
 
-    @Test
-    void shouldDetectUnmatchedWithNoKeyAndValueExpectation() {
+    @ParameterizedTest
+    @EnumSource(OutputOrdering.class)
+    void shouldDetectUnmatchedWithNoKeyAndValueExpectation(final OutputOrdering outputOrdering) {
         // Given:
         givenMatcherFor(
                 List.of(
                         expectedRecord(Optional3.of(1), Optional3.notProvided()),
                         expectedRecord(Optional3.of(2), Optional3.explicitlyNull()),
                         expectedRecord(Optional3.notProvided(), Optional3.of("a")),
-                        expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))));
+                        expectedRecord(Optional3.explicitlyNull(), Optional3.of("a"))),
+                outputOrdering);
 
         final List<ConsumedRecord> actual = List.of(actualRecord(2, "c"));
 
@@ -329,9 +412,9 @@ class RecordMatcherTest {
         assertThat(result.extras(), is(actual));
     }
 
-    private void givenMatcherFor(final List<TopicRecord> expected) {
+    private void givenMatcherFor(final List<TopicRecord> expected, final OutputOrdering ordering) {
         this.expected = expected;
-        this.matcher = new RecordMatcher(this.expected);
+        this.matcher = new RecordMatcher(this.expected, ordering);
     }
 
     private TopicRecord expectedRecord(final Object key, final Object value) {
@@ -406,7 +489,7 @@ class RecordMatcherTest {
                     return false;
                 }
 
-                if (!item.mismatchDescription().toString().equals(reason)) {
+                if (!item.mismatchDescription().equals(reason)) {
                     mismatchDescription
                             .appendText("wrong mismatch description. expected: ")
                             .appendValue(reason)

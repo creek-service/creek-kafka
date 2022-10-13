@@ -125,12 +125,10 @@ class TopicVerifierTest {
         final TopicRecord expected = mock(TopicRecord.class, withSettings().name("e-record"));
         final Unmatched unmatched = mock(Unmatched.class);
         final Mismatched mismatched = mock(Mismatched.class);
-        final MismatchDescription mismatchDescription =
-                mock(MismatchDescription.class, withSettings().name("mismatch details"));
         when(unmatched.expected()).thenReturn(expected);
         when(unmatched.mismatches()).thenReturn(List.of(mismatched));
         when(mismatched.actual()).thenReturn(rec1);
-        when(mismatched.mismatchDescription()).thenReturn(mismatchDescription);
+        when(mismatched.mismatchDescription()).thenReturn("mismatch details");
 
         when(result.matched()).thenReturn(List.of(rec0));
         when(result.unmatched()).thenReturn(List.of(unmatched));

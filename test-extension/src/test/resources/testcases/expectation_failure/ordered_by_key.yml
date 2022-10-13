@@ -1,0 +1,13 @@
+---
+name: order by key
+services:
+  - test-service
+options:
+  - !creek/kafka-options@1
+    outputOrdering: BY_KEY
+tests:
+  - name: out of order
+    inputs:
+      - input
+    expectations:
+      - wrong_key_order

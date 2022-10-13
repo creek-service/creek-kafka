@@ -69,9 +69,9 @@ final class MatchResult {
     static final class Mismatched {
 
         private final ConsumedRecord actual;
-        private final MismatchDescription mismatchDescription;
+        private final String mismatchDescription;
 
-        Mismatched(final ConsumedRecord actual, final MismatchDescription mismatchDescription) {
+        Mismatched(final ConsumedRecord actual, final String mismatchDescription) {
             this.actual = requireNonNull(actual, "actual");
             this.mismatchDescription = requireNonNull(mismatchDescription, "mismatchDescription");
         }
@@ -80,7 +80,7 @@ final class MatchResult {
             return actual;
         }
 
-        public MismatchDescription mismatchDescription() {
+        public String mismatchDescription() {
             return mismatchDescription;
         }
     }

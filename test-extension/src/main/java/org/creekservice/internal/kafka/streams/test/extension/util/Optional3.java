@@ -97,6 +97,10 @@ public final class Optional3<T> {
         return hasValue ? value.orElse(ifNull) : ifNotProvided;
     }
 
+    public T orElseThrow() {
+        return value.orElseThrow();
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

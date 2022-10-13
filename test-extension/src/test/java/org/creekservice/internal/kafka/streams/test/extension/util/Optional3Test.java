@@ -85,6 +85,14 @@ class Optional3Test {
         assertThat(of(8).orElse(1, 2), is(8));
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void shouldOrElseThrow() {
+        assertThrows(NoSuchElementException.class, () -> notProvided().orElseThrow());
+        assertThrows(NoSuchElementException.class, () -> explicitlyNull().orElseThrow());
+        assertThat(of(8).orElseThrow(), is(8));
+    }
+
     @Test
     void shouldToString() {
         assertThat(notProvided().toString(), is("<not-set>"));

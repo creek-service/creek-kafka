@@ -221,7 +221,7 @@ class StartKafkaTestListenerFunctionalTest {
                     .all()
                     .get(1, TimeUnit.HOURS);
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
-            throw new AssertionError("Failed to create topic");
+            throw new AssertionError("Failed to create topic", e);
         }
     }
 

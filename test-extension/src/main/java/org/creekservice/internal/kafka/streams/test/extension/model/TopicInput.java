@@ -27,6 +27,8 @@ import org.creekservice.api.system.test.extension.test.model.Input;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicInput implements Input {
 
+    public static final String NAME = "creek/kafka-topic";
+
     private final List<TopicRecord> records;
 
     @SuppressWarnings("unused") // Invoked by Jackson via reflection

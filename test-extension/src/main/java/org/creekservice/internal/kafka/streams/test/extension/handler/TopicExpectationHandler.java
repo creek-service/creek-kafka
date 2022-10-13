@@ -29,6 +29,7 @@ import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
+import org.creekservice.internal.kafka.streams.test.extension.model.TestOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 
@@ -84,23 +85,33 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                 byTopic.entrySet().stream()
                         .map(
                                 e ->
-                                        new TopicVerifier(
+                                        topicVerifier(
                                                 e.getKey(),
-                                                topicConsumers,
-                                                recordMatcher(e.getKey(), e.getValue(), topics),
-                                                options))
+                                                e.getValue(),
+                                                options,
+                                                topics,
+                                                topicConsumers))
                         .collect(toList());
 
         return () -> topicVerifiers.forEach(Verifier::verify);
     }
 
-    private RecordMatcher recordMatcher(
+    private TopicVerifier topicVerifier(
             final String topicName,
-            final List<TopicRecord> expectedRecovers,
-            final Map<String, KafkaTopic<?, ?>> topics) {
+            final List<TopicRecord> expectedRecords,
+            final ExpectationOptions options,
+            final Map<String, KafkaTopic<?, ?>> topics,
+            final TopicConsumers topicConsumers) {
+
         final KafkaTopicDescriptor<?, ?> topic = topics.get(topicName).descriptor();
-        final List<TopicRecord> coercedExpected = recordCoercer.coerce(expectedRecovers, topic);
-        return new RecordMatcher(coercedExpected);
+        final List<TopicRecord> coercedExpected = recordCoercer.coerce(expectedRecords, topic);
+        final TestOptions testOptions = TestOptionsAccessor.get(options);
+
+        return new TopicVerifier(
+                topicName,
+                topicConsumers,
+                new RecordMatcher(coercedExpected, testOptions.outputOrdering()),
+                options);
     }
 
     private KafkaTopic<?, ?> kafkaTopic(
