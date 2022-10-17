@@ -46,7 +46,7 @@ public final class StreamsVersions {
     }
 
     public static final String EXACTLY_ONCE_V2 =
-            versionAtLeast(3, 1).map(v -> "exactly_once_v2").orElse("exactly_once_beta");
+            versionAtLeast(3, 0).map(v -> "exactly_once_v2").orElse("exactly_once_beta");
 
     private static Optional<?> versionAtLeast(final int minMajor, final int minMinor) {
         return (MAJOR_VERSION > minMajor)

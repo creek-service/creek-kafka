@@ -26,7 +26,7 @@ class StreamsVersionsTest {
     @Test
     void shouldGetExactlyOnce() {
         final String expected =
-                StreamsVersions.MAJOR_VERSION > 2 ? "exactly_once_v2" : "exactly_once_beta";
+                StreamsVersions.MAJOR_VERSION >= 3 ? "exactly_once_v2" : "exactly_once_beta";
 
         assertThat(StreamsVersions.EXACTLY_ONCE_V2, is(expected));
     }
