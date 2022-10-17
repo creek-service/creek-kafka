@@ -97,7 +97,7 @@ class KafkaStreamsExecutorTest {
                         shutdownFuture,
                         loggingCloseDelay);
 
-        when(app.close(any())).thenReturn(true);
+        when(app.close(any(Duration.class))).thenReturn(true);
         when(metricsPublisherFactory.create(any())).thenReturn(metricsPublisher);
     }
 
@@ -255,7 +255,7 @@ class KafkaStreamsExecutorTest {
     @Test
     void shouldReportAppCloseTimeout() {
         // Given:
-        when(app.close(any())).thenReturn(false);
+        when(app.close(any(Duration.class))).thenReturn(false);
         shutdownFuture.complete(null);
 
         // When:
@@ -268,7 +268,7 @@ class KafkaStreamsExecutorTest {
     @Test
     void shouldReportExceptionThrownOnShutdown() {
         // Given:
-        when(app.close(any())).thenThrow(new RuntimeException("Big Bada Boom"));
+        when(app.close(any(Duration.class))).thenThrow(new RuntimeException("Big Bada Boom"));
         shutdownFuture.complete(null);
 
         // When:
@@ -295,7 +295,7 @@ class KafkaStreamsExecutorTest {
     void shouldObserveExceptionThrownOnShutdown() {
         // Given:
         final RuntimeException e = new RuntimeException("Big Bada Boom");
-        when(app.close(any())).thenThrow(e);
+        when(app.close(any(Duration.class))).thenThrow(e);
         shutdownFuture.complete(null);
 
         // When:

@@ -23,6 +23,7 @@ val creekBaseVersion : String by extra
 val testContainersVersion : String by extra
 val kafkaVersion : String by extra
 val jacksonVersion : String by extra
+val slf4jVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
@@ -32,6 +33,7 @@ dependencies {
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     testImplementation(project(":test-service"))
     testImplementation("org.creekservice:creek-system-test-executor:$creekSystemTestVersion")

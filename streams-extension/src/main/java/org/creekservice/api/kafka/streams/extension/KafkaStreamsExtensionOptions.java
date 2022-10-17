@@ -32,6 +32,7 @@ import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHa
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
+import org.creekservice.internal.kafka.streams.extension.StreamsVersions;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultLifecycleObserver;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultStateRestoreObserver;
 
@@ -49,7 +50,7 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
                     3,
                     // Default to exactly once semantics:
                     StreamsConfig.PROCESSING_GUARANTEE_CONFIG,
-                    StreamsConfig.EXACTLY_ONCE_BETA,
+                    StreamsVersions.EXACTLY_ONCE_V2,
                     // Reduce default commit interval from 30s to 1s:
                     // Reducing eos publishing delays and the number of messages replayed on
                     // failure.

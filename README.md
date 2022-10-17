@@ -23,4 +23,20 @@ aptly named [Example Kafka Streams Aggregate][1].
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.
 
+## Kafka client version compatability
+
+The libraries themselves are compiled with the latest versions of the Kafka clients and Kafka streams libraries.
+However, they are compatible with older versions, as set out in the table below. 
+The `tested version` column details the exact version of Kafka libraries testing covers.
+
+| Kafka version | Tested version | Notes                                           |
+|---------------|----------------|-------------------------------------------------|
+| < 2.8         |                | Not compatible due to API changes in Streams    |
+| 2.8.+         | 2.8.2          | Supported & tested                              |
+| 3.0.+         | 3.0.2          | Supported & tested                              |
+| 3.1.+         | 3.1.2          | Supported & tested                              |
+| 3.2.+         | 3.2.3          | Supported & tested                              |
+| > 3.2         |                | Not currently tested / released. Should work... |
+
+
 [1]: https://github.com/creek-service/example-kafka-streams-aggregate

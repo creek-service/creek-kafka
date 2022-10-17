@@ -7,6 +7,7 @@ module creek.kafka.streams.extension {
     requires transitive kafka.streams;
     requires creek.observability.logging;
     requires creek.observability.lifecycle;
+    requires creek.base.type;
 
     exports org.creekservice.api.kafka.streams.extension;
     exports org.creekservice.api.kafka.streams.extension.exception;

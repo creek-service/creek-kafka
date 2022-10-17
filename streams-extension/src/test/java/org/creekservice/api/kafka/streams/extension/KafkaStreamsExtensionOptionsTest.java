@@ -36,6 +36,7 @@ import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHa
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
 import org.creekservice.api.kafka.streams.extension.observation.StateRestoreObserver;
+import org.creekservice.internal.kafka.streams.extension.StreamsVersions;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultLifecycleObserver;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultStateRestoreObserver;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,7 +110,7 @@ class KafkaStreamsExtensionOptionsTest {
                         .build(Set.of())
                         .get("any")
                         .get(StreamsConfig.PROCESSING_GUARANTEE_CONFIG),
-                is(StreamsConfig.EXACTLY_ONCE_BETA));
+                is(StreamsVersions.EXACTLY_ONCE_V2));
     }
 
     @Test
