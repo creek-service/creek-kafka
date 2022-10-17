@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        kafka_version: [ 2.7.2, 2.8.2, 3.0.2, 3.1.2, 3.2.3 ]
+        kafka_version: [ 2.7.2, 2.8.2, 3.0.2, 3.1.2, 3.2.3, 3.3.1 ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
