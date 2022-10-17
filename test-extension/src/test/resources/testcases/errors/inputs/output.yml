@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic@1
+topic: output
+notes: the output topic is an edge output topic, i.e. no service-under-test consumes from it. It's invalid to produce to it in a test.
+records:
+  - key: 1
+    value: hello

@@ -33,3 +33,13 @@ tests:
       - bad_output_key
     expectations:
       - output
+  - name: produce to output
+    notes: attempting to produce to an output edge, i.e. a topic that no service-under-test consumes from
+    inputs:
+      - output
+    expectations:
+      - output
+  - name: consume from input
+    notes: attempting to consume to an input edge, i.e. a topic that no service-under-test produces to
+    expectations:
+      - input

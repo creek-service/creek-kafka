@@ -22,7 +22,6 @@ import static org.creekservice.api.kafka.metadata.SerializationFormat.serializat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
@@ -174,7 +173,7 @@ class TopicCollectorTest {
         // Then:
         final Map<URI, List<KafkaTopicDescriptor<?, ?>>> topics =
                 result.stream().collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-        assertThat(topics, hasEntry(topic.id(), List.of(topic, topic)));
+        assertThat(topics.get(topic.id()), is(List.of(topic, topic)));
         assertThat(topics.entrySet(), hasSize(1));
     }
 
@@ -189,7 +188,7 @@ class TopicCollectorTest {
         // Then:
         final Map<URI, List<KafkaTopicDescriptor<?, ?>>> topics =
                 result.stream().collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-        assertThat(topics, hasEntry(creatableTopic.id(), List.of(creatableTopic, creatableTopic2)));
+        assertThat(topics.get(creatableTopic.id()), is(List.of(creatableTopic, creatableTopic2)));
         assertThat(topics.entrySet(), hasSize(1));
     }
 
@@ -242,5 +241,34 @@ class TopicCollectorTest {
 
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(creatableTopic)));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(creatableTopic2)));
+    }
+
+    @Test
+    void shouldThrowOnUnknownTopicId() {
+        // Given:
+        final URI id = URI.create("some:///id");
+        final CollectedTopics collectedTopics = new CollectedTopics(Map.of());
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> collectedTopics.getAll(id));
+
+        // Then:
+        assertThat(e.getMessage(), is("Unknown topic id: " + id));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldGetByTopicId() {
+        // Given:
+        final URI id = URI.create("some:///id");
+        final List<KafkaTopicDescriptor<?, ?>> descriptors =
+                List.of(mock(KafkaTopicDescriptor.class));
+        final CollectedTopics collectedTopics = new CollectedTopics(Map.of(id, descriptors));
+
+        // When:
+        final List<KafkaTopicDescriptor<?, ?>> result = collectedTopics.getAll(id);
+
+        // Then:
+        assertThat(result, is(descriptors));
     }
 }

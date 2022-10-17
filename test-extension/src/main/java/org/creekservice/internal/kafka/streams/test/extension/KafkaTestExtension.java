@@ -22,6 +22,7 @@ import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.test.env.listener.TestListenerContainer;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
@@ -31,6 +32,7 @@ import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpecta
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.TearDownTestListener;
+import org.creekservice.internal.kafka.streams.test.extension.testsuite.TopicValidatingListener;
 
 /**
  * A Creek system test extension for testing Kafka Streams based microservices.
@@ -57,22 +59,28 @@ public final class KafkaTestExtension implements CreekTestExtension {
                 (ClientsExtension)
                         api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
 
-        api.tests()
-                .env()
-                .listeners()
-                .append(new StartKafkaTestListener(api, clusterEndpointsProvider));
+        final TestListenerContainer testListeners = api.tests().env().listeners();
 
-        api.tests().env().listeners().append(new TearDownTestListener(clientsExt));
+        testListeners.append(new StartKafkaTestListener(api, clusterEndpointsProvider));
 
-        initializeModel(api.tests().model(), clientsExt);
+        final TopicValidatingListener topicValidator = new TopicValidatingListener(api);
+        testListeners.append(topicValidator);
+
+        testListeners.append(new TearDownTestListener(clientsExt));
+
+        initializeModel(
+                api.tests().model(),
+                new TopicInputHandler(clientsExt, topicValidator),
+                new TopicExpectationHandler(clientsExt, topicValidator));
     }
 
     @VisibleForTesting
     public static void initializeModel(
-            final TestModelContainer model, final ClientsExtension clientsExt) {
-        model.addInput(TopicInput.class, new TopicInputHandler(clientsExt))
-                .withName(TopicInput.NAME);
-        model.addExpectation(TopicExpectation.class, new TopicExpectationHandler(clientsExt))
+            final TestModelContainer model,
+            final TopicInputHandler inputHandler,
+            final TopicExpectationHandler expectationHandler) {
+        model.addInput(TopicInput.class, inputHandler).withName(TopicInput.NAME);
+        model.addExpectation(TopicExpectation.class, expectationHandler)
                 .withName(TopicExpectation.NAME);
         model.addOption(KafkaOptions.class).withName(KafkaOptions.NAME);
     }

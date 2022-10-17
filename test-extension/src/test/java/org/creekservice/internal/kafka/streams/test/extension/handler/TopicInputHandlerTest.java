@@ -73,11 +73,13 @@ class TopicInputHandlerTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private KafkaTopic<Integer, String> topicB;
 
+    @Mock private TopicValidator topicValidator;
+
     private TopicInputHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new TopicInputHandler(clientsExt, coercer);
+        handler = new TopicInputHandler(clientsExt, coercer, topicValidator);
 
         final TopicRecord record0 =
                 new TopicRecord(

@@ -3,7 +3,7 @@ name: passing suite
 options:
   - !creek/kafka-options@1
     notes: test using an older kafka server
-    kafkaDockerImage: "confluentinc/cp-kafka:6.2.7"
+    kafkaDockerImage: "confluentinc/cp-kafka:7.1.4"
 services:
   - test-service
 tests:

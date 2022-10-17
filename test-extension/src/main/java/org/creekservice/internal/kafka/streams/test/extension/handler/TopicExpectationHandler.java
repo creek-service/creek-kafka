@@ -37,9 +37,12 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
 
     private final ClientsExtension clientsExt;
     private final RecordCoercer recordCoercer = new RecordCoercer();
+    private final TopicValidator topicValidator;
 
-    public TopicExpectationHandler(final ClientsExtension clientsExt) {
+    public TopicExpectationHandler(
+            final ClientsExtension clientsExt, final TopicValidator topicValidator) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
+        this.topicValidator = requireNonNull(topicValidator, "topicValidator");
     }
 
     @Override
@@ -77,6 +80,8 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                                 toMap(
                                         Map.Entry::getKey,
                                         e -> kafkaTopic(cluster, e.getKey(), e.getValue())));
+
+        topics.values().forEach(topicValidator::validateCanConsume);
 
         final TopicConsumers topicConsumers =
                 new TopicConsumers(topics, clientsExt.consumer(cluster));

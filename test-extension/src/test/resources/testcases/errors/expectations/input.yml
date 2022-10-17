@@ -1,0 +1,7 @@
+---
+!creek/kafka-topic@1
+topic: input
+notes: the input topic is an edge input topic, i.e. no service-under-test produces to it. It's invalid to consume from it in a test.
+records:
+  - key: hello
+    value: 1
