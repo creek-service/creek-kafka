@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
+import static org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -23,12 +24,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
@@ -49,8 +49,6 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StartKafkaTestListenerTest {
 
-    private static final URI ID = URI.create("resource://ignored/1");
-    private static final URI ID2 = URI.create("resource://ignored/2");
     private static final String KAFKA_DOCKER_IMAGE = "some-kafka-docker-image";
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -64,11 +62,8 @@ class StartKafkaTestListenerTest {
 
     @Mock private ServiceDescriptor descriptor0;
     @Mock private ServiceDescriptor descriptor1;
-
-    @Mock private KafkaTopicDescriptor<?, ?> kafkaResource0;
-
-    @Mock private KafkaTopicDescriptor<?, ?> kafkaResource1;
     @Mock private TopicCollector topicCollector;
+    @Mock private CollectedTopics collectedTopics;
     @Mock private ClusterEndpointsProvider clusterEndpointsProvider;
     @Mock private CreekTestSuite suite;
 
@@ -87,12 +82,12 @@ class StartKafkaTestListenerTest {
         doReturn(Optional.of(descriptor1)).when(serviceInstance1).descriptor();
         when(descriptor0.name()).thenReturn("service-0");
         when(descriptor1.name()).thenReturn("service-1");
-        when(kafkaResource0.cluster()).thenReturn("bob");
-        when(kafkaResource1.cluster()).thenReturn("janet");
 
         final KafkaOptions testOption = mock(KafkaOptions.class);
         when(testOption.kafkaDockerImage()).thenReturn(KAFKA_DOCKER_IMAGE);
         when(suite.options(KafkaOptions.class)).thenReturn(List.of(testOption));
+
+        when(topicCollector.collectTopics(any())).thenReturn(collectedTopics);
     }
 
     @Test
@@ -105,13 +100,24 @@ class StartKafkaTestListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
+        verify(topicCollector, never()).collectTopics(any());
         verify(api.tests().env().currentSuite().services(), never()).add(any());
     }
 
     @Test
-    void shouldNotStartKafkaIfNoServiceDescriptorsHaveKafkaResources() {
+    void shouldCollectTopicsFromAllServicesWithDescriptors() {
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(topicCollector).collectTopics(List.of(descriptor0));
+        verify(topicCollector).collectTopics(List.of(descriptor1));
+    }
+
+    @Test
+    void shouldNotStartKafkaIfServiceDescriptorsHaveNoKafkaResources() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0))).thenReturn(Map.of());
+        when(collectedTopics.clusters()).thenReturn(Set.of());
 
         // When:
         listener.beforeSuite(suite);
@@ -123,10 +129,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldAddKafkaBrokerPerCluster() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
-        when(topicCollector.collectTopics(List.of(descriptor1)))
-                .thenReturn(Map.of(ID, kafkaResource1));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob", "janet"));
 
         // When:
         listener.beforeSuite(suite);
@@ -141,8 +144,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldStartKafka() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
 
         // When:
         listener.beforeSuite(suite);
@@ -154,8 +156,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldSetClusterEndpoints() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
 
         final ConfigurableServiceInstance kafkaInstance = mock(ConfigurableServiceInstance.class);
         when(api.tests().env().currentSuite().services().add(any())).thenReturn(kafkaInstance);
@@ -173,8 +174,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldClearClusterEndpoints() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
 
         listener.beforeSuite(suite);
 
@@ -188,8 +188,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldStopKafkaOnlyOnce() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
         listener.beforeSuite(suite);
 
         // When:
@@ -203,10 +202,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldSetKafkaEndpointOnServicesUnderTest() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
-        when(topicCollector.collectTopics(List.of(descriptor1)))
-                .thenReturn(Map.of(ID, kafkaResource0, ID2, kafkaResource1));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob", "janet"));
 
         when(api.tests()
                         .env()
@@ -235,10 +231,7 @@ class StartKafkaTestListenerTest {
     @Test
     void shouldSetApplicationIdOnServicesUnderTest() {
         // Given:
-        when(topicCollector.collectTopics(List.of(descriptor0)))
-                .thenReturn(Map.of(ID, kafkaResource0));
-        when(topicCollector.collectTopics(List.of(descriptor1)))
-                .thenReturn(Map.of(ID, kafkaResource1));
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob", "janet"));
 
         // When:
         listener.beforeSuite(suite);

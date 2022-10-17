@@ -20,11 +20,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 
@@ -45,10 +43,7 @@ public final class ClustersPropertiesFactory {
             final Collection<? extends ComponentDescriptor> components,
             final ClientsExtensionOptions apiOptions) {
 
-        final Set<String> clusterNames =
-                topicCollector.collectTopics(components).values().stream()
-                        .map(KafkaTopicDescriptor::cluster)
-                        .collect(Collectors.toSet());
+        final Set<String> clusterNames = topicCollector.collectTopics(components).clusters();
 
         return apiOptions.propertiesBuilder().build(clusterNames);
     }

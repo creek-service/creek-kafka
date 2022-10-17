@@ -22,20 +22,26 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +52,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 class ResourceRegistryFactoryTest {
 
     private static final SerializationFormat KEY_FORMAT = serializationFormat("key-format");
@@ -55,6 +62,7 @@ class ResourceRegistryFactoryTest {
 
     @Mock private Collection<? extends ComponentDescriptor> components;
     @Mock private TopicCollector topicCollector;
+    @Mock private CollectedTopics collectedTopics;
     @Mock private ResourceRegistryFactory.RegistryFactory registryFactory;
     @Mock private ResourceRegistryFactory.TopicFactory topicFactory;
     @Mock private ClustersProperties clusterProperties;
@@ -67,7 +75,10 @@ class ResourceRegistryFactoryTest {
     @Mock private Topic<String, Long> topicOne;
     @Mock private Topic<String, Long> topicTwo;
     @Mock private KafkaTopicDescriptor<String, Long> topicDefA;
-    @Mock private KafkaTopicDescriptor<String, Long> topicDefB;
+
+    @Mock(extraInterfaces = CreatableKafkaTopic.class)
+    private KafkaTopicDescriptor<String, Long> topicDefB;
+
     @Mock private PartDescriptor<String> aKeyPart;
     @Mock private PartDescriptor<Long> aValuePart;
     @Mock private CustomPart<Long> customPart;
@@ -101,8 +112,10 @@ class ResourceRegistryFactoryTest {
 
         when(topicFactory.create(any(), any(), any())).thenReturn((Topic) topicOne);
 
-        when(topicCollector.collectTopics(any()))
-                .thenReturn(Map.of(URI.create("topic://default/A"), topicDefA));
+        when(topicCollector.collectTopics(any())).thenReturn(collectedTopics);
+        doReturn(Map.of(URI.create("topic://default/A"), List.of(topicDefA)).entrySet().stream())
+                .when(collectedTopics)
+                .stream();
     }
 
     @Test
@@ -117,7 +130,7 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldNotBlowUpIfNoKafkaResources() {
         // Given:
-        when(topicCollector.collectTopics(any())).thenReturn(Map.of());
+        when(collectedTopics.stream()).thenReturn(Stream.of());
 
         // When:
         final ResourceRegistry result = factory.create(components, clusterProperties);
@@ -197,13 +210,17 @@ class ResourceRegistryFactoryTest {
     @Test
     void shouldCreateTopicResourcesForEachTopicDescriptor() {
         // Given:
-        when(topicCollector.collectTopics(any()))
-                .thenReturn(
-                        Map.of(
-                                URI.create("topic://default/a"),
-                                topicDefA,
-                                URI.create("topic://default/b"),
-                                topicDefB));
+        doReturn(
+                Map.of(
+                        URI.create("topic://default/a"),
+                        List.of(topicDefA),
+                        URI.create("topic://default/b"),
+                        List.of(topicDefB))
+                        .entrySet()
+                        .stream())
+                .when(collectedTopics)
+                .stream();
+
         when(topicFactory.create(eq(topicDefB), any(), any())).thenReturn(topicTwo);
 
         // When:
@@ -217,6 +234,23 @@ class ResourceRegistryFactoryTest {
                                 topicOne,
                                 URI.create("topic://default/b"),
                                 topicTwo));
+    }
+
+    @Test
+    void shouldPickCreatableDescriptorIfThereIsOne() {
+        // Given:
+        doReturn(
+                Map.of(URI.create("topic://default/a"), List.of(topicDefA, topicDefB, topicDefA))
+                        .entrySet()
+                        .stream())
+                .when(collectedTopics)
+                .stream();
+
+        // When:
+        factory.create(components, clusterProperties);
+
+        // Then:
+        verify(topicFactory).create(eq(topicDefB), any(), any());
     }
 
     @Test

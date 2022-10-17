@@ -16,7 +16,7 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
-import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
 import java.net.URI;
@@ -25,7 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.creekservice.api.base.type.Lists;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -36,27 +38,28 @@ public final class TopicCollector {
     public TopicCollector() {}
 
     /**
-     * Collect all topic descriptors, grouping and de-dupping by name.
+     * Collect topic descriptors from the supplied {@code components}.
      *
      * @param components the components to extract topics from.
-     * @return the map of topics by name.
+     * @return Object that can be queried for information on the collected topics.
      */
-    public Map<URI, KafkaTopicDescriptor<?, ?>> collectTopics(
+    public CollectedTopics collectTopics(
             final Collection<? extends ComponentDescriptor> components) {
-        return components.stream()
-                .flatMap(ComponentDescriptor::resources)
-                .filter(KafkaTopicDescriptor.class::isInstance)
-                .map(d -> (KafkaTopicDescriptor<?, ?>) d)
-                .collect(
-                        groupingBy(
-                                KafkaTopicDescriptor::id,
-                                collectingAndThen(
-                                        Collectors.toList(),
-                                        TopicCollector::throwOnDescriptorMismatch)));
+
+        final Map<URI, List<KafkaTopicDescriptor<?, ?>>> found =
+                components.stream()
+                        .flatMap(ComponentDescriptor::resources)
+                        .filter(KafkaTopicDescriptor.class::isInstance)
+                        .map(d -> (KafkaTopicDescriptor<?, ?>) d)
+                        .collect(groupingBy(KafkaTopicDescriptor::id));
+
+        found.values().forEach(TopicCollector::throwOnDescriptorMismatch);
+
+        return new CollectedTopics(found);
     }
 
-    private static KafkaTopicDescriptor<?, ?> throwOnDescriptorMismatch(
-            final List<? extends KafkaTopicDescriptor<?, ?>> defs) {
+    private static void throwOnDescriptorMismatch(final List<KafkaTopicDescriptor<?, ?>> defs) {
+
         final List<KafkaTopicDescriptor<?, ?>> reduced =
                 defs.stream()
                         .reduce(
@@ -67,7 +70,6 @@ public final class TopicCollector {
         if (reduced.size() != 1) {
             throw new TopicDescriptorMismatchException(defs);
         }
-        return reduced.get(0);
     }
 
     private static List<KafkaTopicDescriptor<?, ?>> accumulateTopics(
@@ -96,6 +98,31 @@ public final class TopicCollector {
                             + descriptors.stream()
                                     .map(KafkaTopicDescriptors::asString)
                                     .collect(Collectors.joining(System.lineSeparator())));
+        }
+    }
+
+    public static class CollectedTopics {
+        private final Map<URI, List<KafkaTopicDescriptor<?, ?>>> topics;
+
+        CollectedTopics(final Map<URI, List<KafkaTopicDescriptor<?, ?>>> found) {
+            this.topics =
+                    requireNonNull(found, "found").entrySet().stream()
+                            .collect(
+                                    Collectors.toUnmodifiableMap(
+                                            Map.Entry::getKey, e -> List.copyOf(e.getValue())));
+        }
+
+        /** @return the set of cluster names found in all collected topics. */
+        public Set<String> clusters() {
+            return topics.values().stream()
+                    .map(list -> list.get(0))
+                    .map(KafkaTopicDescriptor::cluster)
+                    .collect(Collectors.toSet());
+        }
+
+        /** @return stream of topic id to a list of all the topic's descriptors. */
+        public Stream<Map.Entry<URI, List<KafkaTopicDescriptor<?, ?>>>> stream() {
+            return topics.entrySet().stream();
         }
     }
 }

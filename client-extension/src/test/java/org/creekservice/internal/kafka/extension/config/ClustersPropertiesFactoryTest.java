@@ -19,18 +19,17 @@ package org.creekservice.internal.kafka.extension.config;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
+import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,8 +43,6 @@ class ClustersPropertiesFactoryTest {
     @Mock private Collection<? extends ComponentDescriptor> components;
     @Mock private ClustersProperties.Builder propertiesBuilder;
     @Mock private ClientsExtensionOptions options;
-    @Mock private KafkaTopicDescriptor<?, ?> topicA;
-    @Mock private KafkaTopicDescriptor<?, ?> topicB;
     @Mock private ClustersProperties builtProperties;
     private ClustersPropertiesFactory factory;
 
@@ -55,16 +52,9 @@ class ClustersPropertiesFactoryTest {
 
         when(options.propertiesBuilder()).thenReturn(propertiesBuilder);
 
-        when(topicCollector.collectTopics(components))
-                .thenReturn(
-                        Map.of(
-                                URI.create("topic://default/a"),
-                                topicA,
-                                URI.create("topic://default/b"),
-                                topicB));
-
-        when(topicA.cluster()).thenReturn("cluster-A");
-        when(topicB.cluster()).thenReturn("cluster-B");
+        final CollectedTopics collectedTopics = mock(CollectedTopics.class);
+        when(collectedTopics.clusters()).thenReturn(Set.of("cluster-A", "cluster-B"));
+        when(topicCollector.collectTopics(components)).thenReturn(collectedTopics);
 
         when(propertiesBuilder.build(any())).thenReturn(builtProperties);
     }
@@ -76,18 +66,6 @@ class ClustersPropertiesFactoryTest {
 
         // Then:
         verify(propertiesBuilder).build(Set.of("cluster-A", "cluster-B"));
-    }
-
-    @Test
-    void shouldPassUniqueClusterNames() {
-        // Given:
-        when(topicB.cluster()).thenReturn("cluster-A");
-
-        // When:
-        factory.create(components, options);
-
-        // Then:
-        verify(propertiesBuilder).build(Set.of("cluster-A"));
     }
 
     @Test
