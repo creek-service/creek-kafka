@@ -35,15 +35,21 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     private final ClientsExtension clientsExt;
     private final TypeCoercer coercer;
     private final Set<Producer<byte[], byte[]>> toFlush = new HashSet<>();
+    private final TopicValidator topicValidator;
 
-    public TopicInputHandler(final ClientsExtension clientsExt) {
-        this(clientsExt, new TypeCoercer());
+    public TopicInputHandler(
+            final ClientsExtension clientsExt, final TopicValidator topicValidator) {
+        this(clientsExt, new TypeCoercer(), topicValidator);
     }
 
     @VisibleForTesting
-    TopicInputHandler(final ClientsExtension clientsExt, final TypeCoercer typeCoercer) {
+    TopicInputHandler(
+            final ClientsExtension clientsExt,
+            final TypeCoercer typeCoercer,
+            final TopicValidator topicValidator) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
         this.coercer = requireNonNull(typeCoercer, "typeCoercer");
+        this.topicValidator = requireNonNull(topicValidator, "topicValidator");
     }
 
     @Override
@@ -62,6 +68,8 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     }
 
     private <K, V> void send(final TopicRecord record, final KafkaTopic<K, V> topic) {
+        topicValidator.validateCanProduce(topic);
+
         final byte[] key =
                 record.key()
                         .map(k -> coerceKey(k, topic, record))

@@ -20,8 +20,9 @@ import static org.mockito.Mockito.mock;
 
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.api.system.test.test.util.ModelParser;
-import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 
 final class ModelUtil {
 
@@ -30,7 +31,10 @@ final class ModelUtil {
     static ModelParser createParser() {
         final CreekSystemTestExtensionTester.YamlParserBuilder builder =
                 CreekSystemTestExtensionTester.extensionTester().yamlParser();
-        KafkaTestExtension.initializeModel(builder.model(), mock(ClientsExtension.class));
+        KafkaTestExtension.initializeModel(
+                builder.model(),
+                mock(TopicInputHandler.class),
+                mock(TopicExpectationHandler.class));
         return builder.build();
     }
 }

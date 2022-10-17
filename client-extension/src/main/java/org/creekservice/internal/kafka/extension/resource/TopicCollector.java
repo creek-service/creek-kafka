@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Lists;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
@@ -104,6 +106,7 @@ public final class TopicCollector {
     public static class CollectedTopics {
         private final Map<URI, List<KafkaTopicDescriptor<?, ?>>> topics;
 
+        @VisibleForTesting
         CollectedTopics(final Map<URI, List<KafkaTopicDescriptor<?, ?>>> found) {
             this.topics =
                     requireNonNull(found, "found").entrySet().stream()
@@ -123,6 +126,21 @@ public final class TopicCollector {
         /** @return stream of topic id to a list of all the topic's descriptors. */
         public Stream<Map.Entry<URI, List<KafkaTopicDescriptor<?, ?>>>> stream() {
             return topics.entrySet().stream();
+        }
+
+        /**
+         * Get all known topic descriptors for the supplied topic resource id
+         *
+         * @param topicResourceId the resource id of the topic to look up.
+         * @return the list of descriptors
+         * @throws RuntimeException on unknown topic id.
+         */
+        public List<KafkaTopicDescriptor<?, ?>> getAll(final URI topicResourceId) {
+            final List<KafkaTopicDescriptor<?, ?>> descriptors = topics.get(topicResourceId);
+            if (descriptors == null) {
+                throw new UnknownTopicOrPartitionException("Unknown topic id: " + topicResourceId);
+            }
+            return descriptors;
         }
     }
 }

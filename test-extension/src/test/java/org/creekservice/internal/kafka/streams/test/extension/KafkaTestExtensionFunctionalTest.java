@@ -154,6 +154,18 @@ class KafkaTestExtensionFunctionalTest {
                 containsString(
                         "Test run failed for test case: bad output key, cause: "
                                 + "Failed to deserialize record key. topic: output, partition: 0, offset: 0"));
+
+        assertThat(
+                errorMessage(result, 5),
+                containsString(
+                        "Tests can not produce to topic kafka-topic://default/output "
+                                + "as the services-under-test do not consume from it"));
+
+        assertThat(
+                errorMessage(result, 6),
+                containsString(
+                        "Tests can not consume from topic kafka-topic://default/input "
+                                + "as the services-under-test do not produce to it"));
     }
 
     private static String failureMessage(
