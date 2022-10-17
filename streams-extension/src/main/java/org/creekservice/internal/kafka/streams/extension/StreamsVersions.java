@@ -30,10 +30,7 @@ public final class StreamsVersions {
     public static final int MINOR_VERSION;
 
     static {
-        final String version =
-                jarVersion(KafkaStreams.class)
-                        .orElseThrow(
-                                () -> new IllegalStateException("Kafka Streams jar not found"));
+        final String version = jarVersion(KafkaStreams.class).orElse("Kafka Streams jar not found");
 
         final Matcher matcher = Pattern.compile("(\\d+)\\.(\\d+)\\..*").matcher(version);
         if (!matcher.matches()) {

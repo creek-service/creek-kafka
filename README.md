@@ -31,8 +31,7 @@ The `tested version` column details the exact version of Kafka libraries testing
 
 | Kafka version | Tested version | Notes                                           |
 |---------------|----------------|-------------------------------------------------|
-| < 2.7         |                | Not currently tested. May work...               |
-| 2.7.+         | 2.7.2          | Supported & tested                              |
+| < 2.8         |                | Not compatible due to API changes in Streams    |
 | 2.8.+         | 2.8.2          | Supported & tested                              |
 | 3.0.+         | 3.0.2          | Supported & tested                              |
 | 3.1.+         | 3.1.2          | Supported & tested                              |

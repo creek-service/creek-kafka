@@ -41,7 +41,7 @@ allprojects {
     }
 
     configurations.all {
-        resolutionStrategy.cacheChangingModulesFor(10, TimeUnit.MINUTES)
+        resolutionStrategy.cacheChangingModulesFor(15, TimeUnit.MINUTES)
     }
 }
 
