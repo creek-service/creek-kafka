@@ -20,6 +20,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        kafka_version: [ ~, 2.7.2, 2.8.2, 3.0.2, 3.1.2, 3.2.3 ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -34,6 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          KAFKA_VERSION:  ${{ matrix.kafka_version }}
         run: ./gradlew check coveralls
       - name: Publish
         if: github.event_name == 'push' || github.event.inputs.publish == 'true'

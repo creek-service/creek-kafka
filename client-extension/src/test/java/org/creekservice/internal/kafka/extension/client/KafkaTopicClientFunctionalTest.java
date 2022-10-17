@@ -179,6 +179,7 @@ class KafkaTopicClientFunctionalTest {
 
     private Matcher<? super CreatableKafkaTopic<?, ?>> exists() {
         return new TypeSafeDiagnosingMatcher<>() {
+            @SuppressWarnings("deprecation")
             @Override
             protected boolean matchesSafely(
                     final CreatableKafkaTopic<?, ?> topic, final Description mismatchDescription) {

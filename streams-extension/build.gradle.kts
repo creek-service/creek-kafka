@@ -29,6 +29,7 @@ dependencies {
     api(project(":client-extension"))
     api("org.apache.kafka:kafka-streams:$kafkaVersion")
 
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
     implementation("org.creekservice:creek-observability-logging:$creekObsVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
