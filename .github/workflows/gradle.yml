@@ -45,7 +45,7 @@ jobs:
           CREEK_KAFKA_VERSION:  ${{ matrix.kafka_version }}
         run: ./gradlew check coveralls
       - name: Publish
-        if: ${{ matrix.publish }} && (github.event_name == 'push' || github.event.inputs.publish == 'true')
+        if: (matrix.publish == true) && (github.event_name == 'push' || github.event.inputs.publish == 'true')
         run:  |
           git fetch --tags --unshallow
           ./gradlew publish
