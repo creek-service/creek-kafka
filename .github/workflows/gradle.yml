@@ -47,6 +47,7 @@ jobs:
       - name: Publish
         if: (matrix.publish == true) && (github.event_name == 'push' || github.event.inputs.publish == 'true')
         run:  |
+          echo "matrix.publish is ${{ matrix.publish }}"
           git fetch --tags --unshallow
           ./gradlew publish
         env:
