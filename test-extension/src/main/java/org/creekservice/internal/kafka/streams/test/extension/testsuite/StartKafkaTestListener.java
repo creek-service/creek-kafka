@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
@@ -92,9 +91,10 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
         return service.descriptor()
                 .map(
                         descriptor ->
-                                topicCollector.collectTopics(List.of(descriptor)).values().stream()
-                                        .map(KafkaTopicDescriptor::cluster)
-                                        .distinct()
+                                topicCollector
+                                        .collectTopics(List.of(descriptor))
+                                        .clusters()
+                                        .stream()
                                         .map(
                                                 clusterName ->
                                                         new ClusterInstance(clusterName, service)))

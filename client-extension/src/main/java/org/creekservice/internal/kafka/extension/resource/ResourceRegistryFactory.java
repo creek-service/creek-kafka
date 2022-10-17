@@ -20,16 +20,19 @@ import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 
 public final class ResourceRegistryFactory {
 
@@ -58,17 +61,28 @@ public final class ResourceRegistryFactory {
             final Collection<? extends ComponentDescriptor> components,
             final ClustersProperties properties) {
 
-        final Map<URI, KafkaTopicDescriptor<?, ?>> topicDefs =
-                topicCollector.collectTopics(components);
+        final CollectedTopics collectedTopics = topicCollector.collectTopics(components);
 
         final Map<URI, Topic<?, ?>> topics =
-                topicDefs.entrySet().stream()
+                collectedTopics.stream()
                         .collect(
                                 Collectors.toUnmodifiableMap(
                                         Map.Entry::getKey,
                                         e -> createTopicResource(e.getValue(), properties)));
 
         return registryFactory.create(topics);
+    }
+
+    private Topic<?, ?> createTopicResource(
+            final List<KafkaTopicDescriptor<?, ?>> defs, final ClustersProperties allProperties) {
+
+        final KafkaTopicDescriptor<?, ?> bestDef =
+                defs.stream()
+                        .filter(d -> d instanceof CreatableKafkaTopic)
+                        .findAny()
+                        .orElse(defs.get(0));
+
+        return createTopicResource(bestDef, allProperties);
     }
 
     private <K, V> Topic<K, V> createTopicResource(
