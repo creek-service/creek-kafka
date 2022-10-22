@@ -38,5 +38,16 @@ The `tested version` column details the exact version of Kafka libraries testing
 | 3.2.+         | 3.2.3          | Supported & tested                              |
 | > 3.2         |                | Not currently tested / released. Should work... |
 
+In Gradle, it is possible to force the use of an older Kafka client if you which using a resolution strategy:
+
+```kotlin
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.apache.kafka") {
+            useVersion("2.8.2")
+        }
+    }
+}
+```
 
 [1]: https://github.com/creek-service/example-kafka-streams-aggregate
