@@ -55,3 +55,35 @@ class TopologyBuilderTest {
     }
 }
 ```
+
+## Using with Java platform's module system
+
+The JPMS will complain about split packages because both the Kafka streams and streams test jars expose 
+classes in the same packages:
+
+```shell
+error: module some.module reads package org.apache.kafka.streams from both kafka.streams and kafka.streams.test.utils
+```
+
+Therefore, to use both Kafka streams and the streams test jars under JPMS, it is necessary to patch 
+the streams test jar into the Kafka streams jar. 
+
+The module patching can be achieved using the `org.javamodularity.moduleplugin` plugin:
+
+##### Groovy: Patching the Streams' test jar into the main jar
+```groovy
+plugins {
+  id 'org.javamodularity.moduleplugin' version '1.8.12'
+}
+
+modularity.patchModule('kafka.streams', "kafka-streams-test-utils-${kafkaVersion}.jar")
+```
+
+##### Kotlin: Patching the Streams' test jar into the main jar
+```kotlin
+plugins {
+  id("org.javamodularity.moduleplugin") version "1.8.12"
+}
+
+modularity.patchModule("kafka.streams", "kafka-streams-test-utils-$kafkaVersion.jar")
+```

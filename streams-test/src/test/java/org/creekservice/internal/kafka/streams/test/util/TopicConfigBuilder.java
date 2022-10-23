@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.streams.test.util;
+package org.creekservice.internal.kafka.streams.test.util;
 
 import static java.util.Objects.requireNonNull;
 
