@@ -2,6 +2,27 @@
 
 A Creek system test extension for system testing Kafka based microservices.
 
+## Configuring the extension
+
+The test extension can be added to any module that runs system tests. 
+How this is done will depend on the build plugin being used to run system tests.
+For the [gradle plugin][gradle-system-test-plugin] the text extension can be added using the `systemTestExtension`
+dependency configuration:
+
+##### Groovy: adding the Kafka test extension to a build
+```groovy
+dependencies {
+    systemTestExtension 'org.creekservice:creek-kafka-test-extension:0.2.0'
+}
+```
+
+##### Kotlin: adding the Kafka test extension to a build
+```kotlin
+dependencies {
+    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.2.0")
+}
+```
+
 ## Test model
 
 The extension registers the following model subtypes to support system testing of Kafka based microservices:
@@ -114,3 +135,5 @@ records:
     key: 2
     value: ~
 ```
+
+[gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
