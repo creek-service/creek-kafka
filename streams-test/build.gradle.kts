@@ -25,14 +25,11 @@ val kafkaVersion : String by extra
 dependencies {
     api(project(":metadata"))
     api("org.creekservice:creek-service-context:$creekServiceVersion")
-    api("org.apache.kafka:kafka-streams-test-utils:${kafkaVersion}")
+    api("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
+    api("org.creekservice:creek-test-util:$creekTestVersion")
 
-    implementation("org.creekservice:creek-test-util:$creekTestVersion")
     implementation(project(":streams-extension"))
 }
 
-tasks.test {
-    // As not a module, need to compliance check the actual jar:
-    dependsOn("jar")
-    classpath = files(tasks.jar.get().archiveFile, project.sourceSets.test.get().output, configurations.testRuntimeClasspath)
-}
+// Patch Kafka Streams test jar into main Kafka Streams module to avoid split packages:
+modularity.patchModule("kafka.streams", "kafka-streams-test-utils-$kafkaVersion.jar")

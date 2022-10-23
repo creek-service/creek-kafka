@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.streams.test.util;
+package org.creekservice.internal.kafka.streams.test.util;
 
-import static org.creekservice.api.kafka.streams.test.util.TopicConfigBuilder.withPartitions;
-import static org.creekservice.api.kafka.streams.test.util.TopicDescriptors.inputTopic;
-import static org.creekservice.api.kafka.streams.test.util.TopicDescriptors.outputTopic;
+import static org.creekservice.internal.kafka.streams.test.util.TopicConfigBuilder.withPartitions;
+import static org.creekservice.internal.kafka.streams.test.util.TopicDescriptors.inputTopic;
+import static org.creekservice.internal.kafka.streams.test.util.TopicDescriptors.outputTopic;
 
 import java.util.ArrayList;
 import java.util.Collection;
