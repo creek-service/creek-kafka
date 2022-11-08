@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.serde;
+package org.creekservice.internal.kafka.serde.provider;
 
 
 import java.nio.ByteBuffer;
@@ -53,9 +53,6 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
                     Map.entry(Bytes.class, Serdes::Bytes),
                     Map.entry(byte[].class, Serdes::ByteArray),
                     Map.entry(Void.class, Serdes::Void));
-
-    /** Create instance. */
-    public NativeKafkaSerdeProvider() {}
 
     @Override
     public SerializationFormat format() {

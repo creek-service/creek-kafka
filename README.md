@@ -12,7 +12,6 @@ aptly named [Example Kafka Streams Aggregate][1].
 
 See [CreekService.org](https://www.creekservice.org) for info on Creek Service.
 
-
 ## Modules defined in this repo:
 
 * **[metadata](metadata)**: defines types to allow your services to indicate they consume and produce to Kafka.

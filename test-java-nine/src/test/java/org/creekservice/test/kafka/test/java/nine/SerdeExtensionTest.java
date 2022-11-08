@@ -21,7 +21,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
-import org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider;
@@ -40,8 +39,8 @@ class SerdeExtensionTest {
     @Test
     void shouldFindKafkaFormat() {
         assertThat(
-                providers.get(NativeKafkaSerdeProvider.FORMAT),
-                is(instanceOf(NativeKafkaSerdeProvider.class)));
+                providers.get(serializationFormat("kafka")).getClass().getSimpleName(),
+                is("NativeKafkaSerdeProvider"));
     }
 
     @Test

@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider
+org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider

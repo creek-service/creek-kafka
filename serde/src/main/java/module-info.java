@@ -16,6 +16,7 @@
 
 
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider;
 
 /** Base types for extending Creek Kafka with custom serialization formats. */
 module creek.kafka.serde {
@@ -23,11 +24,10 @@ module creek.kafka.serde {
     requires transitive creek.base.annotation;
     requires transitive kafka.clients;
 
-    exports org.creekservice.api.kafka.serde;
     exports org.creekservice.api.kafka.serde.provider;
 
     uses KafkaSerdeProvider;
 
     provides KafkaSerdeProvider with
-            org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider;
+            NativeKafkaSerdeProvider;
 }
