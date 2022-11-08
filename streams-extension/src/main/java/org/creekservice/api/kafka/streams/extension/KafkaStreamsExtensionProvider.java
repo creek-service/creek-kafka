@@ -37,6 +37,7 @@ public final class KafkaStreamsExtensionProvider
     private final ExtensionFactory extensionFactory;
 
     /** Constructor */
+    @SuppressWarnings("unused") // Invoked via reflection
     public KafkaStreamsExtensionProvider() {
         this(KafkaStreamsBuilder::new, KafkaStreamsExecutor::new, StreamsExtension::new);
     }

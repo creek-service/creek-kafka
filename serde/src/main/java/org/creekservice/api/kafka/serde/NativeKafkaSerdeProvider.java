@@ -54,6 +54,9 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
                     Map.entry(byte[].class, Serdes::ByteArray),
                     Map.entry(Void.class, Serdes::Void));
 
+    /** Create instance. */
+    public NativeKafkaSerdeProvider() {}
+
     @Override
     public SerializationFormat format() {
         return FORMAT;
