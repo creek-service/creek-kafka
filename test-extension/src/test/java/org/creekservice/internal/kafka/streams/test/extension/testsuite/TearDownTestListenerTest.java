@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.time.Duration;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.junit.jupiter.api.BeforeEach;
