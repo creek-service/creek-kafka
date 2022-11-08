@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.time.Duration;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +40,7 @@ class TearDownTestListenerTest {
     }
 
     @Test
-    void shouldCloseAfterSuite() throws Exception {
+    void shouldCloseAfterSuite() {
         // When:
         listener.afterSuite(null, null);
 
@@ -50,9 +49,9 @@ class TearDownTestListenerTest {
     }
 
     @Test
-    void shouldSwallowExceptions() throws Exception {
+    void shouldSwallowExceptions() {
         // Given:
-        doThrow(new IOException("boom")).when(clientsExt).close(any());
+        doThrow(new RuntimeException("boom")).when(clientsExt).close(any());
 
         // When:
         listener.afterSuite(null, null);

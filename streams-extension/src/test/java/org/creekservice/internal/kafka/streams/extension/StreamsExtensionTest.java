@@ -121,7 +121,7 @@ class StreamsExtensionTest {
     }
 
     @Test
-    void shouldCloseClientExtOnClose() throws Exception {
+    void shouldCloseClientExtOnClose() {
         // Given:
         final Duration duration = Duration.ofMillis(1535);
 
