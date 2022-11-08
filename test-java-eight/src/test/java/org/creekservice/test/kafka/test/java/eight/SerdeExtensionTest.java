@@ -20,8 +20,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
-import org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
+import org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider;
 import org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider;
 import org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
 import org.junit.jupiter.api.BeforeEach;

@@ -41,6 +41,8 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
     public static final OwnedKafkaTopicOutput<Long, String> OutputTopic =
             register(outputTopic("output", Long.class, String.class, withPartitions(1)));
 
+    public TestServiceDescriptor() {}
+
     @Override
     public String dockerImage() {
         return "ghcr.io/creekservice/creek-kafka-test-service";

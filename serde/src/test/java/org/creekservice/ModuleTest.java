@@ -17,21 +17,13 @@
 package org.creekservice;
 
 
-import org.creekservice.api.kafka.serde.NativeKafkaSerdeProvider;
 import org.creekservice.api.test.conformity.ConformityTester;
-import org.creekservice.api.test.conformity.check.CheckConstructorsPrivate;
 import org.junit.jupiter.api.Test;
 
 class ModuleTest {
 
     @Test
     void shouldConform() {
-        ConformityTester.builder(ModuleTest.class)
-                .withCustom(
-                        CheckConstructorsPrivate.builder()
-                                .withExcludedClasses(
-                                        "providers must have public constructor",
-                                        NativeKafkaSerdeProvider.class))
-                .check();
+        ConformityTester.builder(ModuleTest.class).check();
     }
 }

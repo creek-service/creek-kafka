@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.serde;
+package org.creekservice.internal.kafka.serde.provider;
 
 
 import java.nio.ByteBuffer;
