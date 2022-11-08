@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.streams.extension;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -79,7 +78,7 @@ public final class StreamsExtension implements KafkaStreamsExtension {
     }
 
     @Override
-    public void close(final Duration timeout) throws IOException {
+    public void close(final Duration timeout) {
         clientsExtension.close(timeout);
     }
 

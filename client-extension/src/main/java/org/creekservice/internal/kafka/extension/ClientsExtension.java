@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.extension;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
@@ -92,7 +91,7 @@ public final class ClientsExtension implements KafkaClientsExtension {
     }
 
     @Override
-    public void close(final Duration timeout) throws IOException {
+    public void close(final Duration timeout) {
         for (final Producer<byte[], byte[]> producer : producers.values()) {
             producer.close(timeout);
         }

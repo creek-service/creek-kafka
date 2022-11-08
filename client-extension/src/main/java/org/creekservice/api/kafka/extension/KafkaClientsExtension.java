@@ -18,7 +18,6 @@ package org.creekservice.api.kafka.extension;
 
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -107,11 +106,10 @@ public interface KafkaClientsExtension extends CreekExtension, Closeable {
      * consumers}, waiting for up to the supplier {@code timeout} for <i>each</i> to close.
      *
      * @param timeout The maximum time to wait for producer to complete any pending requests.
-     * @throws IOException see Kafka clients for details
      * @see org.apache.kafka.clients.producer.KafkaProducer#close(Duration)
      * @see org.apache.kafka.clients.consumer.KafkaConsumer#close(Duration)
      */
-    void close(Duration timeout) throws IOException;
+    void close(Duration timeout);
 
     /**
      * Close the resources associated with the extension.
@@ -119,11 +117,10 @@ public interface KafkaClientsExtension extends CreekExtension, Closeable {
      * <p>Closes all shared {@link #producer(String) producers} and {@link #consumer(String)}
      * consumers}, waiting until all previously sent requests complete.
      *
-     * @throws IOException see Kafka clients for details
      * @see org.apache.kafka.clients.producer.KafkaProducer#close(Duration)
      * @see org.apache.kafka.clients.consumer.KafkaConsumer#close(Duration)
      */
-    default void close() throws IOException {
+    default void close() {
         close(Duration.ofMillis(Long.MAX_VALUE));
     }
 }

@@ -41,7 +41,7 @@ class TearDownTestListenerTest {
     }
 
     @Test
-    void shouldCloseAfterSuite() throws Exception {
+    void shouldCloseAfterSuite() {
         // When:
         listener.afterSuite(null, null);
 
@@ -50,9 +50,9 @@ class TearDownTestListenerTest {
     }
 
     @Test
-    void shouldSwallowExceptions() throws Exception {
+    void shouldSwallowExceptions() {
         // Given:
-        doThrow(new IOException("boom")).when(clientsExt).close(any());
+        doThrow(new RuntimeException("boom")).when(clientsExt).close(any());
 
         // When:
         listener.afterSuite(null, null);
