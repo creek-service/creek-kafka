@@ -32,6 +32,7 @@ public final class KafkaStreamsBuilder {
     private final KafkaClientsExtension clientsExtension;
     private final AppFactory appFactory;
 
+    /** @param clientsExtension the kafka client extension. */
     public KafkaStreamsBuilder(final KafkaClientsExtension clientsExtension) {
         this(clientsExtension, KafkaStreams::new);
     }
@@ -42,6 +43,13 @@ public final class KafkaStreamsBuilder {
         this.appFactory = requireNonNull(appFactory, "appFactory");
     }
 
+    /**
+     * Build the streams app.
+     *
+     * @param topology the streams topology.
+     * @param clusterName the Kafka cluster name the app will target.
+     * @return the streams app.
+     */
     public KafkaStreams build(final Topology topology, final String clusterName) {
         final Properties properties = clientsExtension.properties(clusterName);
         final KafkaClientSupplier kafkaClientSupplier = new DefaultKafkaClientSupplier();

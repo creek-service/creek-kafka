@@ -48,6 +48,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     private final ClustersProperties.Builder properties;
     private final Optional<TopicClient> topicClient;
 
+    /** @return new builder instance. */
     public static Builder builder() {
         return new Builder();
     }
@@ -96,6 +97,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
                 + '}';
     }
 
+    /** Builder of the client extension options. */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder implements ClientsExtensionOptions.Builder {
 

@@ -33,12 +33,17 @@ import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 
+/** {@link ExpectationHandler} for {@link TopicExpectation} */
 public final class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
 
     private final ClientsExtension clientsExt;
     private final RecordCoercer recordCoercer = new RecordCoercer();
     private final TopicValidator topicValidator;
 
+    /**
+     * @param clientsExt client test extension
+     * @param topicValidator topic validator
+     */
     public TopicExpectationHandler(
             final ClientsExtension clientsExt, final TopicValidator topicValidator) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");

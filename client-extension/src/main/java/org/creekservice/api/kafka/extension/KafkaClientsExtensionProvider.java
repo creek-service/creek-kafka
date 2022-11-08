@@ -45,6 +45,7 @@ public final class KafkaClientsExtensionProvider
     private final ClustersPropertiesFactory propertiesFactory;
     private final KafkaResourceValidator resourceValidator;
 
+    /** Constructor */
     public KafkaClientsExtensionProvider() {
         this(
                 new KafkaResourceValidator(),

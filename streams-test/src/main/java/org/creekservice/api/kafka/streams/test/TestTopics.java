@@ -59,6 +59,19 @@ public final class TestTopics {
 
     private TestTopics() {}
 
+    /**
+     * Create a test input topic
+     *
+     * @param topic the topic descriptor
+     * @param ctx the creek context
+     * @param testDriver the Streams topology test driver
+     * @param <K> the topic key type
+     * @param <V> the topic value type
+     * @return the test input topic
+     * @see TopologyTestDriver#createInputTopic(String,
+     *     org.apache.kafka.common.serialization.Serializer,
+     *     org.apache.kafka.common.serialization.Serializer)
+     */
     public static <K, V> TestInputTopic<K, V> inputTopic(
             final KafkaTopicDescriptor<K, V> topic,
             final CreekContext ctx,
@@ -68,6 +81,21 @@ public final class TestTopics {
                 topic.name(), serde.keySerde.serializer(), serde.valueSerde.serializer());
     }
 
+    /**
+     * Create a test input topic
+     *
+     * @param topic the topic descriptor
+     * @param ctx the creek context
+     * @param testDriver the Streams topology test driver
+     * @param startTimestamp Start timestamp for auto-generated record time
+     * @param autoAdvance autoAdvance duration for auto-generated record time
+     * @param <K> the topic key type
+     * @param <V> the topic value type
+     * @return the test input topic
+     * @see TopologyTestDriver#createInputTopic(String,
+     *     org.apache.kafka.common.serialization.Serializer,
+     *     org.apache.kafka.common.serialization.Serializer, Instant, Duration)
+     */
     public static <K, V> TestInputTopic<K, V> inputTopic(
             final KafkaTopicDescriptor<K, V> topic,
             final CreekContext ctx,
@@ -83,6 +111,19 @@ public final class TestTopics {
                 autoAdvance);
     }
 
+    /**
+     * Create a test output topic
+     *
+     * @param topic the topic descriptor
+     * @param ctx the creek context
+     * @param testDriver the Streams topology test driver
+     * @param <K> the topic key type
+     * @param <V> the topic value type
+     * @return the test output topic
+     * @see TopologyTestDriver#createOutputTopic(String,
+     *     org.apache.kafka.common.serialization.Deserializer,
+     *     org.apache.kafka.common.serialization.Deserializer)
+     */
     public static <K, V> TestOutputTopic<K, V> outputTopic(
             final KafkaTopicDescriptor<K, V> topic,
             final CreekContext ctx,

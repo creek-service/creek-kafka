@@ -26,6 +26,7 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
+/** Util class definining streams exception handlers. */
 public final class StreamsExceptionHandlers {
 
     private StreamsExceptionHandlers() {}
@@ -33,11 +34,13 @@ public final class StreamsExceptionHandlers {
     private static final StructuredLogger LOGGER =
             StructuredLoggerFactory.internalLogger(StreamsExceptionHandlers.class);
 
+    /** Exception handler that logs the exception and causes the streams app to exit. */
     public static final class LogAndFailProductionExceptionHandler
             implements ProductionExceptionHandler {
 
         private final StructuredLogger logger;
 
+        /** Constructor. */
         @SuppressWarnings("unused") // Invoked via reflection
         public LogAndFailProductionExceptionHandler() {
             this(LOGGER);

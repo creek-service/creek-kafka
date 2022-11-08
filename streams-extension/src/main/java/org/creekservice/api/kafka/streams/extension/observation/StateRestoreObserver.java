@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.streams.extension.observation;
 
+/** Observer of state store restoration during Streams app startup. */
 public interface StateRestoreObserver {
 
     /**

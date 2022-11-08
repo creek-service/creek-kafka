@@ -25,11 +25,21 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
 
+/**
+ * Provider of Kafka cluster endpoints and other properties
+ *
+ * <p>Property overrides are loaded from system environment properties using {@link
+ * SystemEnvPropertyOverrides}.
+ *
+ * <p>Cluster endpoints are overwritten to match the Kafka broker instances started by the test
+ * framework.
+ */
 public final class ClusterEndpointsProvider implements KafkaPropertyOverrides {
 
     private final KafkaPropertyOverrides delegate;
     private final Map<String, Map<String, ?>> configs = new HashMap<>();
 
+    /** Constructor. */
     public ClusterEndpointsProvider() {
         this(SystemEnvPropertyOverrides.systemEnvPropertyOverrides());
     }
@@ -51,6 +61,12 @@ public final class ClusterEndpointsProvider implements KafkaPropertyOverrides {
         return result;
     }
 
+    /**
+     * Overwrite properties for a cluster.
+     *
+     * @param clusterName the name of the cluster.
+     * @param config the configs to overwrite.
+     */
     public void put(final String clusterName, final Map<String, ?> config) {
         configs.put(requireNonNull(clusterName, "clusterName"), requireNonNull(config, "config"));
     }

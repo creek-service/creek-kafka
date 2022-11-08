@@ -20,7 +20,14 @@ package org.creekservice.internal.kafka.streams.extension;
 import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.streams.KafkaStreams;
 
+/** A shutdown hook */
 public interface StreamsShutdownHook {
 
-    void apply(KafkaStreams streams, CompletableFuture<Void> future);
+    /**
+     * Called to allow the hook to do its thing.
+     *
+     * @param streams the streams app.
+     * @param forceShutdown a future that the hook can complete to force a shutdown.
+     */
+    void apply(KafkaStreams streams, CompletableFuture<Void> forceShutdown);
 }

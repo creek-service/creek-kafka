@@ -21,11 +21,16 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 
+/** Util class for working with implementations of {@link KafkaTopicConfig}. */
 public final class KafkaTopicConfigs {
 
     private KafkaTopicConfigs() {}
 
-    /** @return true if left and right are equivalent. */
+    /**
+     * @param left one config
+     * @param right other config
+     * @return true if left and right are equivalent.
+     */
     public static boolean matches(final KafkaTopicConfig left, final KafkaTopicConfig right) {
         return left.partitions() == right.partitions()
                 && Objects.equals(left.config(), right.config());
@@ -34,8 +39,8 @@ public final class KafkaTopicConfigs {
     /**
      * Convert topic details to string.
      *
-     * <p>Used when logging topic details.
-     * Avoids the need for every implementor of this type to define {@code toString).
+     * <p>Used when logging topic details. Avoids the need for every implementor of this type to
+     * define {@code toString}.
      *
      * @param config the config to convert
      * @return string representation

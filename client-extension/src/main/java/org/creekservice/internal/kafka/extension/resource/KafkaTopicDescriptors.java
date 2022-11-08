@@ -22,6 +22,7 @@ import java.util.StringJoiner;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
+/** Util class for working with implementations of {@link KafkaTopicDescriptor} */
 public final class KafkaTopicDescriptors {
 
     private KafkaTopicDescriptors() {}
@@ -29,6 +30,8 @@ public final class KafkaTopicDescriptors {
      * Comparison method that avoids code relying on different implementations of {@link
      * KafkaTopicDescriptor} implementing {@code equals} correctly.
      *
+     * @param left left descriptor
+     * @param right right descriptor
      * @return {@code true} if {@code left} and {@code right} are equivalent.
      */
     public static boolean matches(
@@ -71,8 +74,8 @@ public final class KafkaTopicDescriptors {
     /**
      * Convert topic details to string.
      *
-     * <p>Used when logging topic details.
-     * Avoids the need for every implementor of this type to define {@code toString).
+     * <p>Used when logging topic details. Avoids the need for every implementor of this type to
+     * define {@code toString}.
      *
      * @param topic the topic to convert
      * @return string representation
@@ -137,6 +140,8 @@ public final class KafkaTopicDescriptors {
      * Comparison method that avoids code relying on different implementations of {@link
      * KafkaTopicDescriptor.PartDescriptor} implementing {@code equals} correctly.
      *
+     * @param left left descriptor
+     * @param right right descriptor
      * @return {@code true} if {@code left} and {@code right} are equivalent.
      */
     public static boolean matches(
@@ -149,8 +154,8 @@ public final class KafkaTopicDescriptors {
     /**
      * Convert part descriptor to a string.
      *
-     * <p>Used when logging topic details.
-     * Avoids the need for every implementor of this type to define {@code toString).
+     * <p>Used when logging topic details. Avoids the need for every implementor of this type to
+     * define {@code toString}.
      *
      * @param part the part to convert
      * @return string representation

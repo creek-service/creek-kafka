@@ -24,13 +24,21 @@ import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Input;
 
+/** Records to produce into Kafka topic(s) */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicInput implements Input {
 
+    /** Versioned name, as used in the system test YAML files. */
     public static final String NAME = "creek/kafka-topic@1";
 
     private final List<TopicRecord> records;
 
+    /**
+     * @param topicName optional topic name, can be set at record level
+     * @param clusterName optional cluster name, can be set at record level
+     * @param ignored ignored notes field.
+     * @param records input records.
+     */
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
     public TopicInput(
             @JsonProperty(value = "topic") final Optional<String> topicName,
@@ -49,6 +57,7 @@ public final class TopicInput implements Input {
         }
     }
 
+    /** @return records to produce. */
     public List<TopicRecord> records() {
         return List.copyOf(records);
     }

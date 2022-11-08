@@ -39,6 +39,11 @@ public final class StreamsExtension implements KafkaStreamsExtension {
     private final KafkaStreamsBuilder appBuilder;
     private final KafkaStreamsExecutor appExecutor;
 
+    /**
+     * @param clientsExtension the client extension/
+     * @param appBuilder the streams app builder to use.
+     * @param appExecutor the streams app executor to use.
+     */
     public StreamsExtension(
             final KafkaClientsExtension clientsExtension,
             final KafkaStreamsBuilder appBuilder,

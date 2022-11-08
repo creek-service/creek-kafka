@@ -22,14 +22,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/** Unit class for buiding error messages. */
 public final class ErrorMsgUtil {
 
     private ErrorMsgUtil() {}
 
+    /**
+     * Format the list across multiple lines.
+     *
+     * @param list the list to format as a string.
+     * @return the formatted string.
+     */
     public static String formatList(final List<?> list) {
         return formatList(list, 0);
     }
 
+    /**
+     * Format the list across multiple lines using the supplied {@code indentLevel}.
+     *
+     * @param list the list to format as a string.
+     * @param indentLevel the indent level to use.
+     * @return the formatted string.
+     */
     public static String formatList(final List<?> list, final int indentLevel) {
         final String indent = "\t".repeat(indentLevel + 1);
         final String finalIndent = "\t".repeat(indentLevel);

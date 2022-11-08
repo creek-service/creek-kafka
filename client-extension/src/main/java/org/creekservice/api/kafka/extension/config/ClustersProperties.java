@@ -51,6 +51,7 @@ public final class ClustersProperties {
         this.overrides = requireNonNull(overrides, "overrides");
     }
 
+    /** @return new properties builder. */
     public static Builder propertiesBuilder() {
         return new Builder();
     }
@@ -85,6 +86,7 @@ public final class ClustersProperties {
         return clusters.getOrDefault(clusterName.toLowerCase(), Map.of());
     }
 
+    /** Builder of properties for clusters. */
     public static final class Builder {
 
         private final Map<String, Object> common = new HashMap<>();
@@ -93,11 +95,26 @@ public final class ClustersProperties {
 
         private Builder() {}
 
+        /**
+         * Add a property common to all clusters.
+         *
+         * @param name the property name.
+         * @param value the property value.
+         * @return self.
+         */
         public Builder putCommon(final String name, final Object value) {
             common.put(requireNonBlank(name, "name"), requireNonNull(value, "value"));
             return this;
         }
 
+        /**
+         * Add a property to a specific cluster.
+         *
+         * @param cluster the name of the cluster.
+         * @param name the property name.
+         * @param value the property value.
+         * @return self.
+         */
         public Builder put(final String cluster, final String name, final Object value) {
             clusters.computeIfAbsent(
                             requireNonBlank(cluster, "cluster").toLowerCase(), k -> new HashMap<>())
@@ -105,6 +122,12 @@ public final class ClustersProperties {
             return this;
         }
 
+        /**
+         * Add all the properties from another {@link ClustersProperties} instance.
+         *
+         * @param other the other instance to add to this builder.
+         * @return self.
+         */
         public Builder putAll(final ClustersProperties other) {
             other.common.forEach(this::putCommon);
             other.clusters.forEach(
@@ -113,11 +136,23 @@ public final class ClustersProperties {
             return this;
         }
 
+        /**
+         * Set the overrides provider.
+         *
+         * @param overridesProvider the provider to load overrides from.
+         * @return self.
+         */
         public Builder withOverridesProvider(final KafkaPropertyOverrides overridesProvider) {
             overrides = requireNonNull(overridesProvider, "overridesProvider");
             return this;
         }
 
+        /**
+         * Build the clusters properties.
+         *
+         * @param clusterNames the valid cluster names.
+         * @return the clusters properties.
+         */
         public ClustersProperties build(final Set<String> clusterNames) {
             overrides.init(requireNonNull(clusterNames, "clusterNames"));
             return new ClustersProperties(common, clusters, overrides);

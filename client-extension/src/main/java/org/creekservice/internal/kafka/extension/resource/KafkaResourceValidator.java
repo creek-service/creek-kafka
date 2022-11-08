@@ -70,7 +70,7 @@ public final class KafkaResourceValidator {
         validateTopicGroup(resourceGroup);
     }
 
-    public static void validateTopicGroup(
+    private static void validateTopicGroup(
             final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
         final Map<Integer, ? extends KafkaTopicDescriptor<?, ?>> uniqueNoConfig =
                 resourceGroup.stream()

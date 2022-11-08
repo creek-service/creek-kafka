@@ -24,6 +24,7 @@ import java.util.Optional;
  */
 public final class SystemEnvProperties {
 
+    /** The environment variable name prefix for kafka configuration. */
     public static final String KAFKA_PREFIX = "KAFKA_";
 
     private SystemEnvProperties() {}

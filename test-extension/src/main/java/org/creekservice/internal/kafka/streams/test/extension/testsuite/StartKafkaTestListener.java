@@ -40,6 +40,10 @@ import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsPr
 import org.creekservice.internal.kafka.streams.test.extension.handler.TestOptionsAccessor;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 
+/**
+ * A test listener responsible for starting and stopping the Kafka broker instances the test suite
+ * requires.
+ */
 public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     private final CreekSystemTest api;
@@ -47,6 +51,10 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
     private final ClusterEndpointsProvider clusterEndpointsProvider;
     private final Map<String, ServiceInstance> kafkaInstances = new HashMap<>();
 
+    /**
+     * @param api the system test api.
+     * @param clusterEndpointsProvider a provider of cluster endpoint information.
+     */
     public StartKafkaTestListener(
             final CreekSystemTest api, final ClusterEndpointsProvider clusterEndpointsProvider) {
         this(api, clusterEndpointsProvider, new TopicCollector());

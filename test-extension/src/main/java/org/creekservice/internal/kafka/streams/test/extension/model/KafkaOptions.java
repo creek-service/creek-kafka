@@ -26,13 +26,25 @@ import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.creekservice.api.system.test.extension.test.model.Option;
 
-/** Test model extension to allow users to customise how this test extension operates. */
+/** Test model extension to allow users to customise the Kafka test extension functionality. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
 
+    /** Versioned name, as used in the system test YAML files. */
     public static final String NAME = "creek/kafka-options@1";
+
+    /**
+     * The default timeout to use to wait for spurious / unexpected records once all expected
+     * records are consumed.
+     */
     public static final Duration DEFAULT_EXTRA_TIMEOUT = Duration.ofSeconds(1);
-    // https://hub.docker.com/r/confluentinc/cp-kafka/tags
+
+    /**
+     * The default image name to use for the Kafka broker.
+     *
+     * @see <a href="https://hub.docker.com/r/confluentinc/cp-kafka/tags">Kafka versions on Docker
+     *     hub</a>
+     */
     public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.2.2";
 
     private static final KafkaOptions DEFAULTS =
@@ -43,6 +55,7 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
                     Optional.empty(),
                     Optional.empty());
 
+    /** Supported output ordering */
     public enum OutputOrdering {
         /** Topic records can be in any order. */
         NONE,
@@ -60,10 +73,18 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
     private final Duration extraTimeout;
     private final String kafkaDockerImage;
 
+    /** @return default options. */
     public static KafkaOptions defaults() {
         return DEFAULTS;
     }
 
+    /**
+     * @param outputOrdering optional output ordering requirements
+     * @param verifierTimeout optional explicit verifier timeout
+     * @param extraTimeout optional explicit timeout for additional records.
+     * @param kafkaDockerImage optional explicit docker container name to use for Kafka broker.
+     * @param notes optional ignored notes.
+     */
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
     public KafkaOptions(
             @JsonProperty("outputOrdering") final Optional<OutputOrdering> outputOrdering,

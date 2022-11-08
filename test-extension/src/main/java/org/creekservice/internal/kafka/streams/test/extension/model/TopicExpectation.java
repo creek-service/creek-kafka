@@ -24,13 +24,21 @@ import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 
+/** An expectation of records on a Kafka topic. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicExpectation implements Expectation {
 
+    /** Versioned name, as used in the system test YAML files. */
     public static final String NAME = "creek/kafka-topic@1";
 
     private final List<TopicRecord> records;
 
+    /**
+     * @param topicName optional topic name, can be set at record level
+     * @param clusterName optional cluster name, can be set at record level
+     * @param ignored ignored notes field.
+     * @param records expected records.
+     */
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
     public TopicExpectation(
             @JsonProperty(value = "topic") final Optional<String> topicName,
@@ -49,6 +57,7 @@ public final class TopicExpectation implements Expectation {
         }
     }
 
+    /** @return the expected records. */
     public List<TopicRecord> records() {
         return List.copyOf(records);
     }

@@ -31,7 +31,7 @@ import java.util.function.Function;
  * <p>Tri states:
  *
  * <ul>
- *   <li>not present
+ *   <li>not value proviced
  *   <li>present as null
  *   <li>present as value
  * </ul>
@@ -45,20 +45,46 @@ public final class Optional3<T> {
     private final Optional<T> value;
     private final boolean hasValue;
 
+    /**
+     * No value provided
+     *
+     * @param <T> the value type
+     * @return {@link Optional3} indicating no value was provided.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Optional3<T> notProvided() {
         return (Optional3<T>) NOT_PROVIDED;
     }
 
+    /**
+     * Null value provided.
+     *
+     * @param <T> the value type
+     * @return {@link Optional3} indicating a {@code null} value was provided.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Optional3<T> explicitlyNull() {
         return (Optional3<T>) EXPLICITLY_NULL;
     }
 
+    /**
+     * Non-null value provided
+     *
+     * @param value the non-null value.
+     * @param <T> the value type
+     * @return {@link Optional3} indicating a non-null value was provided.
+     */
     public static <T> Optional3<T> of(final T value) {
         return new Optional3<>(true, Optional.of(value));
     }
 
+    /**
+     * Protentially null value provided.
+     *
+     * @param value the potentially null value.
+     * @param <T> the value type
+     * @return {@link Optional3} indicating value was provided.
+     */
     @JsonCreator
     public static <T> Optional3<T> ofNullable(final T value) {
         return new Optional3<>(true, Optional.ofNullable(value));
@@ -69,6 +95,12 @@ public final class Optional3<T> {
         this.value = requireNonNull(value, "value");
     }
 
+    /**
+     * Get the value, if provided.
+     *
+     * @return {@link Optional} representing the value
+     * @throws NoSuchElementException if no value was provided
+     */
     @JsonValue
     public Optional<T> get() {
         if (!isProvided()) {
@@ -77,14 +109,23 @@ public final class Optional3<T> {
         return value;
     }
 
+    /** @return {@code true} if the instance has a value, null or otherwise. */
     public boolean isProvided() {
         return hasValue;
     }
 
+    /** @return {@code true} if the instance has a non-null value. */
     public boolean isPresent() {
         return isProvided() && value.isPresent();
     }
 
+    /**
+     * Transform any non-null value using the supplied {@code mapper}.
+     *
+     * @param mapper the mapper.
+     * @param <O> the resulting type.
+     * @return the result of the transformation.
+     */
     @SuppressWarnings("unchecked")
     public <O> Optional3<O> map(final Function<T, O> mapper) {
         if (!isPresent()) {
@@ -93,10 +134,23 @@ public final class Optional3<T> {
         return new Optional3<>(hasValue, value.map(mapper));
     }
 
+    /**
+     * Get the contained non-null value, or else one of the supplied parameters if there is none.
+     *
+     * @param ifNull the value to return if the instance has a null value.
+     * @param ifNotProvided the value to return if the instance has no value.
+     * @return the non-null value, or one of the parameters.
+     */
     public T orElse(final T ifNull, final T ifNotProvided) {
         return hasValue ? value.orElse(ifNull) : ifNotProvided;
     }
 
+    /**
+     * Return the contained non-null value, or else throw.
+     *
+     * @return the non-null value.
+     * @throws NoSuchElementException if the value is null or not provided.
+     */
     public T orElseThrow() {
         return value.orElseThrow();
     }

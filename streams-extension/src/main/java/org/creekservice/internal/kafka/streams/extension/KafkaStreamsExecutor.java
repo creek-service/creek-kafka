@@ -43,6 +43,7 @@ public final class KafkaStreamsExecutor {
     private final CompletableFuture<Void> shutdownFuture;
     private final Runnable loggingCloseDelay;
 
+    /** @param options streams extension options. */
     public KafkaStreamsExecutor(final KafkaStreamsExtensionOptions options) {
         this(
                 options,
@@ -71,6 +72,11 @@ public final class KafkaStreamsExecutor {
         this.loggingCloseDelay = requireNonNull(loggingCloseDelay, "loggingCloseDelay");
     }
 
+    /**
+     * Execute / run a streams app.
+     *
+     * @param streamsApp the streams app.
+     */
     @SuppressFBWarnings(
             value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "false-positive")

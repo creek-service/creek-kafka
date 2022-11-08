@@ -31,6 +31,7 @@ import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 /** Serde provider for Kafka's own in-built serde classes. */
 public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
 
+    /** The serialization format name for the native Kafka format. */
     public static final SerializationFormat FORMAT =
             SerializationFormat.serializationFormat("kafka");
 

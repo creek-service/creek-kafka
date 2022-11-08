@@ -30,6 +30,12 @@ public final class SerializationFormat {
 
     private final String name;
 
+    /**
+     * Factory method
+     *
+     * @param name the format name.
+     * @return the format.
+     */
     public static SerializationFormat serializationFormat(final String name) {
         return new SerializationFormat(name);
     }

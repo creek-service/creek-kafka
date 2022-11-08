@@ -17,6 +17,7 @@
 
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 
+/** Base types for extending Creek Kafka with custom serialization formats. */
 module creek.kafka.serde {
     requires transitive creek.kafka.metadata;
     requires transitive creek.base.annotation;

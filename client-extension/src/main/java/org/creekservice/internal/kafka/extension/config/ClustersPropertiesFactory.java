@@ -26,10 +26,12 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 
+/** Creator of properties for all Kafka clusters. */
 public final class ClustersPropertiesFactory {
 
     private final TopicCollector topicCollector;
 
+    /** Constructor. */
     public ClustersPropertiesFactory() {
         this(new TopicCollector());
     }
@@ -39,6 +41,13 @@ public final class ClustersPropertiesFactory {
         this.topicCollector = requireNonNull(topicCollector, "topicCollector");
     }
 
+    /**
+     * Create {@link ClustersProperties}.
+     *
+     * @param components all known components.
+     * @param apiOptions api options.
+     * @return cluster properties
+     */
     public ClustersProperties create(
             final Collection<? extends ComponentDescriptor> components,
             final ClientsExtensionOptions apiOptions) {

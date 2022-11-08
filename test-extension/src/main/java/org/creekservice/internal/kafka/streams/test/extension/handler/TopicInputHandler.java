@@ -30,6 +30,7 @@ import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.yaml.TypeCoercer;
 
+/** {@link InputHandler} for {@link TopicInput}. */
 public final class TopicInputHandler implements InputHandler<TopicInput> {
 
     private final ClientsExtension clientsExt;
@@ -37,6 +38,10 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     private final Set<Producer<byte[], byte[]>> toFlush = new HashSet<>();
     private final TopicValidator topicValidator;
 
+    /**
+     * @param clientsExt the client extension.
+     * @param topicValidator a topic validator.
+     */
     public TopicInputHandler(
             final ClientsExtension clientsExt, final TopicValidator topicValidator) {
         this(clientsExt, new TypeCoercer(), topicValidator);

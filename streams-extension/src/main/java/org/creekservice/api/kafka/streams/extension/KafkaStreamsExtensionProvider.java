@@ -36,6 +36,7 @@ public final class KafkaStreamsExtensionProvider
     private final ExecutorFactory executorFactory;
     private final ExtensionFactory extensionFactory;
 
+    /** Constructor */
     public KafkaStreamsExtensionProvider() {
         this(KafkaStreamsBuilder::new, KafkaStreamsExecutor::new, StreamsExtension::new);
     }

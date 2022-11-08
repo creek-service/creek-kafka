@@ -18,6 +18,7 @@
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 
+/** A service extension that provides functionality to work with Java Kafka client. */
 module creek.kafka.clients.extension {
     requires transitive creek.base.annotation;
     requires transitive creek.service.extension;

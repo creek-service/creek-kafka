@@ -74,6 +74,11 @@ public final class KafkaTestExtension implements CreekTestExtension {
                 new TopicExpectationHandler(clientsExt, topicValidator));
     }
 
+    /**
+     * @param model the test model
+     * @param inputHandler the input handler
+     * @param expectationHandler the expectation handler.
+     */
     @VisibleForTesting
     public static void initializeModel(
             final TestModelContainer model,

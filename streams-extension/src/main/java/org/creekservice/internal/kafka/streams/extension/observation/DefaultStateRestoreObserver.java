@@ -24,6 +24,7 @@ import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
+/** Default implementation of {@link StateRestoreObserver}. */
 public final class DefaultStateRestoreObserver implements StateRestoreObserver {
 
     private static final StructuredLogger LOGGER =
@@ -31,6 +32,7 @@ public final class DefaultStateRestoreObserver implements StateRestoreObserver {
 
     private final StructuredLogger logger;
 
+    /** Constructor */
     public DefaultStateRestoreObserver() {
         this(LOGGER);
     }

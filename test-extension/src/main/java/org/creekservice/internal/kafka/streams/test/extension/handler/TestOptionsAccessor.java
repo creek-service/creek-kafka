@@ -25,14 +25,27 @@ import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 
+/** Util class for accessing {@link KafkaOptions}. */
 public final class TestOptionsAccessor {
 
     private TestOptionsAccessor() {}
 
+    /**
+     * Get Kafka options from a {@link ExpectationOptions}.
+     *
+     * @param options the expectation options.
+     * @return the Kafka options.
+     */
     public static KafkaOptions get(final ExpectationOptions options) {
         return get(options::get);
     }
 
+    /**
+     * Get Kafka options from a {@link CreekTestSuite}.
+     *
+     * @param suite the test suite.
+     * @return the Kafka options.
+     */
     public static KafkaOptions get(final CreekTestSuite suite) {
         return get(suite::options);
     }

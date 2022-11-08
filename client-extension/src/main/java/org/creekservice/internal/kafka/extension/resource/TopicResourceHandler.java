@@ -28,10 +28,12 @@ import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 
+/** Resource handle for topics. */
 public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor<?, ?>> {
 
     private final TopicClient topicClient;
 
+    /** @param topicClient the topic client to use. */
     public TopicResourceHandler(final TopicClient topicClient) {
         this.topicClient = requireNonNull(topicClient, "topicClient");
     }

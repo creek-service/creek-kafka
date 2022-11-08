@@ -27,9 +27,11 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 
+/** Loader of Kafka Serde providers */
 public final class ProviderLoader {
     private final LoaderFactory factory;
 
+    /** Constructor */
     public ProviderLoader() {
         this(ServiceLoader::load);
     }
@@ -39,6 +41,11 @@ public final class ProviderLoader {
         this.factory = requireNonNull(factory, "factory");
     }
 
+    /**
+     * Load all serde providers from the class and module path.
+     *
+     * @return the discovered serde providers.
+     */
     public Map<SerializationFormat, KafkaSerdeProvider> load() {
         return factory.load(KafkaSerdeProvider.class).stream()
                 .map(ServiceLoader.Provider::get)
