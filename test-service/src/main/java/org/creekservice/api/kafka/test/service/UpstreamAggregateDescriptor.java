@@ -34,6 +34,8 @@ public final class UpstreamAggregateDescriptor implements AggregateDescriptor {
     public static final OwnedKafkaTopicOutput<String, Long> Output =
             register(outputTopic("input", String.class, Long.class, withPartitions(3)));
 
+    public UpstreamAggregateDescriptor() {}
+
     @Override
     public Collection<ComponentOutput> outputs() {
         return List.copyOf(OUTPUTS);
