@@ -66,7 +66,7 @@ subprojects {
         set("creekBaseVersion", "0.2.0-SNAPSHOT")
         set("creekTestVersion", "0.2.0-SNAPSHOT")
         set("creekMdVersion", "0.2.0-SNAPSHOT")
-        set("creekServiceVersion", "0.2.0-SNAPSHOT")
+        set("creekServiceVersion", "0.2.0")
         set("creekSystemTestVersion", "0.2.0-SNAPSHOT")
         set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("spotBugsVersion", "4.7.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
