@@ -44,7 +44,7 @@ import org.creekservice.api.service.context.CreekContext;
  * private TestInputTopic<String, Long> inputTopic;
  * private TestOutputTopic<Long, String> outputTopic;
  *
- * @BeforeEach
+ * @literal @BeforeEach
  * public void setUp() {
  *   ...
  *

@@ -35,7 +35,7 @@ import org.creekservice.api.test.util.Temp;
  * class TopologyTest {
  *     private static CreekContext ctx;
  *
- *     @BeforeAll
+ *     @literal @BeforeAll
  *     public static void classSetup() {
  *         ctx = CreekServices.builder(new TestServiceDescriptor())
  *                 .with(TestKafkaStreamsExtensionOptions.defaults())
