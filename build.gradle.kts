@@ -68,7 +68,7 @@ subprojects {
         set("creekMdVersion", "0.2.0-SNAPSHOT")
         set("creekServiceVersion", "0.2.0-SNAPSHOT")
         set("creekSystemTestVersion", "0.2.0-SNAPSHOT")
-        set("creekObsVersion", "0.2.0-SNAPSHOT")
+        set("creekObsVersion", "0.2.1-SNAPSHOT")
         set("spotBugsVersion", "4.7.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.14.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("slf4jVersion", "2.0.3")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
