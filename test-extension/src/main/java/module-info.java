@@ -18,6 +18,7 @@
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
 
+/** A system test extension to enable system testing of microservices that interact with Kafka. */
 module creek.kafka.test.extension {
     requires transitive creek.system.test.extension;
     requires transitive com.fasterxml.jackson.annotation;

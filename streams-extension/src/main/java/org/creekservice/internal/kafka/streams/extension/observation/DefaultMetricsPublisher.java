@@ -33,6 +33,7 @@ import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
+/** Default impl of {@link MetricsPublisher}. */
 public final class DefaultMetricsPublisher implements MetricsPublisher {
 
     private static final StructuredLogger LOGGER =
@@ -44,6 +45,7 @@ public final class DefaultMetricsPublisher implements MetricsPublisher {
     private final StructuredLogger logger;
     private final ScheduledExecutorService scheduler;
 
+    /** @param options publisher options. */
     public DefaultMetricsPublisher(final KafkaMetricsPublisherOptions options) {
         this(
                 options,

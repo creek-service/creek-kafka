@@ -45,6 +45,10 @@ public final class ClientsExtension implements KafkaClientsExtension {
     private final Map<String, Producer<byte[], byte[]>> producers = new ConcurrentHashMap<>();
     private final Map<String, Consumer<byte[], byte[]>> consumers = new ConcurrentHashMap<>();
 
+    /**
+     * @param clustersProperties the clusters properties.
+     * @param resources known resources.
+     */
     public ClientsExtension(
             final ClustersProperties clustersProperties, final ResourceRegistry resources) {
         this.clustersProperties = requireNonNull(clustersProperties, "clustersProperties");
@@ -66,6 +70,13 @@ public final class ClientsExtension implements KafkaClientsExtension {
         return resources.topic(def);
     }
 
+    /**
+     * Get a topic resource for the supplied {@code cluster} and {@code topic} names.
+     *
+     * @param cluster the cluster name.
+     * @param topic the topic name.
+     * @return the topic resource.
+     */
     public KafkaTopic<?, ?> topic(final String cluster, final String topic) {
         return resources.topic(cluster, topic);
     }

@@ -41,12 +41,14 @@ import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
+/** Implementation of {@link TopicClient} */
 public final class KafkaTopicClient implements TopicClient {
 
     private final StructuredLogger logger;
     private final ClustersProperties clusterProps;
     private final Function<Map<String, Object>, Admin> adminFactory;
 
+    /** @param clusterProps props */
     public KafkaTopicClient(final ClustersProperties clusterProps) {
         this(
                 clusterProps,

@@ -23,6 +23,11 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 
+/**
+ * Client extension options.
+ *
+ * <p>Used to customise how the client extension operates.
+ */
 public interface ClientsExtensionOptions extends CreekExtensionOptions {
 
     /** @return the Kafka client properties */
@@ -31,6 +36,7 @@ public interface ClientsExtensionOptions extends CreekExtensionOptions {
     /** @return explicit topic client to use */
     Optional<TopicClient> topicClient();
 
+    /** Build of client extension options. */
     interface Builder {
 
         /**

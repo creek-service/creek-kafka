@@ -23,6 +23,7 @@ import java.util.Map;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
+/** A registry of all known Kafka resources. */
 public final class ResourceRegistry {
 
     private final Map<URI, Topic<?, ?>> topics;
@@ -31,6 +32,14 @@ public final class ResourceRegistry {
         this.topics = Map.copyOf(requireNonNull(topics, "topics"));
     }
 
+    /**
+     * Get a topic resource from its descriptor
+     *
+     * @param def the descriptor
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return the resource.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
         final Topic<?, ?> found = find(def.id());
@@ -42,6 +51,13 @@ public final class ResourceRegistry {
         return (KafkaTopic) found;
     }
 
+    /**
+     * Get a topic resource from a cluster and topic name.
+     *
+     * @param cluster the cluster name.
+     * @param topic the topic name.
+     * @return the resource.
+     */
     public KafkaTopic<?, ?> topic(final String cluster, final String topic) {
         return find(KafkaTopicDescriptor.resourceId(cluster, topic));
     }

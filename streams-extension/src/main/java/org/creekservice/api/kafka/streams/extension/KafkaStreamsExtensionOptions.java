@@ -40,6 +40,7 @@ import org.creekservice.internal.kafka.streams.extension.observation.DefaultStat
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptions {
 
+    /** Default stream close timeout. */
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
 
     /** Sensible Kafka Streams defaults: */
@@ -66,6 +67,7 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     private final StateRestoreObserver restoreObserver;
     private final KafkaMetricsPublisherOptions metricsPublishing;
 
+    /** @return new builder. */
     public static Builder builder() {
         return new Builder();
     }
@@ -155,6 +157,7 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
                 + '}';
     }
 
+    /** Builder of streams options. */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder implements ClientsExtensionOptions.Builder {
 

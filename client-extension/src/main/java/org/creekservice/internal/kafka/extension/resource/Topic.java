@@ -22,12 +22,23 @@ import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
+/**
+ * Implementation of {@link KafkaTopic}
+ *
+ * @param <K> the key type of the topic
+ * @param <V> the value type of the topic
+ */
 public final class Topic<K, V> implements KafkaTopic<K, V> {
 
     private final KafkaTopicDescriptor<K, V> descriptor;
     private final Serde<K> keySerde;
     private final Serde<V> valueSerde;
 
+    /**
+     * @param descriptor the topic's descriptor
+     * @param keySerde the key serde
+     * @param valueSerde the value serde.
+     */
     public Topic(
             final KafkaTopicDescriptor<K, V> descriptor,
             final Serde<K> keySerde,

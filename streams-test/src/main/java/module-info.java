@@ -1,3 +1,4 @@
+/** Unit test helpers for users writing Kafka Streams microservices. */
 module creek.kafka.streams.test {
     requires transitive creek.kafka.metadata;
     requires transitive creek.service.context;

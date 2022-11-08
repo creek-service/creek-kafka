@@ -34,6 +34,7 @@ import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.creekservice.internal.kafka.streams.test.extension.yaml.JsonLocation;
 
+/** A model type used to hold the data about a record on a Kafka topic. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicRecord {
 
@@ -43,6 +44,13 @@ public final class TopicRecord {
     private final Optional3<Object> key;
     private final Optional3<Object> value;
 
+    /**
+     * @param location the location in the test files the record is persisted.
+     * @param clusterName the name of the Kafka cluster.
+     * @param topicName the name of the Kafka topic.
+     * @param key the record key.
+     * @param value the record value.
+     */
     @VisibleForTesting
     public TopicRecord(
             final URI location,
@@ -57,26 +65,39 @@ public final class TopicRecord {
         this.value = requireNonNull(value, "value");
     }
 
+    /** @return the location in the test files the record is persisted. */
     public URI location() {
         return location;
     }
 
+    /** @return the name of the Kafka topic. */
     public String topicName() {
         return topicName;
     }
 
+    /** @return the name of the Kafka cluster. */
     public String clusterName() {
         return clusterName;
     }
 
+    /** @return the record key. */
     public Optional3<Object> key() {
         return key;
     }
 
+    /** @return the record value. */
     public Optional3<Object> value() {
         return value;
     }
 
+    /**
+     * Transform the record to one containing the supplied (coerced) {@code newKey} and {@code
+     * newValue}
+     *
+     * @param newKey the key to set on the new instance.
+     * @param newValue the value to set on the new instance.
+     * @return a new instance.
+     */
     public TopicRecord with(final Optional3<Object> newKey, final Optional3<Object> newValue) {
         return new TopicRecord(location, clusterName, topicName, newKey, newValue);
     }
@@ -99,6 +120,7 @@ public final class TopicRecord {
                 + '}';
     }
 
+    /** Builder of {@link TopicRecord}. */
     @JsonDeserialize(using = TopicRecord.TopicRecordDeserializer.class)
     public static class RecordBuilder {
 
@@ -125,6 +147,13 @@ public final class TopicRecord {
             this.value = requireNonNull(value, "value");
         }
 
+        /**
+         * Build the {@link TopicRecord} using the supplied defaults.
+         *
+         * @param defaultCluster the default cluster
+         * @param defaultTopic the default topic
+         * @return the record.
+         */
         public TopicRecord build(
                 final Optional<String> defaultCluster, final Optional<String> defaultTopic) {
             return new TopicRecord(
@@ -141,6 +170,14 @@ public final class TopicRecord {
                     value);
         }
 
+        /**
+         * Helper method to build a collection of records from their builders.
+         *
+         * @param defaultCluster the default cluster
+         * @param defaultTopic the default topic
+         * @param builders the builders to build from.
+         * @return the list of built records.
+         */
         public static List<TopicRecord> buildRecords(
                 final Optional<String> defaultCluster,
                 final Optional<String> defaultTopic,
@@ -152,6 +189,7 @@ public final class TopicRecord {
         }
     }
 
+    /** Jackson deserializer for {@link TopicRecord} */
     public static final class TopicRecordDeserializer extends JsonDeserializer<RecordBuilder> {
         @Override
         public RecordBuilder deserialize(final JsonParser parser, final DeserializationContext ctx)

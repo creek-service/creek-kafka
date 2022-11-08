@@ -39,6 +39,21 @@ import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicValidator;
 
+/**
+ * Implementation of {@link TopicValidator}.
+ *
+ * <p>The validator tracks the valid set of topics for the current running test suite and uses this
+ * to validate which topics can be produced to and consumed from.
+ *
+ * <p>It will throw exceptions if any test is attempting to produce to an output-only, or consume
+ * from an input-only, topic. It does this as such actions are nonsensical and generally indicate
+ * user error.
+ *
+ * <p>An output-only topic is a topic which the services-under-test only output too. As no
+ * service-under-test consumes the topic, it doesn't make sense to be producing data to the topic as
+ * part of the test inputs. Likewise, an input-only topic is one which no service-under-test
+ * produces to, and hence it does not make sense for any expectation to consume the topic.
+ */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TopicValidatingListener implements TestEnvironmentListener, TopicValidator {
 
@@ -46,6 +61,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
     private final TopicCollector topicCollector;
     private Optional<CollectedTopics> collectedTopics = Optional.empty();
 
+    /** @param api the system test api. */
     public TopicValidatingListener(final CreekSystemTest api) {
         this(api, new TopicCollector());
     }
@@ -72,6 +88,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
         collectedTopics = Optional.empty();
     }
 
+    @Override
     public void validateCanProduce(final KafkaTopic<?, ?> topic) {
         if (allDescriptorsAre(
                 d -> d instanceof KafkaTopicOutput | d instanceof OwnedKafkaTopicOutput, topic)) {
@@ -79,6 +96,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
         }
     }
 
+    @Override
     public void validateCanConsume(final KafkaTopic<?, ?> topic) {
         if (allDescriptorsAre(
                 d -> d instanceof KafkaTopicInput | d instanceof OwnedKafkaTopicInput, topic)) {

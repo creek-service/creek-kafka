@@ -26,12 +26,14 @@ import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** A test listener that does final teardown after a suite has run. */
 public final class TearDownTestListener implements TestEnvironmentListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TearDownTestListener.class);
 
     private final ClientsExtension clientsExt;
 
+    /** @param clientsExt the client extension. */
     public TearDownTestListener(final ClientsExtension clientsExt) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
     }

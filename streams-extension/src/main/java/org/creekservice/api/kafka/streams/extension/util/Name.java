@@ -23,12 +23,12 @@ import org.apache.kafka.streams.kstream.Named;
 /**
  * Helper class for building unique node names in a Kafka Streams topology.
  *
- * <p>This class can help to ensure unique node names when the building of a topology
- * is spread across multiple methods or classes.
+ * <p>This class can help to ensure unique node names when the building of a topology is spread
+ * across multiple methods or classes.
  *
- * <p>Create a single top level {@code Name} instance. Use {@link Name#postfix postfixes}
- * when passing the {@code Name} instance to methods that build part of the topology. Use
- * {@link Name#name} and {@code Name#named} when creating a node name. For example:
+ * <p>Create a single top level {@code Name} instance. Use {@link Name#postfix postfixes} when
+ * passing the {@code Name} instance to methods that build part of the topology. Use {@link
+ * Name#name} and {@code Name#named} when creating a node name. For example:
  *
  * <pre>{@code
  * class TopologyBuilder {
@@ -51,10 +51,12 @@ import org.apache.kafka.streams.kstream.Named;
  *
  *        return builder.build();
  *     }
+ *  }
  * }</pre>
  */
 public final class Name {
 
+    /** Default delimiter to use when concatenating name. */
     public static final char DEFAULT_DELIM = '.';
 
     private final char delim;
@@ -65,7 +67,10 @@ public final class Name {
         return root(DEFAULT_DELIM);
     }
 
-    /** @return the name for the root of the topology, using a custom delimiter. */
+    /**
+     * @param delimiter a custom delimiter to use when concatenating names.
+     * @return the name for the root of the topology, using a custom delimiter.
+     */
     public static Name root(final char delimiter) {
         return new Name("", delimiter);
     }

@@ -21,16 +21,33 @@ import com.fasterxml.jackson.core.JsonParser;
 import java.io.File;
 import java.net.URI;
 
+/**
+ * Util class for determining the current location within a JSON/YAML file being parsed.
+ *
+ * <p>Locations are in the URI form: {@code file:///path/to/file.yml:<line number>}.
+ */
 public final class JsonLocation {
 
     private static final URI UNKNOWN = URI.create("unknown");
 
     private JsonLocation() {}
 
+    /**
+     * Get the current location from the parser.
+     *
+     * @param parser the parser.
+     * @return the current location.
+     */
     public static URI location(final JsonParser parser) {
         return location(parser.currentLocation());
     }
 
+    /**
+     * Get the location from the Jackson location
+     *
+     * @param location the Jackson location
+     * @return the location.
+     */
     public static URI location(final com.fasterxml.jackson.core.JsonLocation location) {
         final Object content = location.contentReference().getRawContent();
         if (!(content instanceof File)) {

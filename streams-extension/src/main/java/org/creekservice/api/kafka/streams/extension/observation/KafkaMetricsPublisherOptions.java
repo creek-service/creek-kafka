@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.internal.kafka.streams.extension.observation.DefaultMetricsFilter;
 
+/** Options type to allow customisation of metrics publishing. */
 public final class KafkaMetricsPublisherOptions {
 
     private static final Duration DEFAULT_PERIOD = Duration.ofMinutes(1);
@@ -30,6 +31,7 @@ public final class KafkaMetricsPublisherOptions {
     private final Duration publishPeriod;
     private final KafkaMetricsFilter metricsFilter;
 
+    /** @return new builder. */
     public static Builder builder() {
         return new Builder();
     }
@@ -78,6 +80,7 @@ public final class KafkaMetricsPublisherOptions {
                 + '}';
     }
 
+    /** Builder of metrics publisher options. */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder {
 
@@ -112,6 +115,7 @@ public final class KafkaMetricsPublisherOptions {
             return this;
         }
 
+        /** @return the new options. */
         public KafkaMetricsPublisherOptions build() {
             return new KafkaMetricsPublisherOptions(
                     publishPeriod, metricsFilter.orElseGet(DefaultMetricsFilter::new));

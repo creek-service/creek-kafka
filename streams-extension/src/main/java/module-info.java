@@ -2,6 +2,7 @@
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 
+/** A service extension that provides functionality to work with Kafka Streams apps. */
 module creek.kafka.streams.extension {
     requires transitive creek.kafka.clients.extension;
     requires transitive kafka.streams;

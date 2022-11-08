@@ -29,7 +29,10 @@ import org.creekservice.api.platform.metadata.ResourceDescriptor;
  */
 public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
+    /** The default cluster name to use if one is not provided. */
     String DEFAULT_CLUSTER_NAME = "default";
+
+    /** The schema name to use in resource URIs for Kafka optics. */
     String SCHEME = "kafka-topic";
 
     @Override

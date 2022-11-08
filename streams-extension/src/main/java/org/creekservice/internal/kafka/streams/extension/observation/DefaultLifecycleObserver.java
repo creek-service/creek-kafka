@@ -29,6 +29,7 @@ import org.creekservice.api.observability.lifecycle.LoggableLifecycle;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
+/** Default implementation of {@link LifecycleObserver} */
 public final class DefaultLifecycleObserver implements LifecycleObserver {
 
     private static final StructuredLogger LOGGER =
@@ -36,6 +37,7 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
 
     private final StructuredLogger logger;
 
+    /** Constructor */
     public DefaultLifecycleObserver() {
         this(LOGGER);
     }

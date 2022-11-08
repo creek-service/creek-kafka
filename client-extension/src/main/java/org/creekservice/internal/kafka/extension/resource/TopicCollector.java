@@ -35,9 +35,11 @@ import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
+/**
+ * Collects {@link KafkaTopicDescriptor topic descriptors} from {@link ComponentDescriptor component
+ * descriptors}
+ */
 public final class TopicCollector {
-
-    public TopicCollector() {}
 
     /**
      * Collect topic descriptors from the supplied {@code components}.
@@ -103,6 +105,7 @@ public final class TopicCollector {
         }
     }
 
+    /** Holds the result of a topic collection. */
     public static class CollectedTopics {
         private final Map<URI, List<KafkaTopicDescriptor<?, ?>>> topics;
 

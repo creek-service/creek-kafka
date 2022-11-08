@@ -22,6 +22,7 @@ import java.time.Duration;
 /** Observer called as the Kafka Streams app transitions through different states. */
 public interface LifecycleObserver {
 
+    /** Enum defining the possible exit codes */
     enum ExitCode {
         /** The app shutdown gracefully without the timeout. */
         OK(0),
@@ -44,6 +45,7 @@ public interface LifecycleObserver {
             this.code = code;
         }
 
+        /** @return the int value of the exit code. */
         public int asInt() {
             return code;
         }

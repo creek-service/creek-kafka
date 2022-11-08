@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import org.apache.kafka.common.MetricName;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsFilter;
 
+/** Default implentation of {@link KafkaMetricsFilter}. */
 public final class DefaultMetricsFilter implements KafkaMetricsFilter {
 
     private static final Predicate<String> ALL = name -> true;

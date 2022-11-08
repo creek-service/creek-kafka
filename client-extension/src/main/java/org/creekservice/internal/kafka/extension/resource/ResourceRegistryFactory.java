@@ -34,6 +34,7 @@ import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
 
+/** Factory class that builds the {@link ResourceRegistry} */
 public final class ResourceRegistryFactory {
 
     private final KafkaSerdeProviders serdeProviders;
@@ -41,6 +42,7 @@ public final class ResourceRegistryFactory {
     private final RegistryFactory registryFactory;
     private final TopicFactory topicFactory;
 
+    /** Constructor. */
     public ResourceRegistryFactory() {
         this(KafkaSerdeProviders.create(), new TopicCollector(), ResourceRegistry::new, Topic::new);
     }
@@ -57,6 +59,13 @@ public final class ResourceRegistryFactory {
         this.topicFactory = requireNonNull(topicFactory, "topicFactory");
     }
 
+    /**
+     * Create the resource registry.
+     *
+     * @param components the components.
+     * @param properties the properties.
+     * @return the registry.
+     */
     public ResourceRegistry create(
             final Collection<? extends ComponentDescriptor> components,
             final ClustersProperties properties) {

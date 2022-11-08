@@ -28,6 +28,11 @@ public final class KafkaSerdeProviders {
 
     private final Map<SerializationFormat, KafkaSerdeProvider> providers;
 
+    /**
+     * Factory method
+     *
+     * @return an instance.
+     */
     public static KafkaSerdeProviders create() {
         return new KafkaSerdeProviders(new ProviderLoader().load());
     }
@@ -37,6 +42,12 @@ public final class KafkaSerdeProviders {
         this.providers = Map.copyOf(requireNonNull(providers, "providers"));
     }
 
+    /**
+     * Get a serde provider for a specific {@code format}.
+     *
+     * @param format the format
+     * @return the serde provider.
+     */
     public KafkaSerdeProvider get(final SerializationFormat format) {
         final KafkaSerdeProvider found = providers.get(format);
         if (found == null) {

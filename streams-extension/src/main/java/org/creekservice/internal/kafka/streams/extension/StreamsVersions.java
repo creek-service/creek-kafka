@@ -26,7 +26,10 @@ import org.apache.kafka.streams.KafkaStreams;
 /** Tool for handling different versions of Kafka Streams. */
 public final class StreamsVersions {
 
+    /** The major version of the Kafka Streams library found on the class or module path */
     public static final int MAJOR_VERSION;
+
+    /** The minor version of the Kafka Streams library found on the class or module path */
     public static final int MINOR_VERSION;
 
     static {
@@ -42,6 +45,7 @@ public final class StreamsVersions {
         MINOR_VERSION = Integer.parseInt(matcher.group(2));
     }
 
+    /** The value to set for the processing guarantee for exactly once. */
     public static final String EXACTLY_ONCE_V2 =
             versionAtLeast(3, 0).map(v -> "exactly_once_v2").orElse("exactly_once_beta");
 
