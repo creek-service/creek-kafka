@@ -27,6 +27,8 @@ public final class PublicTestSerdeProvider implements KafkaSerdeProvider {
     public static final SerializationFormat FORMAT =
             SerializationFormat.serializationFormat("test-public");
 
+    public PublicTestSerdeProvider() {}
+
     @Override
     public SerializationFormat format() {
         return FORMAT;
