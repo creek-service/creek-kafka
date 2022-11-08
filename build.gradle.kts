@@ -63,12 +63,7 @@ subprojects {
     }
 
     extra.apply {
-        set("creekBaseVersion", "0.2.0-SNAPSHOT")
-        set("creekTestVersion", "0.2.0-SNAPSHOT")
-        set("creekMdVersion", "0.2.0-SNAPSHOT")
-        set("creekServiceVersion", "0.2.0-SNAPSHOT")
-        set("creekSystemTestVersion", "0.2.0-SNAPSHOT")
-        set("creekObsVersion", "0.2.0-SNAPSHOT")
+        set("creekVersion", "0.2.0")
         set("spotBugsVersion", "4.7.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.14.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("slf4jVersion", "2.0.3")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
@@ -82,7 +77,7 @@ subprojects {
         set("testContainersVersion", "1.17.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
-    val creekTestVersion : String by extra
+    val creekVersion : String by extra
     val guavaVersion : String by extra
     val log4jVersion : String by extra
     val junitVersion: String by extra
@@ -91,9 +86,9 @@ subprojects {
     val hamcrestVersion : String by extra
 
     dependencies {
-        testImplementation("org.creekservice:creek-test-util:$creekTestVersion")
-        testImplementation("org.creekservice:creek-test-hamcrest:$creekTestVersion")
-        testImplementation("org.creekservice:creek-test-conformity:$creekTestVersion")
+        testImplementation("org.creekservice:creek-test-util:$creekVersion")
+        testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")
+        testImplementation("org.creekservice:creek-test-conformity:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")

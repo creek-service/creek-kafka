@@ -22,11 +22,11 @@ plugins {
     id("com.bmuschko.docker-remote-api") version "8.1.0"
 }
 
-val creekServiceVersion : String by extra
+val creekVersion : String by extra
 val log4jVersion : String by extra
 
 dependencies {
-    implementation("org.creekservice:creek-service-context:$creekServiceVersion")
+    implementation("org.creekservice:creek-service-context:$creekVersion")
     implementation(project(":streams-extension"))
 
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")

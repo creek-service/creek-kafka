@@ -18,24 +18,22 @@ plugins {
     `java-library`
 }
 
+val creekVersion : String by extra
 val kafkaVersion : String by extra
-val creekBaseVersion : String by extra
-val creekServiceVersion : String by extra
-val creekObsVersion : String by extra
 val spotBugsVersion : String by extra
 val testContainersVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
     api(project(":serde"))
-    api("org.creekservice:creek-service-extension:$creekServiceVersion")
+    api("org.creekservice:creek-service-extension:$creekVersion")
     api("org.apache.kafka:kafka-clients:$kafkaVersion")
 
-    implementation("org.creekservice:creek-observability-logging:$creekObsVersion")
-    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
+    implementation("org.creekservice:creek-observability-logging:$creekVersion")
+    implementation("org.creekservice:creek-base-type:$creekVersion")
 
     testImplementation(project(":test-service"))
-    testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekObsVersion")
+    testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:kafka:$testContainersVersion")
 }
