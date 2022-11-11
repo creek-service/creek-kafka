@@ -43,7 +43,9 @@ public final class KafkaStreamsExecutor {
     private final CompletableFuture<Void> shutdownFuture;
     private final Runnable loggingCloseDelay;
 
-    /** @param options streams extension options. */
+    /**
+     * @param options streams extension options.
+     */
     public KafkaStreamsExecutor(final KafkaStreamsExtensionOptions options) {
         this(
                 options,

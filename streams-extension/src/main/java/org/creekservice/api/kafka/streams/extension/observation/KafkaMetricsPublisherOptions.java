@@ -31,7 +31,9 @@ public final class KafkaMetricsPublisherOptions {
     private final Duration publishPeriod;
     private final KafkaMetricsFilter metricsFilter;
 
-    /** @return new builder. */
+    /**
+     * @return new builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -42,12 +44,16 @@ public final class KafkaMetricsPublisherOptions {
         this.metricsFilter = requireNonNull(metricsFilter, "metricsFilter");
     }
 
-    /** @return time between each publishing of metrics. */
+    /**
+     * @return time between each publishing of metrics.
+     */
     public Duration publishPeriod() {
         return publishPeriod;
     }
 
-    /** @return filter to control what metrics should be published. */
+    /**
+     * @return filter to control what metrics should be published.
+     */
     public KafkaMetricsFilter metricsFilter() {
         return metricsFilter;
     }
@@ -115,7 +121,9 @@ public final class KafkaMetricsPublisherOptions {
             return this;
         }
 
-        /** @return the new options. */
+        /**
+         * @return the new options.
+         */
         public KafkaMetricsPublisherOptions build() {
             return new KafkaMetricsPublisherOptions(
                     publishPeriod, metricsFilter.orElseGet(DefaultMetricsFilter::new));

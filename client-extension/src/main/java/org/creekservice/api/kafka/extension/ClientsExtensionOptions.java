@@ -30,10 +30,14 @@ import org.creekservice.api.service.extension.CreekExtensionOptions;
  */
 public interface ClientsExtensionOptions extends CreekExtensionOptions {
 
-    /** @return the Kafka client properties */
+    /**
+     * @return the Kafka client properties
+     */
     ClustersProperties.Builder propertiesBuilder();
 
-    /** @return explicit topic client to use */
+    /**
+     * @return explicit topic client to use
+     */
     Optional<TopicClient> topicClient();
 
     /** Build of client extension options. */

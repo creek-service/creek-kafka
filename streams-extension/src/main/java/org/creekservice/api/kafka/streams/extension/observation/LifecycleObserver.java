@@ -45,7 +45,9 @@ public interface LifecycleObserver {
             this.code = code;
         }
 
-        /** @return the int value of the exit code. */
+        /**
+         * @return the int value of the exit code.
+         */
         public int asInt() {
             return code;
         }

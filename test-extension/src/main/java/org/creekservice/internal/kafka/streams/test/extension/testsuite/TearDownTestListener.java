@@ -33,7 +33,9 @@ public final class TearDownTestListener implements TestEnvironmentListener {
 
     private final ClientsExtension clientsExt;
 
-    /** @param clientsExt the client extension. */
+    /**
+     * @param clientsExt the client extension.
+     */
     public TearDownTestListener(final ClientsExtension clientsExt) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
     }

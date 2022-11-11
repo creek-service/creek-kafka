@@ -40,7 +40,9 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
         return resourceId(cluster(), name());
     }
 
-    /** @return name of the topic as it is in Kafka. */
+    /**
+     * @return name of the topic as it is in Kafka.
+     */
     String name();
 
     /**
@@ -56,10 +58,14 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
         return DEFAULT_CLUSTER_NAME;
     }
 
-    /** @return metadata about the topic's key: */
+    /**
+     * @return metadata about the topic's key:
+     */
     PartDescriptor<K> key();
 
-    /** @return metadata about the topic's value: */
+    /**
+     * @return metadata about the topic's value:
+     */
     PartDescriptor<V> value();
 
     /** Descriptor for part of a topic's record. */

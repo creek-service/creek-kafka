@@ -32,7 +32,9 @@ public final class KafkaStreamsBuilder {
     private final KafkaClientsExtension clientsExtension;
     private final AppFactory appFactory;
 
-    /** @param clientsExtension the kafka client extension. */
+    /**
+     * @param clientsExtension the kafka client extension.
+     */
     public KafkaStreamsBuilder(final KafkaClientsExtension clientsExtension) {
         this(clientsExtension, KafkaStreams::new);
     }

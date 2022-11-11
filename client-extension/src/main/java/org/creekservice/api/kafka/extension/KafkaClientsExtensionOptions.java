@@ -48,7 +48,9 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     private final ClustersProperties.Builder properties;
     private final Optional<TopicClient> topicClient;
 
-    /** @return new builder instance. */
+    /**
+     * @return new builder instance.
+     */
     public static Builder builder() {
         return new Builder();
     }

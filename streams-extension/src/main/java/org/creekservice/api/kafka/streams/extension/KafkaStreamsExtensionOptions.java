@@ -67,7 +67,9 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     private final StateRestoreObserver restoreObserver;
     private final KafkaMetricsPublisherOptions metricsPublishing;
 
-    /** @return new builder. */
+    /**
+     * @return new builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -95,22 +97,30 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
         return clientOptions.topicClient();
     }
 
-    /** @return the timeout used when closing the stream app. */
+    /**
+     * @return the timeout used when closing the stream app.
+     */
     public Duration streamsCloseTimeout() {
         return streamsCloseTimeout;
     }
 
-    /** @return the observer that will be invoked as the stream app changes state. */
+    /**
+     * @return the observer that will be invoked as the stream app changes state.
+     */
     public LifecycleObserver lifecycleObserver() {
         return lifecycleObserver;
     }
 
-    /** @return the observer that will be invoked as the stream app restored its state. */
+    /**
+     * @return the observer that will be invoked as the stream app restored its state.
+     */
     public StateRestoreObserver restoreObserver() {
         return restoreObserver;
     }
 
-    /** @return metrics publishing options */
+    /**
+     * @return metrics publishing options
+     */
     public KafkaMetricsPublisherOptions metricsPublishing() {
         return metricsPublishing;
     }

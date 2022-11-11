@@ -51,7 +51,9 @@ public final class ClustersProperties {
         this.overrides = requireNonNull(overrides, "overrides");
     }
 
-    /** @return new properties builder. */
+    /**
+     * @return new properties builder.
+     */
     public static Builder propertiesBuilder() {
         return new Builder();
     }

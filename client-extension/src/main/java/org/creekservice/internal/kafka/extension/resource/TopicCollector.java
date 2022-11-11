@@ -118,7 +118,9 @@ public final class TopicCollector {
                                             Map.Entry::getKey, e -> List.copyOf(e.getValue())));
         }
 
-        /** @return the set of cluster names found in all collected topics. */
+        /**
+         * @return the set of cluster names found in all collected topics.
+         */
         public Set<String> clusters() {
             return topics.values().stream()
                     .map(list -> list.get(0))
@@ -126,7 +128,9 @@ public final class TopicCollector {
                     .collect(Collectors.toSet());
         }
 
-        /** @return stream of topic id to a list of all the topic's descriptors. */
+        /**
+         * @return stream of topic id to a list of all the topic's descriptors.
+         */
         public Stream<Map.Entry<URI, List<KafkaTopicDescriptor<?, ?>>>> stream() {
             return topics.entrySet().stream();
         }

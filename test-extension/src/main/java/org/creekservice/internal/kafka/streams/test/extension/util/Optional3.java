@@ -109,12 +109,16 @@ public final class Optional3<T> {
         return value;
     }
 
-    /** @return {@code true} if the instance has a value, null or otherwise. */
+    /**
+     * @return {@code true} if the instance has a value, null or otherwise.
+     */
     public boolean isProvided() {
         return hasValue;
     }
 
-    /** @return {@code true} if the instance has a non-null value. */
+    /**
+     * @return {@code true} if the instance has a non-null value.
+     */
     public boolean isPresent() {
         return isProvided() && value.isPresent();
     }

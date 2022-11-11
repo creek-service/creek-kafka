@@ -65,27 +65,37 @@ public final class TopicRecord {
         this.value = requireNonNull(value, "value");
     }
 
-    /** @return the location in the test files the record is persisted. */
+    /**
+     * @return the location in the test files the record is persisted.
+     */
     public URI location() {
         return location;
     }
 
-    /** @return the name of the Kafka topic. */
+    /**
+     * @return the name of the Kafka topic.
+     */
     public String topicName() {
         return topicName;
     }
 
-    /** @return the name of the Kafka cluster. */
+    /**
+     * @return the name of the Kafka cluster.
+     */
     public String clusterName() {
         return clusterName;
     }
 
-    /** @return the record key. */
+    /**
+     * @return the record key.
+     */
     public Optional3<Object> key() {
         return key;
     }
 
-    /** @return the record value. */
+    /**
+     * @return the record value.
+     */
     public Optional3<Object> value() {
         return value;
     }
