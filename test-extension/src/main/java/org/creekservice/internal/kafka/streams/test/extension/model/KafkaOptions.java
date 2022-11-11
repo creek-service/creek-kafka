@@ -73,7 +73,9 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
     private final Duration extraTimeout;
     private final String kafkaDockerImage;
 
-    /** @return default options. */
+    /**
+     * @return default options.
+     */
     public static KafkaOptions defaults() {
         return DEFAULTS;
     }
@@ -114,7 +116,9 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
         this.location = requireNonNull(location, "location");
     }
 
-    /** @return ordering requirements for records that share the same cluster, topic and key. */
+    /**
+     * @return ordering requirements for records that share the same cluster, topic and key.
+     */
     public OutputOrdering outputOrdering() {
         return outputOrdering;
     }
@@ -142,7 +146,9 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
         return extraTimeout;
     }
 
-    /** @return the docker image name to use for the Kafka server. */
+    /**
+     * @return the docker image name to use for the Kafka server.
+     */
     public String kafkaDockerImage() {
         return kafkaDockerImage;
     }

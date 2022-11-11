@@ -33,7 +33,9 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
 
     private final TopicClient topicClient;
 
-    /** @param topicClient the topic client to use. */
+    /**
+     * @param topicClient the topic client to use.
+     */
     public TopicResourceHandler(final TopicClient topicClient) {
         this.topicClient = requireNonNull(topicClient, "topicClient");
     }

@@ -61,7 +61,9 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
     private final TopicCollector topicCollector;
     private Optional<CollectedTopics> collectedTopics = Optional.empty();
 
-    /** @param api the system test api. */
+    /**
+     * @param api the system test api.
+     */
     public TopicValidatingListener(final CreekSystemTest api) {
         this(api, new TopicCollector());
     }

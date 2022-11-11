@@ -62,7 +62,9 @@ public final class Name {
     private final char delim;
     private final String prefix;
 
-    /** @return the name for the root of the topology */
+    /**
+     * @return the name for the root of the topology
+     */
     public static Name root() {
         return root(DEFAULT_DELIM);
     }

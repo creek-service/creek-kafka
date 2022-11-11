@@ -59,7 +59,9 @@ public final class TestKafkaStreamsExtensionOptions {
                 .withTopicClient(new MockTopicClient());
     }
 
-    /** @return options with base set of test config. */
+    /**
+     * @return options with base set of test config.
+     */
     public static KafkaStreamsExtensionOptions defaults() {
         return builder().build();
     }

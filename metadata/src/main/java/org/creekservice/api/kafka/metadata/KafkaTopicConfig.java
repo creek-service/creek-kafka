@@ -22,10 +22,14 @@ import java.util.Map;
 /** Type for defining a Kafka topic's config */
 public interface KafkaTopicConfig {
 
-    /** @return topics partition count. */
+    /**
+     * @return topics partition count.
+     */
     int partitions();
 
-    /** @return any specific configs. If not supplied, cluster/env defaults will be used. */
+    /**
+     * @return any specific configs. If not supplied, cluster/env defaults will be used.
+     */
     default Map<String, String> config() {
         return Map.of();
     }

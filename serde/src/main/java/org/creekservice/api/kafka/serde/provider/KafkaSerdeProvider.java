@@ -31,7 +31,9 @@ import org.creekservice.api.kafka.metadata.SerializationFormat;
  */
 public interface KafkaSerdeProvider {
 
-    /** @return the serialization format the serde provides. */
+    /**
+     * @return the serialization format the serde provides.
+     */
     SerializationFormat format();
 
     /**

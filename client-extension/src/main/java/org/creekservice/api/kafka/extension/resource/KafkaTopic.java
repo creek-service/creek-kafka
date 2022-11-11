@@ -28,16 +28,24 @@ import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
  */
 public interface KafkaTopic<K, V> {
 
-    /** @return the name of the topic */
+    /**
+     * @return the name of the topic
+     */
     String name();
 
-    /** @return the value type */
+    /**
+     * @return the value type
+     */
     KafkaTopicDescriptor<K, V> descriptor();
 
-    /** @return the serde used to (de)serialize the keys stored in the topic */
+    /**
+     * @return the serde used to (de)serialize the keys stored in the topic
+     */
     Serde<K> keySerde();
 
-    /** @return the serde used to (de)serialize the values stored in the topic */
+    /**
+     * @return the serde used to (de)serialize the values stored in the topic
+     */
     Serde<V> valueSerde();
 
     /**

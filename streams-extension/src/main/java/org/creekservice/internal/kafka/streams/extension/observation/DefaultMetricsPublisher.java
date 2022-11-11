@@ -45,7 +45,9 @@ public final class DefaultMetricsPublisher implements MetricsPublisher {
     private final StructuredLogger logger;
     private final ScheduledExecutorService scheduler;
 
-    /** @param options publisher options. */
+    /**
+     * @param options publisher options.
+     */
     public DefaultMetricsPublisher(final KafkaMetricsPublisherOptions options) {
         this(
                 options,

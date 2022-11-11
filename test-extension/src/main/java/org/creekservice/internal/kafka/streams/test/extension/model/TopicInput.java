@@ -57,7 +57,9 @@ public final class TopicInput implements Input {
         }
     }
 
-    /** @return records to produce. */
+    /**
+     * @return records to produce.
+     */
     public List<TopicRecord> records() {
         return List.copyOf(records);
     }

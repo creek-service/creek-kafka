@@ -23,6 +23,8 @@ package org.creekservice.api.kafka.metadata;
  * @param <V> value type
  */
 public interface CreatableKafkaTopic<K, V> extends KafkaTopicDescriptor<K, V> {
-    /** @return the topic's config */
+    /**
+     * @return the topic's config
+     */
     KafkaTopicConfig config();
 }

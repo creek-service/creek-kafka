@@ -48,7 +48,9 @@ public final class KafkaTopicClient implements TopicClient {
     private final ClustersProperties clusterProps;
     private final Function<Map<String, Object>, Admin> adminFactory;
 
-    /** @param clusterProps props */
+    /**
+     * @param clusterProps props
+     */
     public KafkaTopicClient(final ClustersProperties clusterProps) {
         this(
                 clusterProps,

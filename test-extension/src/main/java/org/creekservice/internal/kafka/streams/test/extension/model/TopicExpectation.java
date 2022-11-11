@@ -57,7 +57,9 @@ public final class TopicExpectation implements Expectation {
         }
     }
 
-    /** @return the expected records. */
+    /**
+     * @return the expected records.
+     */
     public List<TopicRecord> records() {
         return List.copyOf(records);
     }
