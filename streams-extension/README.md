@@ -43,7 +43,8 @@ variables. By default, any environment variable prefixed with `KAFKA_` will be p
 
 It is common to pass `bootstrap.servers` and authentication information to the service in this way, so that different
 values can be passed in different environments. For example, `bootstrap.servers` cam be passed by setting a
-`KAFKA_BOOTSTRAP_SERVERS` environment variable.
+`KAFKA_BOOTSTRAP_SERVERS` environment variable. This is how the [system tests][systemTest] pass the Kafka bootstrap
+to your service.
 
 See [`SystemEnvPropertyOverrides`][2] for more info, including multi-cluster support.
 
@@ -86,3 +87,5 @@ public final class TopologyBuilder {
 
 [1]: src/main/java/org/creekservice/api/kafka/streams/extension/KafkaStreamsExtensionOptions.java
 [2]: ../common/src/main/java/org/creekservice/api/kafka/common/config/SystemEnvPropertyOverrides.java
+[systemTest]: https://github.com/creek-service/creek-system-test
+[todo]: update links above once doccs migrated to creekservice.org
