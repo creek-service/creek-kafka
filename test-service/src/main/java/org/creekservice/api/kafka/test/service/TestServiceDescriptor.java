@@ -45,7 +45,7 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
 
     @Override
     public String dockerImage() {
-        return "ghcr.io/creekservice/creek-kafka-test-service";
+        return "ghcr.io/creek-service/creek-kafka-test-service";
     }
 
     @Override
