@@ -19,6 +19,7 @@ package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 import static java.lang.System.lineSeparator;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +35,8 @@ final class KafkaContainerDef implements ServiceDefinition {
     private static final int ZOOKEEPER_PORT = 2181;
     private static final String DEFAULT_INTERNAL_PARTITION_COUNT = "1";
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
+    private static final Duration STARTUP_TIMEOUT = Duration.ofSeconds(90);
+    private static final Duration SHUTDOWN_TIMEOUT = Duration.ofSeconds(1);
 
     private final String name;
     private final String kafkaDockerImage;
@@ -61,6 +64,8 @@ final class KafkaContainerDef implements ServiceDefinition {
         commandLines.addAll(setUpKafka(instance));
 
         instance.setCommand("sh", "-c", String.join(lineSeparator(), commandLines));
+        instance.setStartupTimeout(STARTUP_TIMEOUT);
+        instance.setShutdownTimeout(SHUTDOWN_TIMEOUT);
     }
 
     @Override
