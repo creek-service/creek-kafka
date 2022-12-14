@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
+import java.time.Duration;
 import java.util.List;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance.ExecResult;
@@ -194,6 +195,24 @@ class KafkaContainerDefTest {
 
         // Then:
         verify(instance).addExposedPorts(9093);
+    }
+
+    @Test
+    void shouldSetLongerStartUpTimeoutAsKafkaCanTakeAWhile() {
+        // When:
+        def.configureInstance(instance);
+
+        // Then:
+        verify(instance).setStartupTimeout(Duration.ofSeconds(90));
+    }
+
+    @Test
+    void shouldConfigureQuickShutdownTimeoutToKeepTestsSpeedy() {
+        // When:
+        def.configureInstance(instance);
+
+        // Then:
+        verify(instance).setShutdownTimeout(Duration.ofSeconds(1));
     }
 
     @Test
