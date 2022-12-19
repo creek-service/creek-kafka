@@ -27,7 +27,7 @@ jobs:
           - kafka_version: 3.3.1
             publish: true
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
       - uses: gradle/wrapper-validation-action@v1
       - name: Fetch version history
         # Do NOT want to fetch all tags if building a specific tag.
@@ -75,7 +75,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
       - name: Create GitHut Release
         uses: softprops/action-gh-release@v1
         with:
