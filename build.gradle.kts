@@ -37,7 +37,7 @@ subprojects {
         set("mockitoVersion", "4.8.1")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         set("kafkaVersion", System.getenv("CREEK_KAFKA_VERSION") ?: "3.3.0") // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-        set("testContainersVersion", "1.17.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "1.17.6")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val creekVersion : String by extra
