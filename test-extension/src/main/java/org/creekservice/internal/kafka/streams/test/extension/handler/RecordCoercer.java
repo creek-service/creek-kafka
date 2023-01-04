@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
-
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;

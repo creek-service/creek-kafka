@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.serde.provider;
 
-
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.UUID;

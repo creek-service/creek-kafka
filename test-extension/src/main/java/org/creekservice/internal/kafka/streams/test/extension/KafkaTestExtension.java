@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension;
 
-
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;

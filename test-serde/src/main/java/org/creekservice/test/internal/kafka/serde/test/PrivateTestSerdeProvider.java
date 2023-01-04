@@ -16,7 +16,6 @@
 
 package org.creekservice.test.internal.kafka.serde.test;
 
-
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;

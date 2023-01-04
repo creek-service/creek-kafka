@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.extension.client;
 
-
 import java.util.List;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 

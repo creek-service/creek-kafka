@@ -1,4 +1,3 @@
-
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 

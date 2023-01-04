@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.metadata;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;

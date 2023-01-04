@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.metadata;
 
-
 import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.UnownedResource;
 

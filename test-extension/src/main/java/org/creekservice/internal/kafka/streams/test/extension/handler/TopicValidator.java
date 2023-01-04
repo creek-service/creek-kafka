@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
-
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 
 /** Validates operations on Kafka topics. */

@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.extension.config;
 
-
 import java.util.Optional;
 
 /**

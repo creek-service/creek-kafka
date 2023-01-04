@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.extension;
 
-
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Properties;

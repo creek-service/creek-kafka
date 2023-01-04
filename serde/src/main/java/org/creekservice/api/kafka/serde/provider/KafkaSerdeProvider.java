@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
-
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;

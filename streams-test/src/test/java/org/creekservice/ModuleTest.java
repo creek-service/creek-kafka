@@ -16,7 +16,6 @@
 
 package org.creekservice;
 
-
 import org.creekservice.api.kafka.streams.test.TestTopics;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.test.conformity.ConformityTester;

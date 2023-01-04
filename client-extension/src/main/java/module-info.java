@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 

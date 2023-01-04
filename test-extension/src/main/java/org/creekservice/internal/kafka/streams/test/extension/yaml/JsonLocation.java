@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.yaml;
 
-
 import com.fasterxml.jackson.core.JsonParser;
 import java.io.File;
 import java.net.URI;

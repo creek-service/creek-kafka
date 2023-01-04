@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.metadata;
 
-
 import java.util.Map;
 
 /** Type for defining a Kafka topic's config */

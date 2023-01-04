@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.extension;
 
-
 import java.util.Optional;
 import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
