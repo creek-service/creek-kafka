@@ -1,4 +1,3 @@
-
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
 module creek.kafka.test.service {

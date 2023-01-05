@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.extension;
 
-
 import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.streams.KafkaStreams;
 

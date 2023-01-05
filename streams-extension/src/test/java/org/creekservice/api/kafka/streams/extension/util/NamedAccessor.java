@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.streams.extension.util;
 
-
 import org.apache.kafka.streams.kstream.Named;
 
 /**

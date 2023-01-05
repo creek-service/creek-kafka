@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.extension.observation;
 
-
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;

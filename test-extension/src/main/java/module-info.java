@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
 

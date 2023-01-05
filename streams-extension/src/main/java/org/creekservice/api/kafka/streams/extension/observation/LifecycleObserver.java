@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.streams.extension.observation;
 
-
 import java.time.Duration;
 
 /** Observer called as the Kafka Streams app transitions through different states. */

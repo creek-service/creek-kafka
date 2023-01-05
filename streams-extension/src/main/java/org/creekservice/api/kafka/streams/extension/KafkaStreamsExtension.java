@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.streams.extension;
 
-
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;

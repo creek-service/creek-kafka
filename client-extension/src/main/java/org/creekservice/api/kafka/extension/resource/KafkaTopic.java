@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.extension.resource;
 
-
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 

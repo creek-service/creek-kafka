@@ -16,7 +16,6 @@
 
 package org.creekservice;
 
-
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionProvider;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers.LogAndFailProductionExceptionHandler;
 import org.creekservice.api.test.conformity.ConformityTester;

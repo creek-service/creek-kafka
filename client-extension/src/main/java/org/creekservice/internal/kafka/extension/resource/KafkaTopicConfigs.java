@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
-
 import java.util.Objects;
 import java.util.StringJoiner;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;

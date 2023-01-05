@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.test.service;
 
-
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.test.service.TestServiceDescriptor;
 import org.creekservice.api.service.context.CreekServices;

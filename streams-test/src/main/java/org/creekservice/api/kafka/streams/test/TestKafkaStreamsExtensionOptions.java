@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.streams.test;
 
-
 import java.util.List;
 import org.apache.kafka.streams.StreamsConfig;
 import org.creekservice.api.kafka.extension.client.TopicClient;

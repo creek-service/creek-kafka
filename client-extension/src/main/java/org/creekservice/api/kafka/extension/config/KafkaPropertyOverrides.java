@@ -16,7 +16,6 @@
 
 package org.creekservice.api.kafka.extension.config;
 
-
 import java.util.Map;
 import java.util.Set;
 

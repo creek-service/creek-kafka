@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
 

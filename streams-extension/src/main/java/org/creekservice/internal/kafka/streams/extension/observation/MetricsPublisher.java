@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.extension.observation;
 
-
 import java.util.Map;
 import java.util.function.Supplier;
 import org.apache.kafka.common.Metric;
