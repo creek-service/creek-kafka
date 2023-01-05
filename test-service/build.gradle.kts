@@ -19,7 +19,7 @@ import java.nio.file.Paths
 
 plugins {
     application
-    id("com.bmuschko.docker-remote-api") version "9.1.0"
+    id("com.bmuschko.docker-remote-api") version "9.0.1"
 }
 
 val creekVersion : String by extra
