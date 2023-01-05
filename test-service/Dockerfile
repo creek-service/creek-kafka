@@ -1,4 +1,4 @@
-FROM amazoncorretto:19
+FROM amazoncorretto:11
 ARG APP_NAME
 ARG APP_VERSION
 ENV VERSION=$APP_VERSION
