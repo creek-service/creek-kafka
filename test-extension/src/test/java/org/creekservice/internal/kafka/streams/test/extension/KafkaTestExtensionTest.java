@@ -16,7 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.test.extension;
 
-import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
+import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.tester;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
+import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
@@ -50,6 +51,8 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaTestExtensionTest {
+
+    private static final CreekSystemTestExtensionTester EXT_TESTER = tester().build();
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
@@ -72,8 +75,7 @@ class KafkaTestExtensionTest {
     @Test
     void shouldExposeExtension() {
         assertThat(
-                extensionTester().accessibleExtensions(),
-                hasItem(instanceOf(KafkaTestExtension.class)));
+                EXT_TESTER.accessibleExtensions(), hasItem(instanceOf(KafkaTestExtension.class)));
     }
 
     @Test
