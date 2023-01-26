@@ -30,7 +30,7 @@ final class ModelUtil {
 
     static ModelParser createParser() {
         final CreekSystemTestExtensionTester.YamlParserBuilder builder =
-                CreekSystemTestExtensionTester.extensionTester().yamlParser();
+                CreekSystemTestExtensionTester.yamlParser();
         KafkaTestExtension.initializeModel(
                 builder.model(),
                 mock(TopicInputHandler.class),

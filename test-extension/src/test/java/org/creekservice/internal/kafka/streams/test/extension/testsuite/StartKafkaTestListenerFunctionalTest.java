@@ -20,7 +20,7 @@ import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CON
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
 import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.OutputTopic;
-import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.extensionTester;
+import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.tester;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -85,10 +85,11 @@ import org.testcontainers.DockerClientFactory;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StartKafkaTestListenerFunctionalTest {
 
-    private static final CreekSystemTestExtensionTester EXT_TESTER = extensionTester()
-            // Uncomment the line below to debug the test service using attach me plugin:
-            // .withDebugServices("test-service")
-            ;
+    private static final CreekSystemTestExtensionTester EXT_TESTER =
+            tester()
+                    // Uncomment the line below to debug the test service using attach me plugin:
+                    // .withDebugServices("test-service")
+                    .build();
 
     private static StartKafkaTestListener listener;
     private static ConfigurableServiceInstance testService;
