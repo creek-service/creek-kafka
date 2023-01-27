@@ -50,12 +50,15 @@ subprojects {
     val creekVersion : String by extra
     val guavaVersion : String by extra
     val log4jVersion : String by extra
+    val jacksonVersion : String by extra
     val junitVersion: String by extra
     val junitPioneerVersion: String by extra
     val mockitoVersion: String by extra
     val hamcrestVersion : String by extra
 
     dependencies {
+        implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
+
         testImplementation("org.creekservice:creek-test-util:$creekVersion")
         testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")
         testImplementation("org.creekservice:creek-test-conformity:$creekVersion")
