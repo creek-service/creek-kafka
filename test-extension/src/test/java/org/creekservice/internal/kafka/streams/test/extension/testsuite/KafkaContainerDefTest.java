@@ -59,7 +59,7 @@ class KafkaContainerDefTest {
     private static final String TEST_NWK_BOOTSTRAP = "TEST_NETWORK://" + TEST_NWK_NAME + ":123456";
 
     @Mock private ConfigurableServiceInstance instance;
-    @Captor private ArgumentCaptor<String> cmdCaptor;
+    @Captor private ArgumentCaptor<String[]> cmdCaptor;
 
     private KafkaContainerDef def;
 
@@ -218,7 +218,7 @@ class KafkaContainerDefTest {
     @Test
     void shouldTweakKafkaListenersOnceStarted() {
         // Given:
-        when(instance.execOnInstance(any())).thenReturn(execResult(0, "", ""));
+        when(instance.execOnInstance(any(String[].class))).thenReturn(execResult(0, "", ""));
 
         // When:
         def.instanceStarted(instance);
@@ -246,7 +246,7 @@ class KafkaContainerDefTest {
     void shouldThrowIfTweakFailed() {
         // Given:
         final ExecResult execResult = execResult(1, "normal output", "error output");
-        when(instance.execOnInstance(any())).thenReturn(execResult);
+        when(instance.execOnInstance(any(String[].class))).thenReturn(execResult);
 
         // When:
         final Exception e =
@@ -262,8 +262,10 @@ class KafkaContainerDefTest {
 
     private List<String> cmdLine() {
         verify(instance).setCommand(cmdCaptor.capture());
-        final List<String> cmd = cmdCaptor.getAllValues();
-        assertThat(cmd, hasSize(3));
-        return cmd;
+        final List<String[]> cmd = cmdCaptor.getAllValues();
+        assertThat(cmd, hasSize(1));
+        final List<String> args = List.of(cmd.get(0));
+        assertThat(args, hasSize(3));
+        return args;
     }
 }
