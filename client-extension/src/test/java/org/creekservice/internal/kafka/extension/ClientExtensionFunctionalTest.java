@@ -24,7 +24,6 @@ import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.Inpu
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -61,7 +60,7 @@ class ClientExtensionFunctionalTest {
 
     @Container
     private static final KafkaContainer KAFKA_CLUSTER =
-            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.2"))
+            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
@@ -91,7 +90,7 @@ class ClientExtensionFunctionalTest {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         extension.close();
     }
 
