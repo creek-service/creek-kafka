@@ -144,16 +144,16 @@ class KafkaTestExtensionFunctionalTest {
         assertThat(
                 errorMessage(result, 3),
                 containsString(
-                        "Test run failed for test case: bad input value, cause: "
-                                + "The record's value is not compatible with the topic's value type. "
-                                + "value: not a number, value_type: java.lang.String, "
-                                + "topic_value_type: java.lang.Long, topic: input"));
+                        "Test run failed for test case: bad input value, cause: The record's value"
+                            + " is not compatible with the topic's value type. value: not a number,"
+                            + " value_type: java.lang.String, topic_value_type: java.lang.Long,"
+                            + " topic: input"));
 
         assertThat(
                 errorMessage(result, 4),
                 containsString(
-                        "Test run failed for test case: bad output key, cause: "
-                                + "Failed to deserialize record key. topic: output, partition: 0, offset: 0"));
+                        "Test run failed for test case: bad output key, cause: Failed to"
+                            + " deserialize record key. topic: output, partition: 0, offset: 0"));
 
         assertThat(
                 errorMessage(result, 5),

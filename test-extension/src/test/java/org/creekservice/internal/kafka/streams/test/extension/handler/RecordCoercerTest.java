@@ -162,8 +162,9 @@ class RecordCoercerTest {
         assertThat(
                 e.getCause().getMessage(),
                 is(
-                        "The record's key is not compatible with the topic's key type. "
-                                + "key: incompatible, key_type: java.lang.String, topic_key_type: java.lang.Long"));
+                        "The record's key is not compatible with the topic's key type. key:"
+                                + " incompatible, key_type: java.lang.String, topic_key_type:"
+                                + " java.lang.Long"));
     }
 
     @Test
@@ -192,7 +193,8 @@ class RecordCoercerTest {
         assertThat(
                 e.getCause().getMessage(),
                 is(
-                        "The record's value is not compatible with the topic's value type. "
-                                + "value: incompatible, value_type: java.lang.String, topic_value_type: java.math.BigDecimal"));
+                        "The record's value is not compatible with the topic's value type. value:"
+                                + " incompatible, value_type: java.lang.String, topic_value_type:"
+                                + " java.math.BigDecimal"));
     }
 }

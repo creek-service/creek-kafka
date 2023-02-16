@@ -161,7 +161,8 @@ class KafkaResourceValidatorTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Invalid topic descriptor: cluster() is invalid: illegal character '!'. Only alpha-numerics and '-' are supported."));
+                        "Invalid topic descriptor: cluster() is invalid: illegal character '!'."
+                                + " Only alpha-numerics and '-' are supported."));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
     }
 
@@ -319,7 +320,8 @@ class KafkaResourceValidatorTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Resource descriptors for the same resource disagree on the details. descriptors: ["));
+                        "Resource descriptors for the same resource disagree on the details."
+                                + " descriptors: ["));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic2)));
     }
@@ -352,7 +354,8 @@ class KafkaResourceValidatorTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Resource descriptors for the same resource disagree on the details. descriptors: ["));
+                        "Resource descriptors for the same resource disagree on the details."
+                                + " descriptors: ["));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
         assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic2)));
     }

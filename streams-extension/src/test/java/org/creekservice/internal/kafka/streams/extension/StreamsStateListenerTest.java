@@ -99,7 +99,8 @@ class StreamsStateListenerTest {
         assertThat(
                 e.getCause().getMessage(),
                 is(
-                        "The Kafka Streams app entered the ERROR state. See Kafka Streams logs for more info."));
+                        "The Kafka Streams app entered the ERROR state. See Kafka Streams logs for"
+                                + " more info."));
     }
 
     @Test

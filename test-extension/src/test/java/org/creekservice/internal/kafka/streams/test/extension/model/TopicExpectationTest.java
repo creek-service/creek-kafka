@@ -146,10 +146,10 @@ class TopicExpectationTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Cannot construct instance of "
-                                + "`org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`, "
-                                + "problem: Topic not set. Topic must be supplied either at the file or record level. "
-                                + "location: unknown"
+                        "Cannot construct instance of"
+                            + " `org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`,"
+                            + " problem: Topic not set. Topic must be supplied either at the file"
+                            + " or record level. location: unknown"
                                 + lineSeparator()
                                 + " at [Source: (StringReader); line: 8, column: 13]"));
     }
@@ -252,9 +252,9 @@ class TopicExpectationTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Cannot construct instance of "
-                                + "`org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`, "
-                                + "problem: At least one record is required"
+                        "Cannot construct instance of"
+                            + " `org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`,"
+                            + " problem: At least one record is required"
                                 + lineSeparator()
                                 + " at [Source: (StringReader); line: 4, column: 12]"));
     }

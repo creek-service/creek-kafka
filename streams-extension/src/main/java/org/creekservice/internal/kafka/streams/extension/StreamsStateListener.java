@@ -58,7 +58,8 @@ final class StreamsStateListener implements KafkaStreams.StateListener {
     private static class StreamsAppFailedException extends RuntimeException {
         StreamsAppFailedException() {
             super(
-                    "The Kafka Streams app entered the ERROR state. See Kafka Streams logs for more info.");
+                    "The Kafka Streams app entered the ERROR state. See Kafka Streams logs for more"
+                            + " info.");
         }
     }
 }

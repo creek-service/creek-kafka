@@ -75,7 +75,11 @@ class MismatchDescriptionTest {
                                 Optional.of("line0\r\nline1"))
                         .toString(),
                 is(
-                        "Mismatch@path@char13, expected: String(line0\\nline1\\n), actual: String(line0\\r\\nline1)"));
+                        "Mismatch@path@char13, expected: String(line0\\n"
+                                + "line1\\n"
+                                + "), actual: String(line0\\r"
+                                + "\\n"
+                                + "line1)"));
     }
 
     @Test

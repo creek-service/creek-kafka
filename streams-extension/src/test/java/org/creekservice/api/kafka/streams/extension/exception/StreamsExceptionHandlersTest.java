@@ -60,8 +60,9 @@ class StreamsExceptionHandlersTest {
         assertThat(
                 logger.textEntries(),
                 contains(
-                        "ERROR: {key=[107, 101, 121], message=Failed to produce to topic, partition=22, topic=some-topic} "
-                                + "java.lang.IllegalArgumentException: BOOM"));
+                        "ERROR: {key=[107, 101, 121], message=Failed to produce to topic,"
+                            + " partition=22, topic=some-topic} java.lang.IllegalArgumentException:"
+                            + " BOOM"));
     }
 
     @Test

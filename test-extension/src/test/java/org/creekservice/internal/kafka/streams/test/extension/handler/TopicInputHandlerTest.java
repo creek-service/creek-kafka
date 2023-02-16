@@ -370,8 +370,8 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "The record's cluster or topic is not known. "
-                                + "cluster: cluster-a, topic: topic-a, location: record0:///location"));
+                        "The record's cluster or topic is not known. cluster: cluster-a, topic:"
+                                + " topic-a, location: record0:///location"));
         assertThat(e.getCause(), is(cause));
     }
 
@@ -389,9 +389,9 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "The record's key is not compatible with the topic's key type. "
-                                + "key: 123, key_type: java.lang.Long, topic_key_type: java.lang.Integer, "
-                                + "topic: topic-b, location: record1:///location"));
+                        "The record's key is not compatible with the topic's key type. key: 123,"
+                            + " key_type: java.lang.Long, topic_key_type: java.lang.Integer, topic:"
+                            + " topic-b, location: record1:///location"));
         assertThat(e.getCause(), is(cause));
     }
 
@@ -409,9 +409,9 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "The record's value is not compatible with the topic's value type. "
-                                + "value: 0, value_type: java.lang.Integer, topic_value_type: java.lang.String, "
-                                + "topic: topic-a, location: record0:///location"));
+                        "The record's value is not compatible with the topic's value type. value:"
+                            + " 0, value_type: java.lang.Integer, topic_value_type:"
+                            + " java.lang.String, topic: topic-a, location: record0:///location"));
         assertThat(e.getCause(), is(cause));
     }
 
@@ -446,7 +446,8 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Failed to serialize the record's value: coerced-1, location: record1:///location"));
+                        "Failed to serialize the record's value: coerced-1, location:"
+                                + " record1:///location"));
         assertThat(e.getCause(), is(cause));
     }
 

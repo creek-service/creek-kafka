@@ -118,7 +118,8 @@ class ResourceRegistryTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "The supplied topic descriptor does not match the topic descriptor found when inspecting components."));
+                        "The supplied topic descriptor does not match the topic descriptor found"
+                                + " when inspecting components."));
         assertThat(
                 e.getMessage(), containsString("supplied=" + KafkaTopicDescriptors.asString(def)));
         assertThat(
@@ -139,7 +140,8 @@ class ResourceRegistryTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Unknown topic. No topic has the supplied id. id=kafka-topic://unknown/topic-A"));
+                        "Unknown topic. No topic has the supplied id."
+                                + " id=kafka-topic://unknown/topic-A"));
     }
 
     private <K, V> void setUpTopicDef(

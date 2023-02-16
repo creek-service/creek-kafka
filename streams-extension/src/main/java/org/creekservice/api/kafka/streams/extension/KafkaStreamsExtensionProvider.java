@@ -68,7 +68,8 @@ public final class KafkaStreamsExtensionProvider
     private KafkaStreamsExtensionOptions options(final CreekService api) {
         if (api.options().get(KafkaClientsExtensionOptions.class).isPresent()) {
             throw new IllegalArgumentException(
-                    "KafkaClientsExtensionOptions detected: use KafkaStreamsExtensionOptions for streams based apps");
+                    "KafkaClientsExtensionOptions detected: use KafkaStreamsExtensionOptions for"
+                            + " streams based apps");
         }
 
         return api.options()

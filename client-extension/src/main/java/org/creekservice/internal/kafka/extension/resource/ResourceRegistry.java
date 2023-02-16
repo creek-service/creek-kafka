@@ -80,8 +80,8 @@ public final class ResourceRegistry {
         TopicDescriptorMismatchException(
                 final KafkaTopicDescriptor<?, ?> supplied, final KafkaTopicDescriptor<?, ?> found) {
             super(
-                    "The supplied topic descriptor does not match the topic descriptor found when inspecting components."
-                            + " supplied="
+                    "The supplied topic descriptor does not match the topic descriptor found when"
+                            + " inspecting components. supplied="
                             + KafkaTopicDescriptors.asString(supplied)
                             + " actual="
                             + KafkaTopicDescriptors.asString(found));
