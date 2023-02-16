@@ -137,7 +137,8 @@ class DefaultMetricsPublisherTest {
         assertThat(
                 logger.textEntries(),
                 contains(
-                        "ERROR: {message=Logging of Kafka metrics failed} java.lang.RuntimeException: Boom"));
+                        "ERROR: {message=Logging of Kafka metrics failed}"
+                                + " java.lang.RuntimeException: Boom"));
     }
 
     @Test

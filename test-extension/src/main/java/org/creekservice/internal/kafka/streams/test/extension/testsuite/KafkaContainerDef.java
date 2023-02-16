@@ -179,7 +179,8 @@ final class KafkaContainerDef implements ServiceDefinition {
     private static final class FailedToConfigureKafkaException extends RuntimeException {
         FailedToConfigureKafkaException(final ExecResult result) {
             super(
-                    "Failed to configure Kafka's advertised listeners. 'kafka-configs''s exec result: "
+                    "Failed to configure Kafka's advertised listeners. 'kafka-configs''s exec"
+                            + " result: "
                             + result);
         }
     }

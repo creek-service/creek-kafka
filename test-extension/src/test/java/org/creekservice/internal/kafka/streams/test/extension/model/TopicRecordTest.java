@@ -354,7 +354,8 @@ class TopicRecordTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Topic not set. Topic must be supplied either at the file or record level. location: "
+                        "Topic not set. Topic must be supplied either at the file or record level."
+                                + " location: "
                                 + LOCATION));
     }
 

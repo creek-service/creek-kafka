@@ -202,7 +202,8 @@ class RecordMatcherTest {
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@key@char0, expected: <empty>, actual: String(not null)")))));
+                                                "Mismatch@key@char0, expected: <empty>, actual:"
+                                                        + " String(not null)")))));
         assertThat(result.extras(), is(actual));
     }
 
@@ -266,7 +267,8 @@ class RecordMatcherTest {
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@value@char0, expected: <empty>, actual: String(not null)")))));
+                                                "Mismatch@value@char0, expected: <empty>, actual:"
+                                                        + " String(not null)")))));
         assertThat(result.extras(), is(actual));
     }
 
@@ -335,31 +337,39 @@ class RecordMatcherTest {
                                 contains(
                                         mismatched(
                                                 actual.get(1),
-                                                "Mismatch@value@char7, expected: String(a), actual: String(b)"),
+                                                "Mismatch@value@char7, expected: String(a), actual:"
+                                                        + " String(b)"),
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@key@char8, expected: Integer(1), actual: Integer(2)"),
+                                                "Mismatch@key@char8, expected: Integer(1), actual:"
+                                                        + " Integer(2)"),
                                         mismatched(
                                                 actual.get(2),
-                                                "Mismatch@key@char0, expected: Integer(1), actual: String(c)"),
+                                                "Mismatch@key@char0, expected: Integer(1), actual:"
+                                                        + " String(c)"),
                                         mismatched(
                                                 actual.get(3),
-                                                "Mismatch@key@char8, expected: Integer(1), actual: Integer(2)"))),
+                                                "Mismatch@key@char8, expected: Integer(1), actual:"
+                                                        + " Integer(2)"))),
                         unmatched(
                                 expected.get(1),
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@value@char7, expected: String(b), actual: String(a)"),
+                                                "Mismatch@value@char7, expected: String(b), actual:"
+                                                        + " String(a)"),
                                         mismatched(
                                                 actual.get(3),
-                                                "Mismatch@value@char7, expected: String(b), actual: String(c)"),
+                                                "Mismatch@value@char7, expected: String(b), actual:"
+                                                        + " String(c)"),
                                         mismatched(
                                                 actual.get(1),
-                                                "Mismatch@key@char8, expected: Integer(2), actual: Integer(1)"),
+                                                "Mismatch@key@char8, expected: Integer(2), actual:"
+                                                        + " Integer(1)"),
                                         mismatched(
                                                 actual.get(2),
-                                                "Mismatch@key@char0, expected: Integer(2), actual: String(c)")))));
+                                                "Mismatch@key@char0, expected: Integer(2), actual:"
+                                                        + " String(c)")))));
         assertThat(result.extras(), is(actual));
     }
 
@@ -390,25 +400,29 @@ class RecordMatcherTest {
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@key@char8, expected: Integer(1), actual: Integer(2)"))),
+                                                "Mismatch@key@char8, expected: Integer(1), actual:"
+                                                        + " Integer(2)"))),
                         unmatched(
                                 expected.get(1),
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@value@char0, expected: <empty>, actual: String(c)"))),
+                                                "Mismatch@value@char0, expected: <empty>, actual:"
+                                                        + " String(c)"))),
                         unmatched(
                                 expected.get(2),
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@value@char7, expected: String(a), actual: String(c)"))),
+                                                "Mismatch@value@char7, expected: String(a), actual:"
+                                                        + " String(c)"))),
                         unmatched(
                                 expected.get(3),
                                 contains(
                                         mismatched(
                                                 actual.get(0),
-                                                "Mismatch@key@char0, expected: <empty>, actual: Integer(2)")))));
+                                                "Mismatch@key@char0, expected: <empty>, actual:"
+                                                        + " Integer(2)")))));
         assertThat(result.extras(), is(actual));
     }
 

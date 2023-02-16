@@ -131,7 +131,8 @@ final class RecordMatcher {
                                                 recordMismatchDescription(expected, actual)
                                                         .map(MismatchDescription::toString)
                                                         .orElse(
-                                                                "Records match, but the order is wrong")))
+                                                                "Records match, but the order is"
+                                                                        + " wrong")))
                         .collect(toList());
 
         return new Unmatched(expected, mismatched);

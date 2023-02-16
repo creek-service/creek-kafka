@@ -63,7 +63,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {lifecycle=creek.lifecycle.service.starting, message=Kafka streams app state change}"));
+                        "INFO: {lifecycle=creek.lifecycle.service.starting, message=Kafka streams"
+                                + " app state change}"));
     }
 
     @Test
@@ -75,7 +76,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {lifecycle=creek.lifecycle.service.rebalancing, message=Kafka streams app state change}"));
+                        "INFO: {lifecycle=creek.lifecycle.service.rebalancing, message=Kafka"
+                                + " streams app state change}"));
     }
 
     @Test
@@ -87,7 +89,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {lifecycle=creek.lifecycle.service.running, message=Kafka streams app state change}"));
+                        "INFO: {lifecycle=creek.lifecycle.service.running, message=Kafka streams"
+                                + " app state change}"));
     }
 
     @Test
@@ -99,7 +102,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {lifecycle=creek.lifecycle.service.started, message=Kafka streams app state change}"));
+                        "INFO: {lifecycle=creek.lifecycle.service.started, message=Kafka streams"
+                                + " app state change}"));
     }
 
     @Test
@@ -122,7 +126,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "INFO: {exitCode=OK(0), lifecycle=creek.lifecycle.service.stopping, message=Kafka streams app state change}"));
+                        "INFO: {exitCode=OK(0), lifecycle=creek.lifecycle.service.stopping,"
+                                + " message=Kafka streams app state change}"));
     }
 
     @Test
@@ -134,9 +139,9 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "WARN: {closeTimeout=PT12H, "
-                                + "message=Failed to stop the Kafka Streams app within the configured timeout, "
-                                + "i.e. streams.close() returned false}"));
+                        "WARN: {closeTimeout=PT12H, message=Failed to stop the Kafka Streams app"
+                                + " within the configured timeout, i.e. streams.close() returned"
+                                + " false}"));
     }
 
     @Test
@@ -148,7 +153,8 @@ class DefaultLifecycleObserverTest {
         assertThat(
                 testLogger.textEntries(),
                 contains(
-                        "ERROR: {message=Failed to stop the Kafka Streams app as streams.close() threw an exception} boom"));
+                        "ERROR: {message=Failed to stop the Kafka Streams app as streams.close()"
+                                + " threw an exception} boom"));
     }
 
     @Test

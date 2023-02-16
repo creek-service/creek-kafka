@@ -59,6 +59,7 @@ class KafkaSerdeProvidersTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Unknown serialization format. Are you missing a runtime serde jar? format=unknown"));
+                        "Unknown serialization format. Are you missing a runtime serde jar?"
+                                + " format=unknown"));
     }
 }

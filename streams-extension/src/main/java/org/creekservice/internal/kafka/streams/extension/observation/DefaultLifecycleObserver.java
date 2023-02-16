@@ -80,7 +80,8 @@ public final class DefaultLifecycleObserver implements LifecycleObserver {
     @Override
     public void stopTimedOut(final Duration closeTimeout) {
         logger.warn(
-                "Failed to stop the Kafka Streams app within the configured timeout, i.e. streams.close() returned false",
+                "Failed to stop the Kafka Streams app within the configured timeout, i.e."
+                        + " streams.close() returned false",
                 log -> log.with(Metric.closeTimeout, closeTimeout));
     }
 
