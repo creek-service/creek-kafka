@@ -135,7 +135,8 @@ public final class TopicRecord {
     public static class RecordBuilder {
 
         private static final String TOPIC_NOT_SET_ERROR =
-                "Topic not set. Topic must be supplied either at the file or record level. location: ";
+                "Topic not set. Topic must be supplied either at the file or record level."
+                        + " location: ";
 
         final URI location;
         final Optional<String> topicName;

@@ -166,7 +166,8 @@ public final class KafkaResourceValidator {
         InconsistentResourceGroupException(
                 final Collection<? extends KafkaTopicDescriptor<?, ?>> unique) {
             super(
-                    "Resource descriptors for the same resource disagree on the details. descriptors: "
+                    "Resource descriptors for the same resource disagree on the details."
+                            + " descriptors: "
                             + format(unique));
         }
 

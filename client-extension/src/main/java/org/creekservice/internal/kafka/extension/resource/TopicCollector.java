@@ -97,7 +97,8 @@ public final class TopicCollector {
         TopicDescriptorMismatchException(
                 final List<? extends KafkaTopicDescriptor<?, ?>> descriptors) {
             super(
-                    "Topic descriptor mismatch: multiple topic descriptors share the same topic name, but have different attributes."
+                    "Topic descriptor mismatch: multiple topic descriptors share the same topic"
+                            + " name, but have different attributes."
                             + System.lineSeparator()
                             + descriptors.stream()
                                     .map(KafkaTopicDescriptors::asString)

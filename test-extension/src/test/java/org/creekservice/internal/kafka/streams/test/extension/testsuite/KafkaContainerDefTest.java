@@ -131,8 +131,10 @@ class KafkaContainerDefTest {
                                 lineSeparator(),
                                 List.of(
                                         "echo 'clientPort=2181' > zookeeper.properties",
-                                        "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties",
-                                        "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties",
+                                        "echo 'dataDir=/var/lib/zookeeper/data' >>"
+                                                + " zookeeper.properties",
+                                        "echo 'dataLogDir=/var/lib/zookeeper/log' >>"
+                                                + " zookeeper.properties",
                                         "zookeeper-server-start ./zookeeper.properties &"))));
     }
 
@@ -256,7 +258,8 @@ class KafkaContainerDefTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Failed to configure Kafka's advertised listeners. 'kafka-configs''s exec result: "
+                        "Failed to configure Kafka's advertised listeners. 'kafka-configs''s exec"
+                                + " result: "
                                 + execResult));
     }
 
