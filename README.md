@@ -17,13 +17,15 @@ See [CreekService.org](https://www.creekservice.org) for info on Creek Service.
 
 ## Modules defined in this repo:
 
-* **[metadata](metadata)**: defines types to allow your services to indicate they consume and produce to Kafka.
-* **[serde](serde)**: defines the base types used to define Kafka Serde (serializers and deserializers), 
+* **[metadata](metadata)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-metadata)]: defines types to allow your services to indicate they consume and produce to Kafka.
+* **[serde](serde)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-serde)]: defines the base types used to define Kafka Serde (serializers and deserializers), 
                       and a `kafka` serialization format which uses the standard Kafka client serde.
-* **[client-extension](client-extension)**: defines a Creek extension to help with writing Kafka client based microservices.
-* **[streams-extension](streams-extension)**: defines a Creek extension to help with writing Kafka Streams based microservices.
-* **[streams-test](streams-test)**: Helpers for writing tests for Kafka streams based microservices.
-* **[test-extension](test-extension)**: Creek system-test extension to allow system testing of Kafka based microservices.
+* **[client-extension](client-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-client-extension)]: defines a Creek extension to help with writing Kafka client based microservices.
+* **[streams-extension](streams-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-streams-extension)]: defines a Creek extension to help with writing Kafka Streams based microservices.
+* **[streams-test](streams-test)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test)]: Helpers for writing tests for Kafka streams based microservices.
+* **[test-extension](test-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-test-extension)]: Creek system-test extension to allow system testing of Kafka based microservices.
+
+Internal / Non-published:
 * **[test-java-eight](test-java-eight)**: functional tests *without* Java 9's modularity.
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.

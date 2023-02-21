@@ -1,3 +1,4 @@
+[![javadoc](https://javadoc.io/badge2/org.creekservice/creek-kafka-streams-extension/javadoc.svg)](https://javadoc.io/doc/org.creekservice/creek-kafka-streams-extension)
 # Creek Kafka Streams Extension
 
 Provides an extension to Creek to allow it to work with Kafka Streams and Kafka resources.
@@ -86,6 +87,6 @@ public final class TopologyBuilder {
 ```
 
 [1]: src/main/java/org/creekservice/api/kafka/streams/extension/KafkaStreamsExtensionOptions.java
-[2]: ../common/src/main/java/org/creekservice/api/kafka/common/config/SystemEnvPropertyOverrides.java
+[2]: ../client-extension/src/main/java/org/creekservice/api/kafka/extension/config/SystemEnvPropertyOverrides.java
 [systemTest]: https://github.com/creek-service/creek-system-test
 [todo]: update links above once doccs migrated to creekservice.org
