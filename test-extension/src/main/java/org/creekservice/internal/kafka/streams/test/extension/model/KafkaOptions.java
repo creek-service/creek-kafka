@@ -45,7 +45,7 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
      * @see <a href="https://hub.docker.com/r/confluentinc/cp-kafka/tags">Kafka versions on Docker
      *     hub</a>
      */
-    public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.3.1";
+    public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.3.2";
 
     private static final KafkaOptions DEFAULTS =
             new KafkaOptions(
