@@ -79,9 +79,12 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
 import org.testcontainers.DockerClientFactory;
 
+@Execution(ExecutionMode.SAME_THREAD) // Due to static state
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StartKafkaTestListenerFunctionalTest {
 
