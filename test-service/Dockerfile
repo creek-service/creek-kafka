@@ -10,7 +10,6 @@ RUN mkdir -p /opt/creek
 
 COPY bin /bin
 COPY log4j /log
-COPY agent /opt/creek/agent
 
 COPY ${APP_NAME}-${APP_VERSION}.tar /opt/creek
 WORKDIR /opt/creek
