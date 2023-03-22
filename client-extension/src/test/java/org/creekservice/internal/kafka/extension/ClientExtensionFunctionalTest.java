@@ -50,12 +50,15 @@ import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactor
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
+@Execution(ExecutionMode.SAME_THREAD) // Due to static state
 class ClientExtensionFunctionalTest {
 
     @Container

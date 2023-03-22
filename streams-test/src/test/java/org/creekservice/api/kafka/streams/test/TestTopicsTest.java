@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Properties;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestInputTopic;
@@ -40,31 +41,25 @@ import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
 import org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TestTopicsTest {
 
-    private static CreekContext ctx;
-
+    private CreekContext ctx;
     private TopologyTestDriver testDriver;
 
-    @BeforeAll
-    public static void classSetup() {
+    @BeforeEach
+    void setUp() {
         ctx =
                 CreekServices.builder(new TestServiceDescriptor())
                         .with(TestKafkaStreamsExtensionOptions.defaults())
                         .build();
-    }
 
-    @BeforeEach
-    void setUp() {
-        testDriver =
-                new TopologyTestDriver(
-                        topology(),
-                        ctx.extension(KafkaClientsExtension.class)
-                                .properties(DEFAULT_CLUSTER_NAME));
+        try (KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class)) {
+            final Properties properties = ext.properties(DEFAULT_CLUSTER_NAME);
+            testDriver = new TopologyTestDriver(topology(properties), properties);
+        }
     }
 
     @AfterEach
@@ -107,13 +102,12 @@ class TestTopicsTest {
         assertThat(output.readRecord().getRecordTime(), is(start.plus(inc)));
     }
 
-    private static Topology topology() {
+    private static Topology topology(final Properties properties) {
         final StreamsBuilder builder = new StreamsBuilder();
 
         builder.stream(InputTopic.name(), Consumed.with(Serdes.String(), Serdes.Long()))
                 .to(OutputTopic.name(), Produced.with(Serdes.String(), Serdes.Long()));
 
-        return builder.build(
-                ctx.extension(KafkaClientsExtension.class).properties(DEFAULT_CLUSTER_NAME));
+        return builder.build(properties);
     }
 }

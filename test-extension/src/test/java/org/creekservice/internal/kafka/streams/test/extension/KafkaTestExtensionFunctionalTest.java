@@ -31,22 +31,15 @@ import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.test.util.TestPaths;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class KafkaTestExtensionFunctionalTest {
 
     private static final Path TESTCASES =
             TestPaths.moduleRoot("test-extension").resolve("src/test/resources/testcases");
 
-    private static final Path RESULTS_DIR =
-            TestPaths.moduleRoot("test-extension").resolve("build/test-results/system-test");
-
-    @BeforeAll
-    static void beforeAll() {
-        TestPaths.delete(RESULTS_DIR);
-        TestPaths.ensureDirectories(RESULTS_DIR);
-    }
+    @TempDir private Path resultsPath;
 
     @Test
     void shouldDetectSuccess() {
@@ -57,7 +50,7 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(true));
-        assertThat(RESULTS_DIR.resolve("TEST-passing_suite.xml"), is(regularFile()));
+        assertThat(resultsPath.resolve("TEST-passing_suite.xml"), is(regularFile()));
     }
 
     @Test
@@ -69,8 +62,8 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
-        assertThat(RESULTS_DIR.resolve("TEST-main.xml"), is(regularFile()));
-        assertThat(RESULTS_DIR.resolve("TEST-order_by_key.xml"), is(regularFile()));
+        assertThat(resultsPath.resolve("TEST-main.xml"), is(regularFile()));
+        assertThat(resultsPath.resolve("TEST-order_by_key.xml"), is(regularFile()));
         assertThat(failureMessage(result, "main", 0), containsString("Additional records"));
         assertThat(
                 failureMessage(result, "main", 1),
@@ -117,7 +110,7 @@ class KafkaTestExtensionFunctionalTest {
 
         // Then:
         assertThat(result.toString(), result.passed(), is(false));
-        assertThat(RESULTS_DIR.resolve("TEST-errors.xml"), is(regularFile()));
+        assertThat(resultsPath.resolve("TEST-errors.xml"), is(regularFile()));
 
         assertThat(
                 errorMessage(result, 0),
@@ -213,7 +206,7 @@ class KafkaTestExtensionFunctionalTest {
 
             @Override
             public Path resultDirectory() {
-                return RESULTS_DIR;
+                return resultsPath;
             }
         };
     }
