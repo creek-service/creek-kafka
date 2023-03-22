@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-java \
+exec java \
  -Xms64m -Xmx256m \
  -Dlog4j.configurationFile=/log/log4j2.xml \
  --module-path "/opt/creek/service/lib" \
