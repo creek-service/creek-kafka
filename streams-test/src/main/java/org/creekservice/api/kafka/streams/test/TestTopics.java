@@ -38,13 +38,13 @@ import org.creekservice.api.service.context.CreekContext;
  *
  * <p>Example usage:
  *
- * <pre>{@code
+ * <pre>
  * private CreekContext ctx;
  * private TopologyTestDriver testDriver;
- * private TestInputTopic<String, Long> inputTopic;
- * private TestOutputTopic<Long, String> outputTopic;
+ * private TestInputTopi&#60;String, Long&#62; inputTopic;
+ * private TestOutputTopic&#60;Long, String&#62; outputTopic;
  *
- * @BeforeEach
+ * &#64;BeforeEach
  * public void setUp() {
  *   ...
  *
@@ -53,7 +53,7 @@ import org.creekservice.api.service.context.CreekContext;
  *   inputTopic = inputTopic(InputTopic, ctx, testDriver);
  *   outputTopic = outputTopic(OutputTopic, ctx, testDriver);
  * }
- * }</pre>
+ * </pre>
  */
 public final class TestTopics {
 
@@ -135,16 +135,17 @@ public final class TestTopics {
 
     private static <K, V> TopicSerde<K, V> topicSerde(
             final KafkaTopicDescriptor<K, V> def, final CreekContext ctx) {
-        final KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class);
-        final KafkaTopic<K, V> topic = ext.topic(def);
-        final TopicSerde<K, V> serde = new TopicSerde<>(topic.keySerde(), topic.valueSerde());
+        try (KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class)) {
+            final KafkaTopic<K, V> topic = ext.topic(def);
+            final TopicSerde<K, V> serde = new TopicSerde<>(topic.keySerde(), topic.valueSerde());
 
-        final Map<String, Object> props = new HashMap<>();
-        final Properties properties = ext.properties(def.cluster());
-        properties.stringPropertyNames().forEach(k -> props.put(k, properties.getProperty(k)));
+            final Map<String, Object> props = new HashMap<>();
+            final Properties properties = ext.properties(def.cluster());
+            properties.stringPropertyNames().forEach(k -> props.put(k, properties.getProperty(k)));
 
-        serde.configure(props);
-        return serde;
+            serde.configure(props);
+            return serde;
+        }
     }
 
     private static final class TopicSerde<K, V> {
