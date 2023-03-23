@@ -15,6 +15,3 @@
 
 --add-opens
   java.base/java.util=org.junitpioneer
-
---add-opens
-  org.junit.platform.commons/org.junit.platform.commons.util=junit.jupiter

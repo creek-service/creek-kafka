@@ -30,18 +30,18 @@ import org.creekservice.api.test.util.Temp;
  *
  * <p>Example usage:
  *
- * <pre>{@code
+ * <pre>
  * class TopologyTest {
  *     private static CreekContext ctx;
  *
- *     @BeforeAll
+ *     &#64;BeforeAll
  *     public static void classSetup() {
  *         ctx = CreekServices.builder(new TestServiceDescriptor())
  *                 .with(TestKafkaStreamsExtensionOptions.defaults())
  *                 .build();
  *     }
  * }
- * }</pre>
+ * </pre>
  */
 public final class TestKafkaStreamsExtensionOptions {
 
