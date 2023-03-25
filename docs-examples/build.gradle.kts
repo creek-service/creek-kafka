@@ -62,4 +62,17 @@ configurations.all {
 }
 // end-snippet
 
+tasks.test {
+    useJUnitPlatform()
+    setForkEvery(1)
+    maxParallelForks = 4
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showExceptions = true
+        showStackTraces = true
+    }
+}
+
 defaultTasks("build")

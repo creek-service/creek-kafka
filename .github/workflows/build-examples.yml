@@ -25,4 +25,4 @@ jobs:
           distribution: 'adopt'
           cache: gradle
       - name: Build
-        run: ./docs-examples/gradlew build
+        run: (cd docs-examples && ./gradlew build)

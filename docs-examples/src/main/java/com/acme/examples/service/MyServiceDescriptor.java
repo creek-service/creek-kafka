@@ -17,16 +17,56 @@
 package com.acme.examples.service;
 
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.platform.metadata.ComponentInput;
+import org.creekservice.api.platform.metadata.ComponentInternal;
+import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static com.acme.examples.service.TopicConfigBuilder.withPartitions;
+import static com.acme.examples.service.TopicDescriptors.inputTopic;
+import static com.acme.examples.service.TopicDescriptors.outputTopic;
 
 public class MyServiceDescriptor implements ServiceDescriptor {
-    public static KafkaTopicDescriptor<Long, String> InputTopic = null;
-    public static KafkaTopicDescriptor<Long, String> OutputTopic = null;
+
+    private static final List<ComponentInput> INPUTS = new ArrayList<>();
+    private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
+    private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
+    public static KafkaTopicDescriptor<Long, String> InputTopic =
+            register(inputTopic("ip", Long.class, String.class, withPartitions(1)));
+    public static KafkaTopicDescriptor<Long, String> OutputTopic =
+            register(outputTopic("op", Long.class, String.class, withPartitions(1)));
 
     @Override
     public String dockerImage() {
-        return null;
+        return "not used";
+    }
+
+    @Override
+    public Collection<ComponentInput> inputs() {
+        return List.copyOf(INPUTS);
+    }
+
+    @Override
+    public Collection<ComponentInternal> internals() {
+        return List.copyOf(INTERNALS);
+    }
+
+    @Override
+    public Collection<ComponentOutput> outputs() {
+        return List.copyOf(OUTPUTS);
+    }
+
+    private static <T extends ComponentInput> T register(final T input) {
+        INPUTS.add(input);
+        return input;
+    }
+
+    private static <T extends ComponentOutput> T register(final T output) {
+        OUTPUTS.add(output);
+        return output;
     }
 }

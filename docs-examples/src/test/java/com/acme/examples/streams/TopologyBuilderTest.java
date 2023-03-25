@@ -37,7 +37,6 @@ import static org.apache.kafka.streams.KeyValue.pair;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.jupiter.api.Assertions.*;
 
 // begin-snippet: topology-builder-test
 class TopologyBuilderTest {
@@ -82,12 +81,6 @@ class TopologyBuilderTest {
 
         // Then:
         assertThat(outputTopic.readKeyValuesToList(), contains(pair(1L, "a")));
-    }
-
-    @Test
-    void shouldFail() {
-        // Todo:
-        fail();
     }
 }
 // end-snippet
