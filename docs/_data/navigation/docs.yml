@@ -1,0 +1,42 @@
+- title: Getting Started
+  children:
+    - title: Introduction
+      url: /
+    - title: Creating a new aggregate
+      url: /bootstrap
+    - title: Adding a new service
+      url: /add-service
+
+- title: Features
+  children:
+    - title: Gradle
+      url: /features/gradle
+    - title: Code formatting
+      url: /features/formatting
+    - title: Static code analysis
+      url: /features/static
+    - title: Unit Testing
+      url: /features/unit-testing
+    - title: System testing
+      url: /features/system-testing
+    - title: Coverage
+      url: /features/coverage
+    - title: Versioning
+      url: /features/versioning
+    - title: Publishing
+      url: /features/publishing
+
+- title: Structure
+  children:
+    - title: Service Modules
+      url: /structure/service
+    - title: Services Module
+      url: /structure/services
+    - title: Api Module
+      url: /structure/api
+    - title: System Tests Module
+      url: /structure/system-tests
+    - title: .creek directory
+      url: /structure/.creek
+    - title: .github directory
+      url: /structure/.github
