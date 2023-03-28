@@ -20,7 +20,6 @@ plugins {
 
 val creekVersion : String by extra
 val kafkaVersion : String by extra
-val spotBugsVersion : String by extra
 val testContainersVersion : String by extra
 
 dependencies {
