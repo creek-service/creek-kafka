@@ -211,7 +211,7 @@ unit testing Kafka Streams topologies.
 This module provides classes to make it easier to write unit tests for Kafka Streams' topologies:
 
 * [`TestKafkaStreamsExtensionOptions`][testKsExtOpt] can be used to configure the [streams extension](#kafka-streams-extension) for unit testing.
-* [`TestTopics`][testTopics] can be used to create input and output topics when using [`TopologyTestDriver`][topologyTestDriver].
+* [`TestTopics`][testTopics] can be used to create input and output topics when using [`TopologyTestDriver`][ksTest].
   
 For example:
 
@@ -240,11 +240,8 @@ plugins {
 {% include_snippet module-plugin from ../docs-examples/build.gradle.kts %}
 }
 
-// Patch Kafka Streams test jar into main Kafka Streams module to avoid split packages:
-modularity.patchModule("kafka.streams", "kafka-streams-test-utils-2.8.2.jar")
+{% include_snippet patch-module from ../docs-examples/build.gradle.kts %}
 {% endhighlight %}
-
-[todo]: http:// pull `modularity.patchModule` line above from code.
 
 ## System test extension
 
@@ -434,8 +431,57 @@ A schema-validated JSON format is currently [in development](https://github.com/
 
 ### Custom formats
 
-Creek Kafka has a pluggable serialization format, allow new formats to be added easily. 
-Documenting how to write a custom format is covered by [issue-33](https://github.com/creek-service/creek-kafka/issues/33).
+Creek Kafka has a pluggable serialization format, allowing new formats to be added easily.
+New formats should implement the `KafkaSerdeProvider` interface:
+
+{% highlight java %}
+{% include_snippet kafka-serde-provider from ../serde/src/main/java/org/creekservice/api/kafka/serde/provider/KafkaSerdeProvider.java %}
+{% endhighlight %}
+
+The provider will be used to create `Serde` for any topic keys or values that use the provider's `format()`.
+The provider can query the `part`, passed to `create`, to obtain the class of the key or value part.
+
+#### Registering custom formats
+
+Serialization formats are discovered from the class-path and module-path using the standard Java [`ServiceLoader`][serviceLoader].
+
+How to make a serialization format discoverable by Creek will depend on whether it is on the JVM's class or module path.
+
+**ProTip:** We suggest registering component descriptors for use on both the class-path _and_ module-path, 
+ensuring they work today and tomorrow.
+{: .notice--info}
+
+##### Formats on the module path
+
+If the format resides in a module it needs to be declared in the module's descriptor, i.e. in the `module-info.java` file,
+as a provider of the `KafkaSerdeProvider` type:
+
+{% highlight java %}
+{% include_snippet module-name from ../docs-examples/src/main/java/module-info.java %}
+{% include_snippet serde-deps from ../docs-examples/src/main/java/module-info.java %}
+{% include_snippet serde-reg from ../docs-examples/src/main/java/module-info.java %}
+}
+{% endhighlight %}
+
+##### Formats on the class path
+
+If the format does not reside in a module, or the jar is on the class-path, it is registered by placing a 
+_provider-configuration_ file in the `META-INF/services` resource directory.
+
+This is a plain text file named `org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider`. Add the fully-qualified
+name of the type implementing the `KafkaSerdeProvider` type to this file:
+
+```
+c{% include_snippet all from ../docs-examples/src/main/resources/org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider %}
+```
+
+#### Testing format registration
+
+The `creek-kafka-serde-test` jar contains a test utility that will test a serialization format is registered correctly:
+
+{% highlight java %}
+{% include_snippet serde-tester from ../test-serde-java-eight/src/test/java/org/creekservice/test/api/kafka/serde/eight/test/KafkaSerdeProviderTesterTest.java %}
+{% endhighlight %}
 
 [onGitHub]: https://github.com/creek-service/creek-kafka
 [basicDemo]: https://www.creekservice.org/basic-kafka-streams-demo/
@@ -450,7 +496,8 @@ Documenting how to write a custom format is covered by [issue-33](https://github
 [topicDescriptors]: https://github.com/creek-service/creek-kafka/blob/bb79516b4fba0fbda6d17cb9b82a3a6773913fe5/test-service/src/main/java/org/creekservice/internal/kafka/test/service/TopicDescriptors.java
 [testKsExtOpt]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestKafkaStreamsExtensionOptions.html
 [testTopics]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestTopics.html
-[topologyTestDriver]: https://www.confluent.io/en-gb/blog/test-kafka-streams-with-topologytestdriver/
+[ksTest]: https://kafka.apache.org/documentation/streams/developer-guide/testing.html
 [systemTest]: https://github.com/creek-service/creek-system-test
 [gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
+[serviceLoader]: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ServiceLoader.html
 [todo]: http://update links above once doccs migrated to creekservice.org

@@ -35,6 +35,7 @@ public class MyServiceDescriptor implements ServiceDescriptor {
     private static final List<ComponentInput> INPUTS = new ArrayList<>();
     private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
     private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
+
     public static KafkaTopicDescriptor<Long, String> InputTopic =
             register(inputTopic("ip", Long.class, String.class, withPartitions(1)));
     public static KafkaTopicDescriptor<Long, String> OutputTopic =

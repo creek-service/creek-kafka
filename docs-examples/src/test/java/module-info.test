@@ -1,0 +1,8 @@
+--add-modules
+  org.hamcrest,creek.test.util,creek.kafka.streams.test
+
+--add-reads
+  custom.serde.format=org.hamcrest,creek.test.util,creek.kafka.streams.test
+
+--add-opens
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons

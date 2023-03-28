@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
+package org.creekservice.test.api.kafka.serde.test;
+
+import org.apache.kafka.common.serialization.Serde;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
-import org.creekservice.test.api.kafka.serde.test.OnlyModuleTestSerdeProvider;
-import org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider;
-import org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider;
 
-module creek.kafka.test.serde {
-    requires transitive creek.kafka.serde;
+public final class OnlyMetaInfTestSerdeProvider implements KafkaSerdeProvider {
 
-    exports org.creekservice.test.api.kafka.serde.test;
+    public static final SerializationFormat FORMAT =
+            SerializationFormat.serializationFormat("test-only-meta");
 
-    provides KafkaSerdeProvider with
-            PublicTestSerdeProvider,
-            OnlyModuleTestSerdeProvider,
-            PrivateTestSerdeProvider;
+    public OnlyMetaInfTestSerdeProvider() {}
+
+    @Override
+    public SerializationFormat format() {
+        return FORMAT;
+    }
+
+    @Override
+    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+        return null;
+    }
 }

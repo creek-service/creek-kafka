@@ -20,6 +20,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 
+// begin-snippet: kafka-serde-provider
 /**
  * Base type for extensions that provide Kafka serde
  *
@@ -31,16 +32,19 @@ import org.creekservice.api.kafka.metadata.SerializationFormat;
 public interface KafkaSerdeProvider {
 
     /**
-     * @return the serialization format the serde provides.
+     * @return the <i>unique</i> serialization format the serde provides.
      */
     SerializationFormat format();
 
     /**
      * Get the serde for the supplied Kafka record {@code part}.
      *
+     * <p>{@link Serde#configure} will be called on the returned serde.
+     *
      * @param part the part descriptor
-     * @param <T> the type of the key.
-     * @return the serde.
+     * @param <T> the type of the part.
+     * @return the serde to use to serialize and deserialize the part.
      */
     <T> Serde<T> create(KafkaTopicDescriptor.PartDescriptor<T> part);
 }
+// end-snippet

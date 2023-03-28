@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 
-dependencies {
-    api(project(":serde"))
+/** Provider test utils for testing serde providers. */
+module creek.kafka.serde.test {
+    requires transitive creek.kafka.serde;
 
-    testImplementation(project(":serde-test"))
+    exports org.creekservice.api.kafka.serde.test;
+
+    uses KafkaSerdeProvider;
 }

@@ -18,8 +18,11 @@ plugins {
     `java-library`
 }
 
+val creekVersion : String by extra
+val kafkaVersion : String by extra
+val spotBugsVersion : String by extra
+
 dependencies {
     api(project(":serde"))
-
-    testImplementation(project(":serde-test"))
+    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 }
