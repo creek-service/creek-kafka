@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2023 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import com.acme.examples.serde.CustomSerdeFormatProvider;
 
-dependencies {
-    api(project(":serde"))
+// begin-snippet: module-name
+module custom.serde.format {
+// end-snippet
 
-    testImplementation(project(":serde-test"))
+// begin-snippet: serde-deps
+    requires creek.kafka.serde;
+// end-snippet
+
+    requires creek.service.context;
+    requires creek.kafka.streams.extension;
+
+// begin-snippet: serde-reg
+    provides KafkaSerdeProvider with CustomSerdeFormatProvider;
+// end-snippet
 }

@@ -62,6 +62,11 @@ configurations.all {
 }
 // end-snippet
 
+// begin-snippet: patch-module
+// Patch Kafka Streams test jar into main Kafka Streams module to avoid split packages:
+modularity.patchModule("kafka.streams", "kafka-streams-test-utils-2.8.2.jar")
+// end-snippet
+
 tasks.test {
     useJUnitPlatform()
     setForkEvery(1)
@@ -74,5 +79,7 @@ tasks.test {
         showStackTraces = true
     }
 }
+
+tasks.javadoc { enabled = false }
 
 defaultTasks("build")

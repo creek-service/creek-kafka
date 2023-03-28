@@ -33,6 +33,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,8 +50,10 @@ class NativeKafkaSerdeProviderTest {
     }
 
     @Test
-    void shouldProvideKafkaFormat() {
-        assertThat(provider.format(), is(serializationFormat("kafka")));
+    void shouldBeValid() {
+        KafkaSerdeProviderTester.tester(NativeKafkaSerdeProvider.class)
+                .withExpectedFormat(serializationFormat("kafka"))
+                .test();
     }
 
     @ParameterizedTest(name = "{0}")
@@ -67,6 +70,7 @@ class NativeKafkaSerdeProviderTest {
         assertThat(serde, is(instanceOf(expectedSerdeType)));
     }
 
+    @SuppressWarnings("resource")
     @Test
     void shouldThrowOnUnsupportedType() {
         // Given:

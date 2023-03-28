@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider
-org.creekservice.test.api.kafka.serde.test.OnlyMetaInfTestSerdeProvider
-org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider
+# // begin-snippet: all
+com.acme.examples.serde.CustomSerdeFormatProvider
+# // end-snippet

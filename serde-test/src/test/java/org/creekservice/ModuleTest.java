@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creekservice;
 
-dependencies {
-    api(project(":serde"))
+import org.creekservice.api.test.conformity.ConformityTester;
+import org.junit.jupiter.api.Test;
 
-    testImplementation(project(":serde-test"))
+class ModuleTest {
+
+    @Test
+    void shouldConform() {
+        ConformityTester.builder(ModuleTest.class).check();
+    }
 }

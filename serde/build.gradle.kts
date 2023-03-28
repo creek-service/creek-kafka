@@ -26,4 +26,6 @@ dependencies {
     api("org.creekservice:creek-base-annotation:$creekVersion")
 
     api("org.apache.kafka:kafka-clients:$kafkaVersion")
+
+    testImplementation(project(":serde-test"))
 }
