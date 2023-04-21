@@ -60,7 +60,7 @@ subprojects {
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.4.0")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("testContainersVersion", "1.17.6")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "1.18.0")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
