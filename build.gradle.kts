@@ -56,7 +56,7 @@ subprojects {
         set("guavaVersion", "31.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.9.2")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.0.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.2.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
+        set("mockitoVersion", "5.3.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.4.0")            // https://mvnrepository.com/artifact/org.apache.kafka
