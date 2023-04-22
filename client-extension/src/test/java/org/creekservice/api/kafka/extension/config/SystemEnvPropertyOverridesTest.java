@@ -31,9 +31,8 @@ import org.junit.jupiter.api.parallel.Isolated;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.junitpioneer.jupiter.SetEnvironmentVariable.SetEnvironmentVariables;
 
-@Isolated // This test uses @SetEnvironmentVariable, which modifies global env, which isn't
-// thread-safe.
-@Execution(SAME_THREAD)
+@Isolated // This test uses @SetEnvironmentVariable, which modifies global env
+@Execution(SAME_THREAD) // ...this isn't thread-safe. So isolate from other tests.
 class SystemEnvPropertyOverridesTest {
 
     @Test
