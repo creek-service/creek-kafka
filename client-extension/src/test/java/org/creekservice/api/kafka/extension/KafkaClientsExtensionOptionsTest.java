@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
@@ -33,8 +34,13 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
+@Isolated // This test uses @SetEnvironmentVariable, which modifies global env, which isn't
+// thread-safe.
+@Execution(SAME_THREAD)
 class KafkaClientsExtensionOptionsTest {
 
     private KafkaClientsExtensionOptions.Builder builder;
@@ -106,9 +112,7 @@ class KafkaClientsExtensionOptionsTest {
     }
 
     @Test
-    @SetEnvironmentVariable.SetEnvironmentVariables({
-        @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:8766")
-    })
+    @SetEnvironmentVariable(key = "KAFKA_BOOTSTRAP_SERVERS", value = "localhost:8766")
     void shouldLoadKafkaPropertyOverridesFromTheEnvironmentByDefault() {
         // Given:
         final KafkaClientsExtensionOptions options = builder.build();
