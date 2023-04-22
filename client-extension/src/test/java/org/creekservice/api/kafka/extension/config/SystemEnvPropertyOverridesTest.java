@@ -21,18 +21,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides.systemEnvPropertyOverrides;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.junitpioneer.jupiter.SetEnvironmentVariable.SetEnvironmentVariables;
 
-@Isolated // This test uses @SetEnvironmentVariable, which modifies global env
-@Execution(SAME_THREAD) // ...this isn't thread-safe. So isolate from other tests.
 class SystemEnvPropertyOverridesTest {
 
     @Test
