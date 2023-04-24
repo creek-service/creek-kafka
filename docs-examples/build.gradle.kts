@@ -45,7 +45,7 @@ dependencies {
     systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.0")
 // end-snippet
 // begin-snippet: streams-test
-    testImplementation("org.creekservice:creek-kafka-streams-test:0.4.0")
+    testImplementation("org.creekservice:creek-kafka-streams-test:0.4.1")
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:2.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
