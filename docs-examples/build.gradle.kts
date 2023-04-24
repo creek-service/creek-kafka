@@ -32,7 +32,7 @@ dependencies {
 // end-snippet
 
 // begin-snippet: meta
-    implementation("org.creekservice:creek-kafka-metadata:0.4.0")
+    implementation("org.creekservice:creek-kafka-metadata:0.4.1")
 // end-snippet
     implementation("org.creekservice:creek-service-context:0.4.1")
 // begin-snippet: client-ext
