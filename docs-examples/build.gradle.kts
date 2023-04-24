@@ -42,7 +42,7 @@ dependencies {
     implementation("org.creekservice:creek-kafka-streams-extension:0.4.0")
 // end-snippet
 // begin-snippet: test-ext
-    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.0")
+    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.1")
 // end-snippet
 // begin-snippet: streams-test
     testImplementation("org.creekservice:creek-kafka-streams-test:0.4.1")
