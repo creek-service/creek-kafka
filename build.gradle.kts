@@ -50,7 +50,7 @@ subprojects {
     extra.apply {
         set("creekVersion", "0.4.2-SNAPSHOT")
         set("spotBugsVersion", "4.7.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.15.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+        set("jacksonVersion", "2.15.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("slf4jVersion", "2.0.7")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
         set("log4jVersion", "2.20.0")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("guavaVersion", "32.1.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
@@ -60,7 +60,7 @@ subprojects {
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.5.1")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("testContainersVersion", "1.18.0")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "1.18.3")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
