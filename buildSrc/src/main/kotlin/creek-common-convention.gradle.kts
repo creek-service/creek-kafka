@@ -19,7 +19,8 @@
  *
  * <p>Apply to all java modules, usually excluding the root project in multi-module sets.
  *
- * <p>Version: 1.8
+ * <p>Version: 1.9
+ *  - 1.9: Add `allDeps` task.
  *  - 1.8: Tweak test config to reduce build speed.
  *  - 1.7: Switch to setting Java version via toolchain
  *  - 1.6: Remove GitHub packages for snapshots
@@ -136,4 +137,7 @@ val static = tasks.register("static") {
 tasks.test {
     shouldRunAfter(static)
 }
+
+// See: https://solidsoft.wordpress.com/2014/11/13/gradle-tricks-display-dependencies-for-all-subprojects-in-multi-project-build/
+tasks.register<DependencyReportTask>("allDeps") {}
 
