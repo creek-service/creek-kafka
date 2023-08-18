@@ -53,6 +53,7 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           CREEK_KAFKA_VERSION:  ${{ matrix.kafka_version }}
+      - name: Build
         run: ./gradlew build coveralls
       - name: Publish
         if: matrix.publish && (github.event_name == 'push' || github.event.inputs.publish_artifacts == 'true')
