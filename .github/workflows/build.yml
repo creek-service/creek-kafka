@@ -50,10 +50,10 @@ jobs:
         uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # v2.7.0
         with:
           gradle-home-cache-cleanup: true
+      - name: Build
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          CREEK_KAFKA_VERSION:  ${{ matrix.kafka_version }}
-      - name: Build
+          CREEK_KAFKA_VERSION: ${{ matrix.kafka_version }}
         run: ./gradlew build coveralls
       - name: Publish
         if: matrix.publish && (github.event_name == 'push' || github.event.inputs.publish_artifacts == 'true')
