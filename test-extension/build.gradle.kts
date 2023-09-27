@@ -21,7 +21,6 @@ plugins {
 val creekVersion : String by extra
 val testContainersVersion : String by extra
 val kafkaVersion : String by extra
-val jacksonVersion : String by extra
 val slf4jVersion : String by extra
 
 dependencies {
@@ -30,8 +29,8 @@ dependencies {
 
     implementation(project(":streams-extension"))
     implementation("org.creekservice:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     testImplementation(project(":test-service"))

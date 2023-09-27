@@ -34,9 +34,39 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
 * **[test-serde](test-serde)**: test-only serde extension implementation.
 * **[test-serde-java-eight](test-serde-java-eight)**: test-only serde extension implementation that only registers itself
   using the Java 8 `META-INF/services` method.
+* **[test-service](test-service)**: test-only microservice implementation.
 
 ### Docs:
 * **[docs](docs)**: doc site accessible on https://www.creekservice.org/creek-kafka.
 * **[docs-examples](docs-examples)**: example code injected into the docs.
+
+## Kafka client version compatability
+
+The libraries themselves are compiled with the latest versions of the Kafka clients and Kafka streams libraries.
+However, they are compatible with older versions, as set out in the table below.
+The `tested version` column details the exact version of Kafka libraries testing covers.
+
+| Kafka version | Tested version | Notes                                           |
+|---------------|----------------|-------------------------------------------------|
+| < 2.8         |                | Not compatible due to API changes in Streams    |
+| 2.8.+         | 2.8.2          | Supported & tested                              |
+| 3.0.+         | 3.0.2          | Supported & tested                              |
+| 3.1.+         | 3.1.2          | Supported & tested                              |
+| 3.2.+         | 3.2.3          | Supported & tested                              |
+| 3.3.+         | 3.3.2          | Supported & tested                              |
+| 3.4.+         | 3.4.0          | Supported & tested                              |
+| > 3.4         |                | Not currently tested / released. Should work... |
+
+In Gradle, it is possible to force the use of an older Kafka client if you which using a resolution strategy:
+
+```kotlin
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.apache.kafka") {
+            useVersion("2.8.2")
+        }
+    }
+}
+```
 
 [1]: https://www.creekservice.org/basic-kafka-streams-demo/

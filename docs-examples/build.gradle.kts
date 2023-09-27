@@ -69,8 +69,8 @@ modularity.patchModule("kafka.streams", "kafka-streams-test-utils-2.8.2.jar")
 
 tasks.test {
     useJUnitPlatform()
-    setForkEvery(1)
-    maxParallelForks = 4
+    setForkEvery(5)
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
     testLogging {
         showStandardStreams = true
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
