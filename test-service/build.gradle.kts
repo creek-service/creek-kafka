@@ -18,7 +18,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     application
-    id("com.bmuschko.docker-remote-api") version "9.3.3"
+    id("com.bmuschko.docker-remote-api") version "9.3.6"
 }
 
 val creekVersion : String by extra
