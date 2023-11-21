@@ -3,17 +3,13 @@ ARG APP_NAME
 ARG APP_VERSION
 ENV VERSION=$APP_VERSION
 
-RUN yum update -y
-RUN yum install -y tar lsof
-
 RUN mkdir -p /opt/creek
 
 COPY bin /bin
 COPY log4j /log
 
-COPY ${APP_NAME}-${APP_VERSION}.tar /opt/creek
+COPY ${APP_NAME}-${APP_VERSION} /opt/creek/${APP_NAME}-${APP_VERSION}
 WORKDIR /opt/creek
-RUN tar xf ${APP_NAME}-${APP_VERSION}.tar
 RUN ln -s ${APP_NAME}-${APP_VERSION} service
 
 ENTRYPOINT ["/bin/run.sh"]
