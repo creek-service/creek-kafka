@@ -42,6 +42,11 @@ val buildAppImage = tasks.create("buildAppImage", DockerBuildImage::class) {
     buildArgs.put("APP_NAME", project.name)
     buildArgs.put("APP_VERSION", "${project.version}")
     images.add("ghcr.io/creek-service/${rootProject.name}-${project.name}:latest")
+
+    onlyIf {
+        // Exclude the task if running on Windows (as images don't build on Windows)
+        !System.getProperty("os.name").lowercase().contains("win")
+    }
 }
 
 tasks.register<Copy>("prepareDocker") {

@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -134,15 +135,24 @@ class TopicVerifierTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "1 expected record(s) not found.\n"
-                                + "Unmatched records: [\n"
-                                + "\tExpected: e-record\n"
-                                + "\tActual: [\n"
-                                + "\t\t(mismatch details) rec1\n"
-                                + "\t]\n"
-                                + "]\n"
-                                + "Matched records: [\n"
-                                + "\trec0\n"
+                        "1 expected record(s) not found."
+                                + lineSeparator()
+                                + "Unmatched records: ["
+                                + lineSeparator()
+                                + "\tExpected: e-record"
+                                + lineSeparator()
+                                + "\tActual: ["
+                                + lineSeparator()
+                                + "\t\t(mismatch details) rec1"
+                                + lineSeparator()
+                                + "\t]"
+                                + lineSeparator()
+                                + "]"
+                                + lineSeparator()
+                                + "Matched records: ["
+                                + lineSeparator()
+                                + "\trec0"
+                                + lineSeparator()
                                 + "]"));
     }
 
@@ -159,9 +169,12 @@ class TopicVerifierTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Additional records were produced.\n"
-                                + "Unmatched records: [\n"
-                                + "\textra\n"
+                        "Additional records were produced."
+                                + lineSeparator()
+                                + "Unmatched records: ["
+                                + lineSeparator()
+                                + "\textra"
+                                + lineSeparator()
                                 + "]"));
     }
 }
