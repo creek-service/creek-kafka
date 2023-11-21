@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
-import static java.lang.System.lineSeparator;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.internal.kafka.streams.test.extension.model.ModelUtil.createParser;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -218,8 +217,7 @@ class TopicRecordTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Unknown property: not_value"
-                                + lineSeparator()
+                        "Unknown property: not_value\n"
                                 + " at [Source: (StringReader); line: 5, column: 10]"));
     }
 
@@ -241,8 +239,7 @@ class TopicRecordTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Property can not be blank: topic"
-                                + lineSeparator()
+                        "Property can not be blank: topic\n"
                                 + " at [Source: (StringReader); line: 2, column: 10]"));
     }
 
@@ -264,8 +261,7 @@ class TopicRecordTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Property can not be blank: cluster"
-                                + lineSeparator()
+                        "Property can not be blank: cluster\n"
                                 + " at [Source: (StringReader); line: 3, column: 13]"));
     }
 
