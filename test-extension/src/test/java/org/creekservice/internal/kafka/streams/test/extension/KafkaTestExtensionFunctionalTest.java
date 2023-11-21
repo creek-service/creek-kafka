@@ -31,9 +31,11 @@ import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.test.util.TestPaths;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@Tag("ContainerisedTest")
 class KafkaTestExtensionFunctionalTest {
 
     private static final Path TESTCASES =
