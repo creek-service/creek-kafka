@@ -149,8 +149,7 @@ class TopicExpectationTest {
                         "Cannot construct instance of"
                             + " `org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`,"
                             + " problem: Topic not set. Topic must be supplied either at the file"
-                            + " or record level. location: unknown"
-                                + lineSeparator()
+                            + " or record level. location: unknown\n"
                                 + " at [Source: (StringReader); line: 8, column: 13]"));
     }
 
