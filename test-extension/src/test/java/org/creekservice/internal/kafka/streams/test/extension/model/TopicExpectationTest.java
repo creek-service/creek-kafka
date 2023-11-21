@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.model;
 
-import static java.lang.System.lineSeparator;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.internal.kafka.streams.test.extension.model.ModelUtil.createParser;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -253,9 +252,8 @@ class TopicExpectationTest {
                 is(
                         "Cannot construct instance of"
                             + " `org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation`,"
-                            + " problem: At least one record is required"
-                                + lineSeparator()
-                                + " at [Source: (StringReader); line: 4, column: 12]"));
+                            + " problem: At least one record is required\n"
+                            + " at [Source: (StringReader); line: 4, column: 12]"));
     }
 
     @Test
