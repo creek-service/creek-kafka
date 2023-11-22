@@ -26,9 +26,10 @@ import java.util.stream.Collectors;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -42,9 +43,13 @@ public final class ResourceRegistryFactory {
     private final RegistryFactory registryFactory;
     private final TopicFactory topicFactory;
 
-    /** Constructor. */
-    public ResourceRegistryFactory() {
-        this(KafkaSerdeProviders.create(), new TopicCollector(), ResourceRegistry::new, Topic::new);
+    /**
+     * Constructor.
+     *
+     * @param serdeProviders all known serde providers.
+     */
+    public ResourceRegistryFactory(final KafkaSerdeProviders serdeProviders) {
+        this(serdeProviders, new TopicCollector(), ResourceRegistry::new, Topic::new);
     }
 
     @VisibleForTesting
@@ -97,31 +102,25 @@ public final class ResourceRegistryFactory {
     private <K, V> Topic<K, V> createTopicResource(
             final KafkaTopicDescriptor<K, V> def, final ClustersProperties allProperties) {
         final Map<String, Object> properties = allProperties.get(def.cluster());
-        final Serde<K> keySerde = serde(def.key(), def.name(), true, properties);
-        final Serde<V> valueSerde = serde(def.value(), def.name(), false, properties);
+        final Serde<K> keySerde = serde(def.key(), properties);
+        final Serde<V> valueSerde = serde(def.value(), properties);
         return topicFactory.create(def, keySerde, valueSerde);
     }
 
     private <T> Serde<T> serde(
-            final KafkaTopicDescriptor.PartDescriptor<T> part,
-            final String topicName,
-            final boolean isKey,
-            final Map<String, Object> clusterProperties) {
-        final KafkaSerdeProvider provider = provider(part, topicName, isKey);
+            final PartDescriptor<T> part, final Map<String, Object> clusterProperties) {
+        final KafkaSerdeProvider provider = provider(part);
 
         final Serde<T> serde = provider.create(part);
-        serde.configure(clusterProperties, isKey);
+        serde.configure(clusterProperties, part.part().isKey());
         return serde;
     }
 
-    private <T> KafkaSerdeProvider provider(
-            final KafkaTopicDescriptor.PartDescriptor<T> part,
-            final String topicName,
-            final boolean isKey) {
+    private <T> KafkaSerdeProvider provider(final PartDescriptor<T> part) {
         try {
             return serdeProviders.get(part.format());
         } catch (final Exception e) {
-            throw new UnknownSerializationFormatException(part.format(), topicName, isKey, e);
+            throw new UnknownSerializationFormatException(part, e);
         }
     }
 
@@ -137,19 +136,17 @@ public final class ResourceRegistryFactory {
     }
 
     private static final class UnknownSerializationFormatException extends RuntimeException {
-        UnknownSerializationFormatException(
-                final SerializationFormat format,
-                final String topicName,
-                final boolean isKey,
-                final Throwable cause) {
+        UnknownSerializationFormatException(final PartDescriptor<?> part, final Throwable cause) {
             super(
                     "Unknown "
-                            + (isKey ? "key" : "value")
+                            + part.part()
                             + " serialization format encountered."
                             + " format="
-                            + format
-                            + ", topic="
-                            + topicName,
+                            + part.format()
+                            + ", "
+                            + LoggingField.topicId
+                            + "="
+                            + part.topic().id(),
                     cause);
         }
     }

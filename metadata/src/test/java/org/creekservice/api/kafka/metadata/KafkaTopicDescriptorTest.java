@@ -20,7 +20,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,12 @@ class KafkaTopicDescriptorTest {
         // Then:
         assertThat(e.getCause(), instanceOf(URISyntaxException.class));
         assertThat(e.getMessage(), containsString("Malformed escape pair"));
+    }
+
+    @Test
+    void shouldKnowIfPartIsKeyPart() {
+        assertTrue(KafkaTopicDescriptor.PartDescriptor.Part.key.isKey());
+        assertFalse(KafkaTopicDescriptor.PartDescriptor.Part.value.isKey());
     }
 
     private KafkaTopicDescriptor<Void, Void> descriptor(final String cluster, final String name) {

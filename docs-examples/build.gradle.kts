@@ -30,7 +30,7 @@ repositories {
 // begin-snippet: deps
 dependencies {
 // end-snippet
-
+    implementation("log4j:log4j:1.2.17")
 // begin-snippet: meta
     implementation("org.creekservice:creek-kafka-metadata:0.4.1")
 // end-snippet

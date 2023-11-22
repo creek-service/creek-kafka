@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
@@ -47,12 +48,16 @@ public final class KafkaClientsExtensionProvider
 
     /** Constructor */
     public KafkaClientsExtensionProvider() {
+        this(KafkaSerdeProviders.create());
+    }
+
+    private KafkaClientsExtensionProvider(final KafkaSerdeProviders serdeProviders) {
         this(
                 new KafkaResourceValidator(),
                 new ClustersPropertiesFactory(),
-                KafkaTopicClient::new,
+                props -> new KafkaTopicClient(props, serdeProviders),
                 ClientsExtension::new,
-                new ResourceRegistryFactory());
+                new ResourceRegistryFactory(serdeProviders));
     }
 
     @VisibleForTesting

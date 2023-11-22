@@ -29,6 +29,7 @@ import java.net.URI;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.junit.jupiter.api.Test;
@@ -565,8 +566,8 @@ class KafkaTopicDescriptorsTest {
                 final Class<V> valueType) {
             this.name = name;
             this.cluster = cluster;
-            this.key = new TestPart<>(keyType, keyFormat);
-            this.value = new TestPart<>(valueType, valueFormat);
+            this.key = new TestPart<>(Part.key, keyType, keyFormat);
+            this.value = new TestPart<>(Part.value, valueType, valueFormat);
         }
 
         @Override
@@ -589,13 +590,20 @@ class KafkaTopicDescriptorsTest {
             return value;
         }
 
-        private static final class TestPart<T> implements PartDescriptor<T> {
+        private final class TestPart<T> implements PartDescriptor<T> {
+            private final Part part;
             private final Class<T> type;
             private final SerializationFormat format;
 
-            TestPart(final Class<T> type, final SerializationFormat format) {
+            TestPart(final Part part, final Class<T> type, final SerializationFormat format) {
+                this.part = part;
                 this.type = type;
                 this.format = format;
+            }
+
+            @Override
+            public Part part() {
+                return part;
             }
 
             @Override
@@ -606,6 +614,11 @@ class KafkaTopicDescriptorsTest {
             @Override
             public Class<T> type() {
                 return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return FirstKafkaTopic.this;
             }
         }
     }
@@ -626,8 +639,8 @@ class KafkaTopicDescriptorsTest {
                 final Class<V> valueType) {
             this.name = name;
             this.cluster = cluster;
-            this.key = new TestPart<>(keyType, keyFormat);
-            this.value = new TestPart<>(valueType, valueFormat);
+            this.key = new TestPart<>(Part.key, keyType, keyFormat);
+            this.value = new TestPart<>(Part.value, valueType, valueFormat);
         }
 
         @Override
@@ -650,13 +663,20 @@ class KafkaTopicDescriptorsTest {
             return value;
         }
 
-        private static final class TestPart<T> implements PartDescriptor<T> {
+        private final class TestPart<T> implements PartDescriptor<T> {
+            private final Part part;
             private final Class<T> type;
             private final SerializationFormat format;
 
-            TestPart(final Class<T> type, final SerializationFormat format) {
+            TestPart(final Part part, final Class<T> type, final SerializationFormat format) {
+                this.part = part;
                 this.type = type;
                 this.format = format;
+            }
+
+            @Override
+            public Part part() {
+                return part;
             }
 
             @Override
@@ -667,6 +687,11 @@ class KafkaTopicDescriptorsTest {
             @Override
             public Class<T> type() {
                 return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return SecondKafkaTopic.this;
             }
         }
     }
@@ -689,8 +714,8 @@ class KafkaTopicDescriptorsTest {
                 final KafkaTopicConfig config) {
             this.name = name;
             this.cluster = cluster;
-            this.key = new TestPart<>(keyType, keyFormat);
-            this.value = new TestPart<>(valueType, valueFormat);
+            this.key = new TestPart<>(Part.key, keyType, keyFormat);
+            this.value = new TestPart<>(Part.value, valueType, valueFormat);
             this.config = config;
         }
 
@@ -719,13 +744,20 @@ class KafkaTopicDescriptorsTest {
             return config;
         }
 
-        private static final class TestPart<T> implements PartDescriptor<T> {
+        private final class TestPart<T> implements PartDescriptor<T> {
+            private final Part part;
             private final Class<T> type;
             private final SerializationFormat format;
 
-            TestPart(final Class<T> type, final SerializationFormat format) {
+            TestPart(final Part part, final Class<T> type, final SerializationFormat format) {
+                this.part = part;
                 this.type = type;
                 this.format = format;
+            }
+
+            @Override
+            public Part part() {
+                return part;
             }
 
             @Override
@@ -736,6 +768,11 @@ class KafkaTopicDescriptorsTest {
             @Override
             public Class<T> type() {
                 return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return FirstCreatableKafkaTopic.this;
             }
         }
     }
@@ -760,8 +797,8 @@ class KafkaTopicDescriptorsTest {
                 final KafkaTopicConfig config) {
             this.name = name;
             this.cluster = cluster;
-            this.key = new TestPart<>(keyType, keyFormat);
-            this.value = new TestPart<>(valueType, valueFormat);
+            this.key = new TestPart<>(Part.key, keyType, keyFormat);
+            this.value = new TestPart<>(Part.value, valueType, valueFormat);
             this.config = config;
         }
 
@@ -790,13 +827,20 @@ class KafkaTopicDescriptorsTest {
             return config;
         }
 
-        private static final class TestPart<T> implements PartDescriptor<T> {
+        private final class TestPart<T> implements PartDescriptor<T> {
+            private final Part part;
             private final Class<T> type;
             private final SerializationFormat format;
 
-            TestPart(final Class<T> type, final SerializationFormat format) {
+            TestPart(final Part part, final Class<T> type, final SerializationFormat format) {
+                this.part = part;
                 this.type = type;
                 this.format = format;
+            }
+
+            @Override
+            public Part part() {
+                return part;
             }
 
             @Override
@@ -807,6 +851,11 @@ class KafkaTopicDescriptorsTest {
             @Override
             public Class<T> type() {
                 return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return SecondCreatableKafkaTopic.this;
             }
         }
     }

@@ -76,6 +76,7 @@ jobs:
         run: |
           ./gradlew -Dgradle.publish.key="$GRADLE_PUBLISH_KEY" -Dgradle.publish.secret="$GRADLE_PUBLISH_SECRET" publishPlugins
 
+  # Until Creek fully supports Windows, minimal check:
   build_windows:
     runs-on: windows-latest
     steps:

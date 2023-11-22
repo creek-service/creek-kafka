@@ -41,6 +41,7 @@ import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.test.TopicConfigBuilder;
 import org.creekservice.test.TopicDescriptors;
 import org.hamcrest.Description;
@@ -97,7 +98,7 @@ class KafkaTopicClientFunctionalTest {
 
     @BeforeEach
     void setUp() {
-        client = new KafkaTopicClient(clustersProperties);
+        client = new KafkaTopicClient(clustersProperties, KafkaSerdeProviders.create());
 
         final Map<String, Object> defaultClusterProps =
                 Map.of(BOOTSTRAP_SERVERS_CONFIG, DEFAULT_CLUSTER.getBootstrapServers());

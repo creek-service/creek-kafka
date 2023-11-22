@@ -26,16 +26,19 @@ import java.util.Optional;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopicInternal;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
 import org.creekservice.api.kafka.metadata.KafkaTopicInput;
 import org.creekservice.api.kafka.metadata.KafkaTopicInternal;
 import org.creekservice.api.kafka.metadata.KafkaTopicOutput;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicInput;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.serde.provider.NativeKafkaSerde;
 
 public final class TopicDescriptors {
 
     public static final SerializationFormat KAFKA_FORMAT = serializationFormat("kafka");
+    public static final SerializationFormat OTHER_FORMAT = serializationFormat("other");
 
     private TopicDescriptors() {}
 
@@ -104,31 +107,12 @@ public final class TopicDescriptors {
         return new OutputTopicDescriptor<>(clusterName, topicName, keyType, valueType, config);
     }
 
-    private static final class KafkaPart<T> implements KafkaTopicDescriptor.PartDescriptor<T> {
-
-        private final Class<T> type;
-
-        KafkaPart(final Class<T> type) {
-            this.type = requireNonNull(type, "type");
-        }
-
-        @Override
-        public SerializationFormat format() {
-            return KAFKA_FORMAT;
-        }
-
-        @Override
-        public Class<T> type() {
-            return type;
-        }
-    }
-
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private abstract static class TopicDescriptor<K, V> implements KafkaTopicDescriptor<K, V> {
         private final String topicName;
         private final String clusterName;
-        private final KafkaTopicDescriptor.PartDescriptor<K> key;
-        private final KafkaTopicDescriptor.PartDescriptor<V> value;
+        private final PartDescriptor<K> key;
+        private final PartDescriptor<V> value;
         private final Optional<KafkaTopicConfig> config;
 
         TopicDescriptor(
@@ -139,8 +123,8 @@ public final class TopicDescriptors {
                 final Optional<TopicConfigBuilder> config) {
             this.clusterName = requireNonBlank(clusterName, "clusterName");
             this.topicName = requireNonBlank(topicName, "topicName");
-            this.key = new KafkaPart<>(keyType);
-            this.value = new KafkaPart<>(valueType);
+            this.key = partDescriptor(Part.key, keyType);
+            this.value = partDescriptor(Part.value, valueType);
             this.config = requireNonNull(config, "config").map(TopicConfigBuilder::build);
         }
 
@@ -155,17 +139,85 @@ public final class TopicDescriptors {
         }
 
         @Override
-        public KafkaTopicDescriptor.PartDescriptor<K> key() {
+        public PartDescriptor<K> key() {
             return key;
         }
 
         @Override
-        public KafkaTopicDescriptor.PartDescriptor<V> value() {
+        public PartDescriptor<V> value() {
             return value;
         }
 
         public KafkaTopicConfig config() {
             return config.orElseThrow();
+        }
+
+        private <T> PartDescriptor<T> partDescriptor(final Part part, final Class<T> partType) {
+            return NativeKafkaSerde.supports(partType)
+                    ? new KafkaPart<>(part, partType)
+                    : new OtherPart<>(part, partType);
+        }
+
+        private final class KafkaPart<T> implements PartDescriptor<T> {
+
+            private final Part part;
+            private final Class<T> type;
+
+            KafkaPart(final Part part, final Class<T> type) {
+                this.part = requireNonNull(part, "part");
+                this.type = requireNonNull(type, "type");
+            }
+
+            @Override
+            public Part part() {
+                return part;
+            }
+
+            @Override
+            public SerializationFormat format() {
+                return KAFKA_FORMAT;
+            }
+
+            @Override
+            public Class<T> type() {
+                return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return TopicDescriptor.this;
+            }
+        }
+
+        private final class OtherPart<T> implements PartDescriptor<T> {
+
+            private final Part part;
+            private final Class<T> type;
+
+            OtherPart(final Part part, final Class<T> type) {
+                this.part = requireNonNull(part, "part");
+                this.type = requireNonNull(type, "type");
+            }
+
+            @Override
+            public Part part() {
+                return part;
+            }
+
+            @Override
+            public SerializationFormat format() {
+                return OTHER_FORMAT;
+            }
+
+            @Override
+            public Class<T> type() {
+                return type;
+            }
+
+            @Override
+            public KafkaTopicDescriptor<?, ?> topic() {
+                return TopicDescriptor.this;
+            }
         }
     }
 

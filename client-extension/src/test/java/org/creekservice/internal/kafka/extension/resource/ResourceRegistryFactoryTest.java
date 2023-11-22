@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -50,6 +51,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
@@ -101,11 +103,11 @@ class ResourceRegistryFactoryTest {
         when(keySerdeProvider.create(any())).thenReturn((Serde) keySerde);
         when(valueSerdeProvider.create(any())).thenReturn((Serde) valueSerde);
 
-        setUpPart(aKeyPart, String.class, KEY_FORMAT);
-        setUpPart(bKeyPart, String.class, KEY_FORMAT);
-        setUpPart(aValuePart, long.class, VALUE_FORMAT);
-        setUpPart(bValuePart, long.class, VALUE_FORMAT);
-        setUpPart(customPart, long.class, VALUE_FORMAT);
+        setUpPart(aKeyPart, Part.key, topicDefA, String.class, KEY_FORMAT);
+        setUpPart(bKeyPart, Part.key, topicDefB, String.class, KEY_FORMAT);
+        setUpPart(aValuePart, Part.value, topicDefA, long.class, VALUE_FORMAT);
+        setUpPart(bValuePart, Part.value, topicDefB, long.class, VALUE_FORMAT);
+        setUpPart(customPart, Part.value, topicDefB, long.class, VALUE_FORMAT);
 
         setUpTopic(topicDefA, "a", aKeyPart, aValuePart);
         setUpTopic(topicDefB, "b", bKeyPart, bValuePart);
@@ -268,7 +270,9 @@ class ResourceRegistryFactoryTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Unknown key serialization format encountered. format=key-format, topic=a"));
+                is(
+                        "Unknown key serialization format encountered. format=key-format,"
+                                + " topicId=kafka-topic://c/a"));
 
         assertThat(e.getCause(), is(cause));
     }
@@ -288,17 +292,24 @@ class ResourceRegistryFactoryTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Unknown value serialization format encountered. format=value-format, topic=a"));
+                is(
+                        "Unknown value serialization format encountered. format=value-format,"
+                                + " topicId=kafka-topic://c/a"));
 
         assertThat(e.getCause(), is(cause));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> void setUpPart(
-            final PartDescriptor<T> part,
+            final PartDescriptor<T> descriptor,
+            final Part part,
+            final KafkaTopicDescriptor<?, ?> topic,
             final Class<T> keyType,
             final SerializationFormat format) {
-        when(part.type()).thenReturn(keyType);
-        when(part.format()).thenReturn(format);
+        when(descriptor.part()).thenReturn(part);
+        when(descriptor.type()).thenReturn(keyType);
+        when(descriptor.format()).thenReturn(format);
+        when(descriptor.topic()).thenReturn((KafkaTopicDescriptor) topic);
     }
 
     private <K, V> void setUpTopic(
@@ -306,6 +317,7 @@ class ResourceRegistryFactoryTest {
             final String name,
             final PartDescriptor<K> keyPart,
             final PartDescriptor<V> valuePart) {
+        when(topic.id()).thenReturn(KafkaTopicDescriptor.resourceId("c", name));
         when(topic.name()).thenReturn(name);
         when(topic.cluster()).thenReturn(CLUSTER_NAME);
         when(topic.key()).thenReturn(keyPart);

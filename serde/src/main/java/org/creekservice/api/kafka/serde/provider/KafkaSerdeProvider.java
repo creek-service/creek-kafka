@@ -16,8 +16,9 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
+import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 
 // begin-snippet: kafka-serde-provider
@@ -37,14 +38,28 @@ public interface KafkaSerdeProvider {
     SerializationFormat format();
 
     /**
-     * Get the serde for the supplied Kafka record {@code part}.
+     * Ensure any resources associated with a topic part are registered, e.g. schemas registered in
+     * the appropriate schema store.
+     *
+     * <p>The method allows serde providers to optionally create / register resources associated
+     * with a topic's key or value. Implementations should only ensure resources for the supplied
+     * {@code topicPart}.
+     *
+     * @param part the descriptor for the topic part.
+     * @param clusterProperties the properties of the cluster the {@code topic} belongs to.
+     */
+    default void ensureTopicPartResources(
+            PartDescriptor<?> part, Map<String, Object> clusterProperties) {}
+
+    /**
+     * Get the serde for the supplied Kafka topic {@code part}.
      *
      * <p>{@link Serde#configure} will be called on the returned serde.
      *
-     * @param part the part descriptor
      * @param <T> the type of the part.
+     * @param part the descriptor for the topic part.
      * @return the serde to use to serialize and deserialize the part.
      */
-    <T> Serde<T> create(KafkaTopicDescriptor.PartDescriptor<T> part);
+    <T> Serde<T> create(PartDescriptor<T> part);
 }
 // end-snippet
