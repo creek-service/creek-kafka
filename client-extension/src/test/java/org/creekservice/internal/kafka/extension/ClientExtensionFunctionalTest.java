@@ -43,6 +43,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.kafka.test.service.TestServiceDescriptor;
 import org.creekservice.api.kafka.test.service.UpstreamAggregateDescriptor;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
@@ -83,7 +84,7 @@ class ClientExtensionFunctionalTest {
                         .build(Set.of());
 
         final ResourceRegistry registry =
-                new ResourceRegistryFactory()
+                new ResourceRegistryFactory(KafkaSerdeProviders.create())
                         .create(List.of(new TestServiceDescriptor()), clustersProperties);
 
         try (Admin admin = Admin.create(clustersProperties.get(DEFAULT_CLUSTER_NAME))) {

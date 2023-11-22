@@ -69,6 +69,16 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
         return (Serde<T>) supplier.get();
     }
 
+    /**
+     * Check if this provider supports the supplied {@code type}.
+     *
+     * @param type the type to check
+     * @return {@code true} if supported, {@code false} otherwise.
+     */
+    public static boolean supports(final Class<?> type) {
+        return SUPPLIERS.containsKey(type);
+    }
+
     private static final class UnsupportedTypeException extends IllegalArgumentException {
         <T> UnsupportedTypeException(final Class<T> type) {
             super("The supplied type is not supported by the kafka format: " + type.getName());

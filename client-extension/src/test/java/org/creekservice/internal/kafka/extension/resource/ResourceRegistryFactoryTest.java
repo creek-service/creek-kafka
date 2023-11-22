@@ -50,6 +50,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
@@ -268,7 +269,9 @@ class ResourceRegistryFactoryTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Unknown key serialization format encountered. format=key-format, topic=a"));
+                is(
+                        "Unknown key serialization format encountered. format=key-format,"
+                                + " topicId=kafka-topic://c/a"));
 
         assertThat(e.getCause(), is(cause));
     }
@@ -288,7 +291,9 @@ class ResourceRegistryFactoryTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Unknown value serialization format encountered. format=value-format, topic=a"));
+                is(
+                        "Unknown value serialization format encountered. format=value-format,"
+                                + " topicId=kafka-topic://c/a"));
 
         assertThat(e.getCause(), is(cause));
     }
@@ -306,6 +311,7 @@ class ResourceRegistryFactoryTest {
             final String name,
             final PartDescriptor<K> keyPart,
             final PartDescriptor<V> valuePart) {
+        when(topic.id()).thenReturn(KafkaTopicDescriptor.resourceId("c", name));
         when(topic.name()).thenReturn(name);
         when(topic.cluster()).thenReturn(CLUSTER_NAME);
         when(topic.key()).thenReturn(keyPart);

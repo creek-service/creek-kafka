@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.apache.kafka.clients.admin.ConfigEntry.ConfigSource.DYNAMIC_TOPIC_CONFIG;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,24 +37,39 @@ import org.apache.kafka.common.errors.TopicExistsException;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider.TopicPart;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 
-/** Implementation of {@link TopicClient} */
+/**
+ * Implementation of {@link TopicClient}.
+ *
+ * <p>Responsible for ensuring topics are created, along with any associated resources, e.g.
+ * schemas.
+ */
 public final class KafkaTopicClient implements TopicClient {
 
     private final StructuredLogger logger;
     private final ClustersProperties clusterProps;
+    private final KafkaSerdeProviders serdeProviders;
     private final Function<Map<String, Object>, Admin> adminFactory;
 
     /**
      * @param clusterProps props
+     * @param serdeProviders all know serde providers
      */
-    public KafkaTopicClient(final ClustersProperties clusterProps) {
+    public KafkaTopicClient(
+            final ClustersProperties clusterProps, final KafkaSerdeProviders serdeProviders) {
         this(
                 clusterProps,
+                serdeProviders,
                 Admin::create,
                 StructuredLoggerFactory.internalLogger(KafkaTopicClient.class));
     }
@@ -61,9 +77,11 @@ public final class KafkaTopicClient implements TopicClient {
     @VisibleForTesting
     KafkaTopicClient(
             final ClustersProperties clusterProps,
+            final KafkaSerdeProviders serdeProviders,
             final Function<Map<String, Object>, Admin> adminFactory,
             final StructuredLogger logger) {
         this.clusterProps = requireNonNull(clusterProps, "clusterProps");
+        this.serdeProviders = requireNonNull(serdeProviders, "serdeProviders");
         this.adminFactory = requireNonNull(adminFactory, "adminFactory");
         this.logger = requireNonNull(logger, "logger");
     }
@@ -76,11 +94,38 @@ public final class KafkaTopicClient implements TopicClient {
     }
 
     private void ensure(final String cluster, final List<CreatableKafkaTopic<?, ?>> topics) {
-        logger.info(
+        ensureTopicResources(topics);
+        ensureTopics(cluster, topics);
+    }
+
+    private void ensureTopicResources(final List<CreatableKafkaTopic<?, ?>> topics) {
+        topics.forEach(
+                topic -> {
+                    logger.debug(
+                            "Ensuring topic resources",
+                            log -> log.with(LoggingField.topicId, topic.id()));
+
+                    ensureTopicPartResources(topic, TopicPart.key);
+                    ensureTopicPartResources(topic, TopicPart.value);
+                });
+    }
+
+    private void ensureTopicPartResources(
+            final CreatableKafkaTopic<?, ?> topic, final TopicPart topicPart) {
+        final PartDescriptor<?> part =
+                topicPart.equals(TopicPart.key) ? topic.key() : topic.value();
+        final KafkaSerdeProvider serdeProvider = serdeProviders.get(part.format());
+
+        serdeProvider.ensureTopicPartResources(
+                part, topicPart, topic, clusterProps.get(topic.cluster()));
+    }
+
+    private void ensureTopics(final String cluster, final List<CreatableKafkaTopic<?, ?>> topics) {
+        logger.debug(
                 "Ensuring topics",
                 log ->
                         log.with(
-                                "topic-ids",
+                                LoggingField.topicIds,
                                 topics.stream().map(CreatableKafkaTopic::id).collect(toList())));
 
         try (Admin admin = adminFactory.apply(clusterProps.get(cluster))) {
@@ -104,6 +149,7 @@ public final class KafkaTopicClient implements TopicClient {
         final Consumer<Map.Entry<String, KafkaFuture<Void>>> throwOnFailure =
                 e -> {
                     final String topic = e.getKey();
+                    final URI topicId = KafkaTopicDescriptor.resourceId(cluster, topic);
                     try {
                         e.getValue().get();
 
@@ -117,20 +163,21 @@ public final class KafkaTopicClient implements TopicClient {
                                 "Created topic",
                                 log -> {
                                     final LogEntryCustomizer configNs =
-                                            log.with("cluster", cluster)
-                                                    .with("name", topic)
-                                                    .with("partitions", partitions)
+                                            log.with(LoggingField.topicId, topicId)
+                                                    .with(LoggingField.partitions, partitions)
                                                     .ns("config");
 
                                     config.forEach(c -> configNs.with(c.name(), c.value()));
                                 });
                     } catch (ExecutionException ex) {
                         if (!(ex.getCause() instanceof TopicExistsException)) {
-                            throw new CreateTopicException(topic, cluster, ex.getCause());
+                            throw new CreateTopicException(topicId, ex.getCause());
                         }
-                        logger.debug("Topic already exists", log -> log.with("nane", topic));
+                        logger.debug(
+                                "Topic already exists",
+                                log -> log.with(LoggingField.topicId, topicId));
                     } catch (Exception ex) {
-                        throw new CreateTopicException(topic, cluster, ex);
+                        throw new CreateTopicException(topicId, ex);
                     }
                 };
 
@@ -146,11 +193,8 @@ public final class KafkaTopicClient implements TopicClient {
     }
 
     private static final class CreateTopicException extends RuntimeException {
-        CreateTopicException(
-                final String topicName, final String clusterName, final Throwable cause) {
-            super(
-                    "Failed to create topic. topic: " + topicName + ", cluster: " + clusterName,
-                    cause);
+        CreateTopicException(final URI topicId, final Throwable cause) {
+            super("Failed to create topic. " + LoggingField.topicId + ": " + topicId, cause);
         }
     }
 }
