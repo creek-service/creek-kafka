@@ -18,7 +18,6 @@ package org.creekservice.api.kafka.serde.provider;
 
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 
@@ -32,11 +31,6 @@ import org.creekservice.api.kafka.metadata.SerializationFormat;
  * META-INFO.services} directory.
  */
 public interface KafkaSerdeProvider {
-
-    enum TopicPart {
-        key,
-        value
-    }
 
     /**
      * @return the <i>unique</i> serialization format the serde provides.
@@ -52,15 +46,10 @@ public interface KafkaSerdeProvider {
      * {@code topicPart}.
      *
      * @param part the descriptor for the topic part.
-     * @param topicPart Identifies if {@code part} is a key or value part.
-     * @param topic the topic the {@code part} belongs to.
      * @param clusterProperties the properties of the cluster the {@code topic} belongs to.
      */
     default void ensureTopicPartResources(
-            PartDescriptor<?> part,
-            TopicPart topicPart,
-            KafkaTopicDescriptor<?, ?> topic,
-            Map<String, Object> clusterProperties) {}
+            PartDescriptor<?> part, Map<String, Object> clusterProperties) {}
 
     /**
      * Get the serde for the supplied Kafka topic {@code part}.

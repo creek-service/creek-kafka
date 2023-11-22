@@ -41,7 +41,6 @@ import org.apache.kafka.common.internals.KafkaFutureImpl;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider.TopicPart;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
 import org.creekservice.test.TopicDescriptors;
@@ -222,8 +221,7 @@ class KafkaTopicClientTest {
         client.ensure(List.of(TOPIC_A));
 
         // Then:
-        verify(kafkaSerdeProvider)
-                .ensureTopicPartResources(TOPIC_A.key(), TopicPart.key, TOPIC_A, A_CLUSTER_PROPS);
+        verify(kafkaSerdeProvider).ensureTopicPartResources(TOPIC_A.key(), A_CLUSTER_PROPS);
     }
 
     @Test
@@ -232,9 +230,7 @@ class KafkaTopicClientTest {
         client.ensure(List.of(TOPIC_A));
 
         // Then:
-        verify(otherSerdeProvider)
-                .ensureTopicPartResources(
-                        TOPIC_A.value(), TopicPart.value, TOPIC_A, A_CLUSTER_PROPS);
+        verify(otherSerdeProvider).ensureTopicPartResources(TOPIC_A.value(), A_CLUSTER_PROPS);
     }
 
     @Test

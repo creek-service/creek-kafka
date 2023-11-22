@@ -69,6 +69,21 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
 
     /** Descriptor for part of a topic's record. */
     interface PartDescriptor<T> {
+
+        enum Part {
+            key,
+            value;
+
+            public boolean isKey() {
+                return this == key;
+            }
+        }
+
+        /**
+         * @return which {@code Part} this descriptor is for.
+         */
+        Part part();
+
         /**
          * The serialization format used to serialize this part of the record.
          *
@@ -86,6 +101,11 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
          * @return The part's java type.
          */
         Class<T> type();
+
+        /**
+         * @return the topic this instance is part of.
+         */
+        KafkaTopicDescriptor<?, ?> topic();
     }
 
     /**

@@ -40,9 +40,6 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider.TopicPart;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
@@ -94,30 +91,17 @@ public final class KafkaTopicClient implements TopicClient {
     }
 
     private void ensure(final String cluster, final List<CreatableKafkaTopic<?, ?>> topics) {
-        ensureTopicResources(topics);
+        topics.forEach(this::ensureTopicResources);
         ensureTopics(cluster, topics);
     }
 
-    private void ensureTopicResources(final List<CreatableKafkaTopic<?, ?>> topics) {
-        topics.forEach(
-                topic -> {
-                    logger.debug(
-                            "Ensuring topic resources",
-                            log -> log.with(LoggingField.topicId, topic.id()));
+    private void ensureTopicResources(final CreatableKafkaTopic<?, ?> topic) {
+        logger.debug("Ensuring topic resources", log -> log.with(LoggingField.topicId, topic.id()));
 
-                    ensureTopicPartResources(topic, TopicPart.key);
-                    ensureTopicPartResources(topic, TopicPart.value);
-                });
-    }
+        final Map<String, Object> props = clusterProps.get(topic.cluster());
+        serdeProviders.get(topic.key().format()).ensureTopicPartResources(topic.key(), props);
 
-    private void ensureTopicPartResources(
-            final CreatableKafkaTopic<?, ?> topic, final TopicPart topicPart) {
-        final PartDescriptor<?> part =
-                topicPart.equals(TopicPart.key) ? topic.key() : topic.value();
-        final KafkaSerdeProvider serdeProvider = serdeProviders.get(part.format());
-
-        serdeProvider.ensureTopicPartResources(
-                part, topicPart, topic, clusterProps.get(topic.cluster()));
+        serdeProviders.get(topic.value().format()).ensureTopicPartResources(topic.value(), props);
     }
 
     private void ensureTopics(final String cluster, final List<CreatableKafkaTopic<?, ?>> topics) {

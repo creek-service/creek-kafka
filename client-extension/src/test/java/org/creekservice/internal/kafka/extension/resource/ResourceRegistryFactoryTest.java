@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
+import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -102,11 +103,11 @@ class ResourceRegistryFactoryTest {
         when(keySerdeProvider.create(any())).thenReturn((Serde) keySerde);
         when(valueSerdeProvider.create(any())).thenReturn((Serde) valueSerde);
 
-        setUpPart(aKeyPart, String.class, KEY_FORMAT);
-        setUpPart(bKeyPart, String.class, KEY_FORMAT);
-        setUpPart(aValuePart, long.class, VALUE_FORMAT);
-        setUpPart(bValuePart, long.class, VALUE_FORMAT);
-        setUpPart(customPart, long.class, VALUE_FORMAT);
+        setUpPart(aKeyPart, Part.key, topicDefA, String.class, KEY_FORMAT);
+        setUpPart(bKeyPart, Part.key, topicDefB, String.class, KEY_FORMAT);
+        setUpPart(aValuePart, Part.value, topicDefA, long.class, VALUE_FORMAT);
+        setUpPart(bValuePart, Part.value, topicDefB, long.class, VALUE_FORMAT);
+        setUpPart(customPart, Part.value, topicDefB, long.class, VALUE_FORMAT);
 
         setUpTopic(topicDefA, "a", aKeyPart, aValuePart);
         setUpTopic(topicDefB, "b", bKeyPart, bValuePart);
@@ -298,12 +299,17 @@ class ResourceRegistryFactoryTest {
         assertThat(e.getCause(), is(cause));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> void setUpPart(
-            final PartDescriptor<T> part,
+            final PartDescriptor<T> descriptor,
+            final Part part,
+            final KafkaTopicDescriptor<?, ?> topic,
             final Class<T> keyType,
             final SerializationFormat format) {
-        when(part.type()).thenReturn(keyType);
-        when(part.format()).thenReturn(format);
+        when(descriptor.part()).thenReturn(part);
+        when(descriptor.type()).thenReturn(keyType);
+        when(descriptor.format()).thenReturn(format);
+        when(descriptor.topic()).thenReturn((KafkaTopicDescriptor) topic);
     }
 
     private <K, V> void setUpTopic(
