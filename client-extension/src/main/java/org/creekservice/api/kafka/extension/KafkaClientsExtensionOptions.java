@@ -20,16 +20,15 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.TypeOverrides;
+import org.creekservice.internal.kafka.extension.config.TypeOverridesBuilder;
 
 /** Options for the Kafka client extension. */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class KafkaClientsExtensionOptions implements ClientsExtensionOptions {
 
     /** More sensible Kafka client defaults: */
@@ -46,7 +45,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
                     ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 
     private final ClustersProperties.Builder properties;
-    private final Optional<TopicClient> topicClient;
+    private final TypeOverrides typeOverrides;
 
     /**
      * @return new builder instance.
@@ -56,9 +55,9 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     }
 
     private KafkaClientsExtensionOptions(
-            final ClustersProperties.Builder properties, final Optional<TopicClient> topicClient) {
+            final ClustersProperties.Builder properties, final TypeOverrides typeOverrides) {
         this.properties = requireNonNull(properties, "properties");
-        this.topicClient = requireNonNull(topicClient, "topicClient");
+        this.typeOverrides = requireNonNull(typeOverrides, "typeOverrides");
     }
 
     @Override
@@ -67,8 +66,8 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     }
 
     @Override
-    public Optional<TopicClient> topicClient() {
-        return topicClient;
+    public TypeOverrides typeOverrides() {
+        return typeOverrides;
     }
 
     @Override
@@ -81,12 +80,12 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         }
         final KafkaClientsExtensionOptions that = (KafkaClientsExtensionOptions) o;
         return Objects.equals(properties, that.properties)
-                && Objects.equals(topicClient, that.topicClient);
+                && Objects.equals(typeOverrides, that.typeOverrides);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(properties, topicClient);
+        return Objects.hash(properties, typeOverrides);
     }
 
     @Override
@@ -94,18 +93,18 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         return "KafkaClientsExtensionOptions{"
                 + "properties="
                 + properties
-                + ", topicClient="
-                + topicClient
+                + ", typeOverrides="
+                + typeOverrides
                 + '}';
     }
 
     /** Builder of the client extension options. */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static final class Builder implements ClientsExtensionOptions.Builder {
 
         private final ClustersProperties.Builder properties =
                 ClustersProperties.propertiesBuilder();
-        private Optional<TopicClient> topicClient = Optional.empty();
+
+        private final TypeOverridesBuilder typeOverrides = new TypeOverridesBuilder();
 
         private Builder() {
             CLIENT_DEFAULTS.forEach(properties::putCommon);
@@ -134,13 +133,13 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         }
 
         @Override
-        public Builder withTopicClient(final TopicClient topicClient) {
-            this.topicClient = Optional.of(topicClient);
+        public <T> Builder withTypeOverride(final Class<T> type, final T instance) {
+            typeOverrides.set(type, instance);
             return this;
         }
 
         public KafkaClientsExtensionOptions build() {
-            return new KafkaClientsExtensionOptions(properties, topicClient);
+            return new KafkaClientsExtensionOptions(properties, typeOverrides.build());
         }
     }
 }

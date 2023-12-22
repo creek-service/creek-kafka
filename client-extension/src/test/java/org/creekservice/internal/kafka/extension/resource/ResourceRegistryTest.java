@@ -25,8 +25,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
-import java.util.Map;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,14 +48,10 @@ class ResourceRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry =
-                new ResourceRegistry(
-                        Map.of(
-                                URI.create("kafka-topic://default/topic-A"),
-                                topicA,
-                                URI.create("kafka-topic://default/topic-B"),
-                                topicB));
+        registry = new ResourceRegistry();
 
+        when(topicA.name()).thenCallRealMethod();
+        when(topicB.name()).thenCallRealMethod();
         when(topicA.descriptor()).thenReturn(topicDefA);
         when(topicB.descriptor()).thenReturn(topicDefB);
 
@@ -66,31 +60,28 @@ class ResourceRegistryTest {
     }
 
     @Test
-    void shouldGetTopicByDef() {
-        assertThat(registry.topic(topicDefA), is(topicA));
-        assertThat(registry.topic(topicDefB), is(topicB));
-    }
-
-    @Test
-    void shouldGetTopicByName() {
-        assertThat(registry.topic(topicDefA.cluster(), topicDefA.name()), is(topicA));
-        assertThat(registry.topic(topicDefB.cluster(), topicDefB.name()), is(topicB));
-    }
-
-    @Test
-    void shouldBeClusterAware() {
+    void shouldThrowOnDuplicateRegistration() {
         // Given:
-        when(topicDefB.name()).thenReturn("topic-A");
-        when(topicDefB.cluster()).thenReturn("different");
+        final String sameName = topicDefA.name();
+        when(topicDefB.name()).thenReturn(sameName);
+
+        registry.register(topicA);
 
         // When:
-        registry =
-                new ResourceRegistry(
-                        Map.of(
-                                URI.create("kafka-topic://default/topic-A"),
-                                topicA,
-                                URI.create("kafka-topic://different/topic-A"),
-                                topicB));
+        final Exception e =
+                assertThrows(IllegalStateException.class, () -> registry.register(topicB));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("Resource already registered with id=kafka-topic://default/topic-A"));
+    }
+
+    @Test
+    void shouldGetTopicByDef() {
+        // When:
+        registry.register(topicA);
+        registry.register(topicB);
 
         // Then:
         assertThat(registry.topic(topicDefA), is(topicA));
@@ -98,8 +89,37 @@ class ResourceRegistryTest {
     }
 
     @Test
+    void shouldGetTopicByName() {
+        // When:
+        registry.register(topicA);
+        registry.register(topicB);
+
+        // Then:
+        assertThat(registry.topic(topicDefA.cluster(), topicDefA.name()), is(topicA));
+        assertThat(registry.topic(topicDefB.cluster(), topicDefB.name()), is(topicB));
+    }
+
+    @Test
+    void shouldBeClusterAware() {
+        // Given:
+        final String sameName = topicDefA.name();
+        when(topicDefB.name()).thenReturn(sameName);
+        when(topicDefB.cluster()).thenReturn("different-cluster");
+
+        // When:
+        registry.register(topicA);
+        registry.register(topicB);
+
+        // Then (did not throw):
+        assertThat(registry.topic(topicDefA), is(topicA));
+        assertThat(registry.topic(topicDefB), is(topicB));
+    }
+
+    @Test
     void shouldGetTopicWithEquivalentDef() {
         // Given:
+        registry.register(topicA);
+
         setUpTopicDef(def, "topic-A", long.class, String.class);
 
         // Then:
@@ -109,6 +129,8 @@ class ResourceRegistryTest {
     @Test
     void shouldThrowOnDefMismatch() {
         // Given:
+        registry.register(topicA);
+
         setUpTopicDef(def, "topic-A", Long.class, String.class);
 
         // When:

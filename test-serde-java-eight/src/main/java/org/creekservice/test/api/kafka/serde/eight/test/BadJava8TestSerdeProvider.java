@@ -35,7 +35,12 @@ public final class BadJava8TestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
-        return null;
+    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
+        return new SerdeProvider() {
+            @Override
+            public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+                return null;
+            }
+        };
     }
 }

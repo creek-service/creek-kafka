@@ -58,15 +58,21 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
         return FORMAT;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
-        final Supplier<Serde<?>> supplier = SUPPLIERS.get(part.type());
-        if (supplier == null) {
-            throw new UnsupportedTypeException(part.type());
-        }
+    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
+        return new SerdeProvider() {
 
-        return (Serde<T>) supplier.get();
+            @SuppressWarnings("unchecked")
+            @Override
+            public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+                final Supplier<Serde<?>> supplier = SUPPLIERS.get(part.type());
+                if (supplier == null) {
+                    throw new UnsupportedTypeException(part.type());
+                }
+
+                return (Serde<T>) supplier.get();
+            }
+        };
     }
 
     /**

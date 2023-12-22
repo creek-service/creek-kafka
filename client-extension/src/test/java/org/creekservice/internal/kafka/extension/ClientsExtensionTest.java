@@ -35,7 +35,6 @@ import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
-import org.creekservice.internal.kafka.extension.resource.Topic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +51,7 @@ class ClientsExtensionTest {
     @Mock private ResourceRegistry resources;
     @Mock private Properties properties;
     @Mock private KafkaTopicDescriptor<Long, String> topicDef;
-    @Mock private Topic<Long, String> topic;
+    @Mock private KafkaTopic<Long, String> topic;
     private final Map<String, Object> clientProperties =
             Map.of(BOOTSTRAP_SERVERS_CONFIG, "localhost:8080");
     private ClientsExtension extension;

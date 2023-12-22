@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2023 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.extension.client;
+package org.creekservice.internal.kafka.extension.resource;
 
-import java.util.List;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 
-/** Client for working with Kafka topics. */
-public interface TopicClient {
-
+/** Type responsible for accepting registration of topic resources. */
+public interface TopicRegistrar {
     /**
-     * Ensure the supplied creatable topics exist, creating where necessary
+     * Register the supplied {@code topic} resource.
      *
-     * @param topics the topics to ensure.
+     * @param topic the topic resource.
      */
-    void ensure(List<? extends CreatableKafkaTopic<?, ?>> topics);
+    void register(KafkaTopic<?, ?> topic);
 }

@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.extension.client;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.kafka.common.KafkaFuture.completedFuture;
 import static org.creekservice.test.TopicConfigBuilder.withPartitions;
 import static org.creekservice.test.TopicDescriptors.outputTopic;
@@ -38,12 +39,8 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.errors.BrokerNotAvailableException;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.internals.KafkaFutureImpl;
-import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
-import org.creekservice.test.TopicDescriptors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,10 +59,6 @@ class KafkaTopicClientTest {
             outputTopic(CLUSTER, "t", Long.class, Object.class, withPartitions(1));
     private static final Map<String, Object> A_CLUSTER_PROPS = Map.of("a", 1);
 
-    @Mock private ClustersProperties clusterProps;
-    @Mock private KafkaSerdeProviders serdeProviders;
-    @Mock private KafkaSerdeProvider kafkaSerdeProvider;
-    @Mock private KafkaSerdeProvider otherSerdeProvider;
     @Mock private Function<Map<String, Object>, Admin> adminFactory;
     @Mock private Admin admin;
     @Mock private CreateTopicsResult createTopicsResult;
@@ -74,7 +67,7 @@ class KafkaTopicClientTest {
 
     @BeforeEach
     void setUp() {
-        client = new KafkaTopicClient(clusterProps, serdeProviders, adminFactory, logger);
+        client = new KafkaTopicClient(CLUSTER, A_CLUSTER_PROPS, adminFactory, logger);
 
         when(adminFactory.apply(any())).thenReturn(admin);
         when(admin.createTopics(any())).thenReturn(createTopicsResult);
@@ -82,17 +75,12 @@ class KafkaTopicClientTest {
         when(createTopicsResult.numPartitions(TOPIC_A.name())).thenReturn(completedFuture(1));
         when(createTopicsResult.config(TOPIC_A.name()))
                 .thenReturn(completedFuture(new Config(List.of())));
-
-        when(clusterProps.get(CLUSTER)).thenReturn(A_CLUSTER_PROPS);
-
-        when(serdeProviders.get(TopicDescriptors.KAFKA_FORMAT)).thenReturn(kafkaSerdeProvider);
-        when(serdeProviders.get(TopicDescriptors.OTHER_FORMAT)).thenReturn(otherSerdeProvider);
     }
 
     @Test
     void shouldCreateAdmin() {
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then:
         verify(adminFactory).apply(A_CLUSTER_PROPS);
@@ -101,7 +89,7 @@ class KafkaTopicClientTest {
     @Test
     void shouldCloseAdmin() {
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then:
         verify(admin).close();
@@ -113,7 +101,8 @@ class KafkaTopicClientTest {
         when(admin.createTopics(any())).thenThrow(new RuntimeException("Boom"));
 
         // When:
-        assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
+        assertThrows(
+                RuntimeException.class, () -> client.ensureExternalResources(List.of(TOPIC_A)));
 
         // Then:
         verify(admin).close();
@@ -125,7 +114,7 @@ class KafkaTopicClientTest {
         givenTopicExists();
 
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then: did not throw.
     }
@@ -140,7 +129,9 @@ class KafkaTopicClientTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
+                assertThrows(
+                        RuntimeException.class,
+                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
 
         // Then:
         assertThat(e.getMessage(), is("Failed to create topic. topicId: kafka-topic://c/t"));
@@ -158,7 +149,9 @@ class KafkaTopicClientTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
+                assertThrows(
+                        RuntimeException.class,
+                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
 
         // Then:
         assertThat(e.getMessage(), is("Failed to create topic. topicId: kafka-topic://c/t"));
@@ -168,7 +161,7 @@ class KafkaTopicClientTest {
     @Test
     void shouldLogTopicsOnEnsure() {
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then:
         assertThat(
@@ -179,7 +172,7 @@ class KafkaTopicClientTest {
     @Test
     void shouldLogOnTopicCreation() {
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then:
         assertThat(
@@ -193,7 +186,7 @@ class KafkaTopicClientTest {
         givenTopicExists();
 
         // When:
-        client.ensure(List.of(TOPIC_A));
+        client.ensureExternalResources(List.of(TOPIC_A));
 
         // Then:
         assertThat(
@@ -202,46 +195,25 @@ class KafkaTopicClientTest {
     }
 
     @Test
-    void shouldThrowOnUnknownFormat() {
+    void shouldThrowIfTopicFromWrongCluster() {
         // Given:
-        final RuntimeException expected = new IllegalArgumentException("Unknown format bro");
-        when(serdeProviders.get(TopicDescriptors.KAFKA_FORMAT)).thenThrow(expected);
+        client = new KafkaTopicClient("different-cluster", A_CLUSTER_PROPS, adminFactory, logger);
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> client.ensure(List.of(TOPIC_A)));
-
-        // Then:
-        assertThat(e, is(expected));
-    }
-
-    @Test
-    void shouldEnsureKeyResource() {
-        // When:
-        client.ensure(List.of(TOPIC_A));
-
-        // Then:
-        verify(kafkaSerdeProvider).ensureTopicPartResources(TOPIC_A.key(), A_CLUSTER_PROPS);
-    }
-
-    @Test
-    void shouldEnsureValueResource() {
-        // When:
-        client.ensure(List.of(TOPIC_A));
-
-        // Then:
-        verify(otherSerdeProvider).ensureTopicPartResources(TOPIC_A.value(), A_CLUSTER_PROPS);
-    }
-
-    @Test
-    void shouldLogOnEnsureTopicResources() {
-        // When:
-        client.ensure(List.of(TOPIC_A));
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
 
         // Then:
         assertThat(
-                logger.textEntries(),
-                hasItem("DEBUG: {message=Ensuring topic resources, topicId=kafka-topic://c/t}"));
+                e.getMessage(),
+                is(
+                        "topics were for wrong cluster."
+                                + lineSeparator()
+                                + "Expected cluster: different-cluster"
+                                + lineSeparator()
+                                + "Invalid topic ids: [kafka-topic://c/t]"));
     }
 
     private void givenTopicExists() {

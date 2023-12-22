@@ -99,7 +99,7 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
             return clientsExt.topic(record.clusterName(), record.topicName());
         } catch (final Exception e) {
             throw new TopicInputException(
-                    "The record's cluster or topic is not known."
+                    "The input record's cluster or topic is not known."
                             + " cluster: "
                             + record.clusterName()
                             + ", topic: "

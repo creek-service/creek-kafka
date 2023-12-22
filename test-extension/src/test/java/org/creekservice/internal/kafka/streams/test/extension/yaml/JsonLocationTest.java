@@ -35,7 +35,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 class JsonLocationTest {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER =
+            new ObjectMapper().enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION);
 
     @TempDir private Path testDir;
 

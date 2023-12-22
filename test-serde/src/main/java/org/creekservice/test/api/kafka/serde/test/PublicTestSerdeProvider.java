@@ -16,8 +16,6 @@
 
 package org.creekservice.test.api.kafka.serde.test;
 
-import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 
@@ -34,7 +32,7 @@ public final class PublicTestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
         return null;
     }
 }

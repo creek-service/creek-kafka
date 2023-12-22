@@ -26,7 +26,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +34,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -46,7 +44,6 @@ import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.extension.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
-import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactory;
 import org.creekservice.internal.kafka.extension.resource.TopicResourceHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,16 +67,17 @@ class KafkaClientsExtensionProviderTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekService api;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private ClientsExtensionOptions userOptions;
+
     @Mock private KafkaResourceValidator resourceValidator;
-    @Mock private ClientsExtensionOptions userOptions;
     @Mock private ClustersPropertiesFactory propertiesFactory;
-    @Mock private KafkaClientsExtensionProvider.TopicClientFactory topicClientFactory;
+    @Mock private KafkaClientsExtensionProvider.HandlerFactory handlerFactory;
     @Mock private KafkaClientsExtensionProvider.ExtensionFactory extensionFactory;
     @Mock private ClustersProperties clustersProperties;
-    @Mock private ResourceRegistryFactory resourceFactory;
-    @Mock private TopicClient topicClient;
+    @Mock private ResourceRegistry resourceRegistry;
     @Mock private ClientsExtension clientsExtension;
-    @Mock private ResourceRegistry resources;
+    @Mock private TopicResourceHandler topicHandler;
 
     private Collection<? extends ComponentDescriptor> components;
 
@@ -96,13 +94,12 @@ class KafkaClientsExtensionProviderTest {
                 new KafkaClientsExtensionProvider(
                         resourceValidator,
                         propertiesFactory,
-                        topicClientFactory,
-                        extensionFactory,
-                        resourceFactory);
+                        resourceRegistry,
+                        handlerFactory,
+                        extensionFactory);
 
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
-        when(topicClientFactory.create(any())).thenReturn(topicClient);
-        when(resourceFactory.create(any(), any())).thenReturn(resources);
+        when(handlerFactory.create(any(), any(), any())).thenReturn(topicHandler);
         when(extensionFactory.create(any(), any())).thenReturn(clientsExtension);
 
         when(api.options().get(any())).thenReturn(Optional.empty());
@@ -127,14 +124,11 @@ class KafkaClientsExtensionProviderTest {
         provider.initialize(api);
 
         // Then:
-        final InOrder inOrder =
-                inOrder(resourceValidator, propertiesFactory, topicClientFactory, resourceFactory);
+        final InOrder inOrder = inOrder(resourceValidator, propertiesFactory, handlerFactory);
 
         inOrder.verify(resourceValidator).validate(any());
-
         inOrder.verify(propertiesFactory).create(any(), any());
-        inOrder.verify(resourceFactory).create(any(), any());
-        inOrder.verify(topicClientFactory).create(any());
+        inOrder.verify(handlerFactory).create(any(), any(), any());
     }
 
     @Test
@@ -151,15 +145,37 @@ class KafkaClientsExtensionProviderTest {
         assertThat(e, is(sameInstance(cause)));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    void shouldHandleTopicResources() {
+    void shouldCreateTopicHandlerWithDefaultOverrides() {
         // When:
         provider.initialize(api);
 
         // Then:
-        verify(api.components().model())
-                .addResource(any(HandlerTypeRef.class), eq(new TopicResourceHandler(topicClient)));
+        verify(handlerFactory)
+                .create(DEFAULT_OPTIONS.typeOverrides(), resourceRegistry, clustersProperties);
+    }
+
+    @Test
+    void shouldCreateTopicHandlerWithCustomOverrides() {
+        // Given:
+        when(api.options().get(ClientsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
+
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(handlerFactory)
+                .create(userOptions.typeOverrides(), resourceRegistry, clustersProperties);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldRegisterTopicHandler() {
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(api.components().model()).addResource(any(HandlerTypeRef.class), eq(topicHandler));
     }
 
     @Test
@@ -184,48 +200,12 @@ class KafkaClientsExtensionProviderTest {
     }
 
     @Test
-    void shouldBuildTopicClient() {
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        verify(topicClientFactory).create(clustersProperties);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void shouldUseSuppliedTopicClient() {
-        // Given:
-        final TopicClient userClient = mock(TopicClient.class);
-        when(userOptions.topicClient()).thenReturn(Optional.of(userClient));
-
-        when(api.options().get(ClientsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
-
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        verify(topicClientFactory, never()).create(any());
-        verify(api.components().model())
-                .addResource(any(HandlerTypeRef.class), eq(new TopicResourceHandler(userClient)));
-    }
-
-    @Test
-    void shouldBuildResources() {
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        verify(resourceFactory).create(components, clustersProperties);
-    }
-
-    @Test
     void shouldBuildExtension() {
         // When:
         provider.initialize(api);
 
         // Then:
-        verify(extensionFactory).create(clustersProperties, resources);
+        verify(extensionFactory).create(clustersProperties, resourceRegistry);
     }
 
     @Test

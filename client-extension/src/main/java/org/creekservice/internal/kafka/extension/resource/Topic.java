@@ -28,7 +28,7 @@ import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
  * @param <K> the key type of the topic
  * @param <V> the value type of the topic
  */
-public final class Topic<K, V> implements KafkaTopic<K, V> {
+final class Topic<K, V> implements KafkaTopic<K, V> {
 
     private final KafkaTopicDescriptor<K, V> descriptor;
     private final Serde<K> keySerde;
@@ -39,18 +39,13 @@ public final class Topic<K, V> implements KafkaTopic<K, V> {
      * @param keySerde the key serde
      * @param valueSerde the value serde.
      */
-    public Topic(
+    Topic(
             final KafkaTopicDescriptor<K, V> descriptor,
             final Serde<K> keySerde,
             final Serde<V> valueSerde) {
         this.descriptor = requireNonNull(descriptor, "descriptor");
         this.keySerde = requireNonNull(keySerde, "keySerde");
         this.valueSerde = requireNonNull(valueSerde, "valueSerde");
-    }
-
-    @Override
-    public String name() {
-        return descriptor.name();
     }
 
     @Override

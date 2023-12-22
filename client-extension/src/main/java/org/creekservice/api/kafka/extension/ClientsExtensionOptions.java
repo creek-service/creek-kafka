@@ -16,10 +16,9 @@
 
 package org.creekservice.api.kafka.extension;
 
-import java.util.Optional;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 
 /**
@@ -37,7 +36,7 @@ public interface ClientsExtensionOptions extends CreekExtensionOptions {
     /**
      * @return explicit topic client to use
      */
-    Optional<TopicClient> topicClient();
+    TypeOverrides typeOverrides();
 
     /** Build of client extension options. */
     interface Builder {
@@ -89,14 +88,17 @@ public interface ClientsExtensionOptions extends CreekExtensionOptions {
         Builder withKafkaProperty(String cluster, String name, Object value);
 
         /**
-         * Set an explicit topic client to use.
+         * Override a specific implementation of a {@code type} used internally.
          *
-         * <p>Intended for internal use only, to allow a mock client to be installed during testing.
+         * <p>Allows the customisation of certain types within the extension. See other parts of the
+         * Creek documentation for example uses.
          *
-         * @param topicClient the client to use.
+         * @param <T> the type to be overridden.
+         * @param type the type to be overridden.
+         * @param instance the instance to use.
          * @return self.
          */
-        Builder withTopicClient(TopicClient topicClient);
+        <T> Builder withTypeOverride(Class<T> type, T instance);
 
         /**
          * Build the immutable options.

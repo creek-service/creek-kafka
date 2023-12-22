@@ -20,36 +20,47 @@ import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CON
 import static org.apache.kafka.clients.CommonClientConfigs.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
-import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
+import static org.creekservice.test.TopicConfigBuilder.withPartitions;
+import static org.creekservice.test.TopicDescriptors.outputTopic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.KafkaClientsExtension;
+import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
-import org.creekservice.api.kafka.test.service.TestServiceDescriptor;
-import org.creekservice.api.kafka.test.service.UpstreamAggregateDescriptor;
-import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
-import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.KafkaTopicInput;
+import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
+import org.creekservice.api.platform.metadata.AggregateDescriptor;
+import org.creekservice.api.platform.metadata.ComponentInput;
+import org.creekservice.api.platform.metadata.ComponentInternal;
+import org.creekservice.api.platform.metadata.ComponentOutput;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.service.context.CreekContext;
+import org.creekservice.api.service.context.CreekServices;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -59,6 +70,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+@SuppressWarnings("SameParameterValue")
 @Testcontainers
 @Tag("ContainerisedTest")
 @Execution(ExecutionMode.SAME_THREAD) // Due to static state
@@ -69,68 +81,91 @@ class ClientExtensionFunctionalTest {
             new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
-                    .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
+                    .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
 
-    private ClientsExtension extension;
-    private KafkaTopic<String, Long> topic;
+    private static CreekContext creek;
+    private static KafkaClientsExtension ext;
+    private static Admin admin;
 
-    @BeforeEach
-    void setUp() {
-        final ClustersProperties clustersProperties =
-                ClustersProperties.propertiesBuilder()
-                        .putCommon(BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.getBootstrapServers())
-                        .putCommon(AUTO_OFFSET_RESET_CONFIG, "earliest")
-                        .putCommon(GROUP_ID_CONFIG, UUID.randomUUID().toString())
-                        .build(Set.of());
+    @BeforeAll
+    static void beforeAll() {
+        creek =
+                CreekServices.builder(new KafkaServiceDescriptor())
+                        .with(
+                                KafkaClientsExtensionOptions.builder()
+                                        .withKafkaProperty(
+                                                DEFAULT_CLUSTER_NAME,
+                                                BOOTSTRAP_SERVERS_CONFIG,
+                                                KAFKA_CLUSTER.getBootstrapServers())
+                                        .withKafkaProperty(AUTO_OFFSET_RESET_CONFIG, "earliest")
+                                        .withKafkaProperty(
+                                                GROUP_ID_CONFIG, UUID.randomUUID().toString())
+                                        .build())
+                        .build();
 
-        final ResourceRegistry registry =
-                new ResourceRegistryFactory(KafkaSerdeProviders.create())
-                        .create(List.of(new TestServiceDescriptor()), clustersProperties);
+        ext = creek.extension(KafkaClientsExtension.class);
 
-        try (Admin admin = Admin.create(clustersProperties.get(DEFAULT_CLUSTER_NAME))) {
-            ensureTopics(admin, UpstreamAggregateDescriptor.Output);
-        }
-
-        extension = new ClientsExtension(clustersProperties, registry);
-        topic = registry.topic(InputTopic);
+        admin = Admin.create(Map.of(BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.getBootstrapServers()));
     }
 
-    @AfterEach
-    void tearDown() {
-        extension.close();
+    @AfterAll
+    static void tearDown() {
+        creek.close();
+        admin.close();
+    }
+
+    @Test
+    void shouldHaveCreatedOwnedTopics() {
+        assertThat(KafkaServiceDescriptor.OutputTopic, topicExists());
+    }
+
+    @Test
+    void shouldNotHaveCreatedUnownedTopics() {
+        assertThat(KafkaServiceDescriptor.InputTopic, not(topicExists()));
     }
 
     @Test
     void shouldProduceAndConsumeToKafkaTopic() {
+        // Given:
+        final OwnedKafkaTopicOutput<Long, String> topicDef = KafkaServiceDescriptor.OutputTopic;
+        final long key = 101L;
+        final String value = "val";
+
         // When:
-        produceToTopic();
-        final ConsumerRecord<byte[], byte[]> record = consumeFromTopic();
+        produceToTopic(topicDef, key, value);
+        final ConsumerRecord<byte[], byte[]> record = consumeFromTopic(topicDef);
 
         // Then:
-        assertThat(topic.deserializeKey(record.key()), is("key"));
-        assertThat(topic.deserializeValue(record.value()), is(100L));
+        final KafkaTopic<Long, String> topic = ext.topic(topicDef);
+        assertThat(topic.deserializeKey(record.key()), is(key));
+        assertThat(topic.deserializeValue(record.value()), is(value));
     }
 
-    private void produceToTopic() {
-        final Producer<byte[], byte[]> producer = extension.producer();
+    private void produceToTopic(
+            final KafkaTopicDescriptor<Long, String> topicDef, final long key, final String value) {
+        final KafkaTopic<Long, String> topic = ext.topic(topicDef);
+        final Producer<byte[], byte[]> producer = ext.producer();
         producer.send(
                 new ProducerRecord<>(
-                        InputTopic.name(), topic.serializeKey("key"), topic.serializeValue(100L)));
+                        topic.name(), topic.serializeKey(key), topic.serializeValue(value)));
         producer.flush();
     }
 
-    private ConsumerRecord<byte[], byte[]> consumeFromTopic() {
+    private ConsumerRecord<byte[], byte[]> consumeFromTopic(
+            final CreatableKafkaTopic<Long, String> topicDef) {
+        final KafkaTopic<Long, String> topic = ext.topic(topicDef);
+
         final List<TopicPartition> tps =
-                IntStream.range(0, UpstreamAggregateDescriptor.Output.config().partitions())
-                        .mapToObj(p -> new TopicPartition(InputTopic.name(), p))
+                IntStream.range(0, topicDef.config().partitions())
+                        .mapToObj(p -> new TopicPartition(topic.name(), p))
                         .collect(Collectors.toList());
 
-        final Consumer<byte[], byte[]> consumer = extension.consumer();
+        final Consumer<byte[], byte[]> consumer = ext.consumer();
         consumer.assign(tps);
 
         for (int i = 0; i != 30; ++i) {
             final Iterator<ConsumerRecord<byte[], byte[]>> result =
-                    consumer.poll(Duration.ofSeconds(1)).records(InputTopic.name()).iterator();
+                    consumer.poll(Duration.ofSeconds(1)).records(topic.name()).iterator();
 
             if (result.hasNext()) {
                 return result.next();
@@ -140,22 +175,105 @@ class ClientExtensionFunctionalTest {
         throw new AssertionError("Timed out waiting for record");
     }
 
-    private void ensureTopics(final Admin admin, final CreatableKafkaTopic<?, ?>... topics) {
-        final List<NewTopic> newTopics =
-                Arrays.stream(topics)
-                        .map(
-                                topic ->
-                                        new NewTopic(
-                                                        topic.name(),
-                                                        Optional.of(topic.config().partitions()),
-                                                        Optional.empty())
-                                                .configs(topic.config().config()))
-                        .collect(Collectors.toList());
+    private static Matcher<? super KafkaTopicDescriptor<?, ?>> topicExists() {
+        return new TypeSafeDiagnosingMatcher<>() {
+            @Override
+            protected boolean matchesSafely(
+                    final KafkaTopicDescriptor<?, ?> item, final Description mismatchDescription) {
+                if (!item.cluster().equals(DEFAULT_CLUSTER_NAME)) {
+                    mismatchDescription
+                            .appendText("wrong cluster. Expected: ")
+                            .appendValue(DEFAULT_CLUSTER_NAME)
+                            .appendText(", but was ")
+                            .appendValue(item.cluster());
+                    return false;
+                }
 
-        try {
-            admin.createTopics(newTopics).all().get();
-        } catch (Exception e) {
-            throw new AssertionError("Failed to create topics", e);
+                try {
+                    final Set<String> topics = admin.listTopics().names().get();
+                    final boolean exists = topics.contains(item.name());
+                    if (!exists) {
+                        mismatchDescription
+                                .appendText("topic does not exist. Existing topics are: ")
+                                .appendValue(topics);
+                        return false;
+                    }
+                    return true;
+                } catch (final Exception e) {
+                    mismatchDescription
+                            .appendText("An exception was thrown querying the Kafka cluster")
+                            .appendValue(e);
+                    return false;
+                }
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendText("topic exists");
+            }
+        };
+    }
+
+    private static final class UpstreamDescriptor implements AggregateDescriptor {
+
+        private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
+
+        public static final OwnedKafkaTopicOutput<String, Long> Output =
+                register(outputTopic("input", String.class, Long.class, withPartitions(3)));
+
+        UpstreamDescriptor() {}
+
+        @Override
+        public Collection<ComponentOutput> outputs() {
+            return List.copyOf(OUTPUTS);
+        }
+
+        private static <T extends ComponentOutput> T register(final T output) {
+            OUTPUTS.add(output);
+            return output;
+        }
+    }
+
+    private static final class KafkaServiceDescriptor implements ServiceDescriptor {
+
+        private static final List<ComponentInput> INPUTS = new ArrayList<>();
+        private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
+        private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
+
+        public static final KafkaTopicInput<String, Long> InputTopic =
+                register(UpstreamDescriptor.Output.toInput());
+
+        public static final OwnedKafkaTopicOutput<Long, String> OutputTopic =
+                register(outputTopic("output", Long.class, String.class, withPartitions(1)));
+
+        @Override
+        public String dockerImage() {
+            return "service never started";
+        }
+
+        @Override
+        public Collection<ComponentInput> inputs() {
+            return List.copyOf(INPUTS);
+        }
+
+        @Override
+        public Collection<ComponentInternal> internals() {
+            return List.copyOf(INTERNALS);
+        }
+
+        @Override
+        public Collection<ComponentOutput> outputs() {
+            return List.copyOf(OUTPUTS);
+        }
+
+        private static <T extends ComponentInput> T register(final T input) {
+            INPUTS.add(input);
+            return input;
+        }
+
+        private static <T extends ComponentOutput> T register(final T output) {
+            OUTPUTS.add(output);
+            return output;
         }
     }
 }

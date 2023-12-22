@@ -20,7 +20,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +56,7 @@ class KafkaClientsExtensionOptionsTest {
                         KafkaClientsExtensionOptions.builder().withKafkaProperty("k", "v").build())
                 .addEqualityGroup(
                         KafkaClientsExtensionOptions.builder()
-                                .withTopicClient(mock(TopicClient.class))
+                                .withTypeOverride(String.class, "diff")
                                 .build())
                 .testEquals();
     }

@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
+import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider;
 
 /** Utility class to access details on the types the {@link NativeKafkaSerdeProvider} supports. */
@@ -31,5 +32,12 @@ public final class NativeKafkaSerde {
      */
     public static boolean supports(final Class<?> type) {
         return NativeKafkaSerdeProvider.supports(type);
+    }
+
+    /**
+     * @return the native Kafka serialization format.
+     */
+    public static SerializationFormat format() {
+        return NativeKafkaSerdeProvider.FORMAT;
     }
 }
