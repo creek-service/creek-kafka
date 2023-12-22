@@ -92,7 +92,7 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
     /**
      * Called to ensure external resources exist for the topic.
      *
-     * <p>e.g. ensure the topic itself exists, plus any schemas the key & value need, etc.
+     * <p>e.g. ensure the topic itself exists, plus any schemas the key and value need, etc.
      *
      * @param topics the collection of topic to ensure.
      */

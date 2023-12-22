@@ -35,6 +35,7 @@ public final class TypeOverridesBuilder {
      * @param type the type, normally an interface, which is to be overridden.
      * @param instance the instance to use.
      * @param <T> the type being overridden.
+     * @return self to allow chaining.
      */
     public <T> TypeOverridesBuilder set(final Class<T> type, final T instance) {
         overrides.put(requireNonNull(type, "type"), requireNonNull(instance, "instance"));
