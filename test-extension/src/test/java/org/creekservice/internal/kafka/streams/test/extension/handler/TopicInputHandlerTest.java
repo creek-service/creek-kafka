@@ -370,8 +370,8 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "The record's cluster or topic is not known. cluster: cluster-a, topic:"
-                                + " topic-a, location: record0:///location"));
+                        "The input record's cluster or topic is not known. cluster: cluster-a,"
+                                + " topic: topic-a, location: record0:///location"));
         assertThat(e.getCause(), is(cause));
     }
 

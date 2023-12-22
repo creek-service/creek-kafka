@@ -30,7 +30,9 @@ public interface KafkaTopic<K, V> {
     /**
      * @return the name of the topic
      */
-    String name();
+    default String name() {
+        return descriptor().name();
+    }
 
     /**
      * @return the value type

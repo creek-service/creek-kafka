@@ -21,57 +21,52 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
+import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
-import org.creekservice.internal.kafka.extension.client.KafkaTopicClient;
 import org.creekservice.internal.kafka.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.extension.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
-import org.creekservice.internal.kafka.extension.resource.ResourceRegistryFactory;
+import org.creekservice.internal.kafka.extension.resource.TopicRegistrar;
+import org.creekservice.internal.kafka.extension.resource.TopicRegistry;
 import org.creekservice.internal.kafka.extension.resource.TopicResourceHandler;
 
 /** Provider of {@link KafkaClientsExtension}. */
 public final class KafkaClientsExtensionProvider
         implements CreekExtensionProvider<KafkaClientsExtension> {
 
-    private final ExtensionFactory extensionFactory;
-    private final ResourceRegistryFactory resourcesFactory;
-    private final TopicClientFactory topicClientFactory;
-    private final ClustersPropertiesFactory propertiesFactory;
     private final KafkaResourceValidator resourceValidator;
+    private final ClustersPropertiesFactory propertiesFactory;
+    private final ResourceRegistry resourceRegistry;
+    private final HandlerFactory handlerFactory;
+    private final ExtensionFactory extensionFactory;
 
     /** Constructor */
     public KafkaClientsExtensionProvider() {
-        this(KafkaSerdeProviders.create());
-    }
-
-    private KafkaClientsExtensionProvider(final KafkaSerdeProviders serdeProviders) {
         this(
                 new KafkaResourceValidator(),
                 new ClustersPropertiesFactory(),
-                props -> new KafkaTopicClient(props, serdeProviders),
-                ClientsExtension::new,
-                new ResourceRegistryFactory(serdeProviders));
+                new ResourceRegistry(),
+                TopicResourceHandler::new,
+                ClientsExtension::new);
     }
 
     @VisibleForTesting
     KafkaClientsExtensionProvider(
             final KafkaResourceValidator resourceValidator,
             final ClustersPropertiesFactory propertiesFactory,
-            final TopicClientFactory topicClientFactory,
-            final ExtensionFactory extensionFactory,
-            final ResourceRegistryFactory resourcesFactory) {
+            final ResourceRegistry resourceRegistry,
+            final HandlerFactory handlerFactory,
+            final ExtensionFactory extensionFactory) {
         this.resourceValidator = requireNonNull(resourceValidator, "kafkaResourceValidator");
         this.propertiesFactory = requireNonNull(propertiesFactory, "configFactory");
-        this.topicClientFactory = requireNonNull(topicClientFactory, "topicClientFactory");
+        this.resourceRegistry = requireNonNull(resourceRegistry, "resourceRegistry");
+        this.handlerFactory = requireNonNull(handlerFactory, "handlerFactory");
         this.extensionFactory = requireNonNull(extensionFactory, "extensionFactory");
-        this.resourcesFactory = requireNonNull(resourcesFactory, "resourcesFactory");
     }
 
     @Override
@@ -87,25 +82,27 @@ public final class KafkaClientsExtensionProvider
                         .orElseGet(() -> KafkaClientsExtensionOptions.builder().build());
 
         final ClustersProperties properties = propertiesFactory.create(components, options);
-        final ResourceRegistry resources = resourcesFactory.create(components, properties);
-        final TopicClient topicClient =
-                options.topicClient().orElseGet(() -> topicClientFactory.create(properties));
 
         api.components()
                 .model()
-                .addResource(new HandlerTypeRef<>() {}, new TopicResourceHandler(topicClient));
+                .addResource(
+                        new HandlerTypeRef<>() {},
+                        handlerFactory.create(
+                                options.typeOverrides(), resourceRegistry, properties));
 
-        return extensionFactory.create(properties, resources);
+        return extensionFactory.create(properties, resourceRegistry);
+    }
+
+    @VisibleForTesting
+    interface HandlerFactory {
+        TopicResourceHandler create(
+                TypeOverrides typeOverrides,
+                TopicRegistrar resources,
+                ClustersProperties properties);
     }
 
     @VisibleForTesting
     interface ExtensionFactory {
-        ClientsExtension create(ClustersProperties clustersProperties, ResourceRegistry resources);
-    }
-
-    @VisibleForTesting
-    interface TopicClientFactory {
-
-        TopicClient create(ClustersProperties properties);
+        ClientsExtension create(ClustersProperties clustersProperties, TopicRegistry resources);
     }
 }

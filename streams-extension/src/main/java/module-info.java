@@ -24,6 +24,7 @@ module creek.kafka.streams.extension {
     requires creek.observability.logging;
     requires creek.observability.lifecycle;
     requires creek.base.type;
+    requires com.github.spotbugs.annotations;
 
     exports org.creekservice.api.kafka.streams.extension;
     exports org.creekservice.api.kafka.streams.extension.exception;

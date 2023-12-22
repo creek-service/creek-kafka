@@ -32,7 +32,7 @@ import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
+import org.creekservice.internal.kafka.extension.resource.TopicRegistry;
 
 /** Kafka Client Creek extension. */
 public final class ClientsExtension implements KafkaClientsExtension {
@@ -40,7 +40,7 @@ public final class ClientsExtension implements KafkaClientsExtension {
     static final String NAME = "org.creekservice.kafka.clients";
 
     private final ClustersProperties clustersProperties;
-    private final ResourceRegistry resources;
+    private final TopicRegistry resources;
     private final Map<String, Producer<byte[], byte[]>> producers = new ConcurrentHashMap<>();
     private final Map<String, Consumer<byte[], byte[]>> consumers = new ConcurrentHashMap<>();
 
@@ -49,7 +49,7 @@ public final class ClientsExtension implements KafkaClientsExtension {
      * @param resources known resources.
      */
     public ClientsExtension(
-            final ClustersProperties clustersProperties, final ResourceRegistry resources) {
+            final ClustersProperties clustersProperties, final TopicRegistry resources) {
         this.clustersProperties = requireNonNull(clustersProperties, "clustersProperties");
         this.resources = requireNonNull(resources, "resources");
     }

@@ -16,20 +16,27 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
-import static java.util.Objects.requireNonNull;
-
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 
 /** A registry of all known Kafka resources. */
-public final class ResourceRegistry {
+public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
 
-    private final Map<URI, Topic<?, ?>> topics;
+    private final Map<URI, KafkaTopic<?, ?>> topics = new HashMap<>();
 
-    ResourceRegistry(final Map<URI, Topic<?, ?>> topics) {
-        this.topics = Map.copyOf(requireNonNull(topics, "topics"));
+    @Override
+    public void register(final KafkaTopic<?, ?> topic) {
+        topics.compute(
+                topic.descriptor().id(),
+                (id, existing) -> {
+                    if (existing != null) {
+                        throw new ResourceAlreadyRegistered(id);
+                    }
+                    return topic;
+                });
     }
 
     /**
@@ -40,9 +47,10 @@ public final class ResourceRegistry {
      * @param <V> the value type
      * @return the resource.
      */
+    @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
-        final Topic<?, ?> found = find(def.id());
+        final KafkaTopic<?, ?> found = find(def.id());
 
         if (!KafkaTopicDescriptors.matches(found.descriptor(), def)) {
             throw new TopicDescriptorMismatchException(def, found.descriptor());
@@ -58,16 +66,23 @@ public final class ResourceRegistry {
      * @param topic the topic name.
      * @return the resource.
      */
+    @Override
     public KafkaTopic<?, ?> topic(final String cluster, final String topic) {
         return find(KafkaTopicDescriptor.resourceId(cluster, topic));
     }
 
-    private Topic<?, ?> find(final URI id) {
-        final Topic<?, ?> found = topics.get(id);
+    private KafkaTopic<?, ?> find(final URI id) {
+        final KafkaTopic<?, ?> found = topics.get(id);
         if (found == null) {
             throw new UnknownTopicException(id);
         }
         return found;
+    }
+
+    private static final class ResourceAlreadyRegistered extends IllegalStateException {
+        ResourceAlreadyRegistered(final URI id) {
+            super("Resource already registered with id=" + id);
+        }
     }
 
     private static final class UnknownTopicException extends IllegalArgumentException {
