@@ -21,7 +21,6 @@ import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
 import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -38,10 +37,8 @@ import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
-import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.test.TopicConfigBuilder;
 import org.creekservice.test.TopicDescriptors;
 import org.hamcrest.Description;
@@ -54,7 +51,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -71,45 +67,26 @@ import org.testcontainers.utility.DockerImageName;
 class KafkaTopicClientFunctionalTest {
 
     @Container
-    private static final KafkaContainer DEFAULT_CLUSTER =
+    private static final KafkaContainer KAFKA_CLUSTER =
             new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
 
-    @Container
-    private static final KafkaContainer OTHER_CLUSTER =
-            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
-                    .withStartupAttempts(3)
-                    .withStartupTimeout(Duration.ofSeconds(90))
-                    .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
-
-    private static final String OTHER_CLUSTER_NAME = "other";
-
-    @Mock private ClustersProperties clustersProperties;
-
-    private final CreatableKafkaTopic<Long, String> defaultTopic =
+    private final CreatableKafkaTopic<Long, String> topic =
             createTopicDescriptor(DEFAULT_CLUSTER_NAME);
-    private final CreatableKafkaTopic<Long, String> otherTopic =
-            createTopicDescriptor(OTHER_CLUSTER_NAME);
     private final Map<String, Admin> admins = new HashMap<>();
 
     private KafkaTopicClient client;
 
     @BeforeEach
     void setUp() {
-        client = new KafkaTopicClient(clustersProperties, KafkaSerdeProviders.create());
+        final Map<String, Object> kafkaProperties =
+                Map.of(BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.getBootstrapServers());
 
-        final Map<String, Object> defaultClusterProps =
-                Map.of(BOOTSTRAP_SERVERS_CONFIG, DEFAULT_CLUSTER.getBootstrapServers());
-        when(clustersProperties.get(DEFAULT_CLUSTER_NAME)).thenReturn(defaultClusterProps);
-        admins.put(DEFAULT_CLUSTER_NAME, Admin.create(defaultClusterProps));
+        client = new KafkaTopicClient(DEFAULT_CLUSTER_NAME, kafkaProperties);
 
-        final Map<String, Object> otherClusterProps =
-                Map.of(BOOTSTRAP_SERVERS_CONFIG, OTHER_CLUSTER.getBootstrapServers());
-
-        when(clustersProperties.get(OTHER_CLUSTER_NAME)).thenReturn(otherClusterProps);
-        admins.put(OTHER_CLUSTER_NAME, Admin.create(otherClusterProps));
+        admins.put(DEFAULT_CLUSTER_NAME, Admin.create(kafkaProperties));
     }
 
     @AfterEach
@@ -120,42 +97,34 @@ class KafkaTopicClientFunctionalTest {
     @Test
     void shouldThrowIfKafkaDown() {
         // Given:
-        when(clustersProperties.get(DEFAULT_CLUSTER_NAME))
-                .thenReturn(Map.of(BOOTSTRAP_SERVERS_CONFIG, "host_down:81"));
+        final Map<String, Object> kafkaProperties =
+                Map.of(BOOTSTRAP_SERVERS_CONFIG, "host_down:81");
+
+        client = new KafkaTopicClient(DEFAULT_CLUSTER_NAME, kafkaProperties);
 
         // Then:
-        assertThrows(KafkaException.class, () -> client.ensure(List.of(defaultTopic)));
+        assertThrows(KafkaException.class, () -> client.ensureExternalResources(List.of(topic)));
     }
 
     @Test
     void shouldCreateTopicsThatDoNotExist() {
         // When:
-        client.ensure(List.of(defaultTopic));
+        client.ensureExternalResources(List.of(topic));
 
         // Then:
-        assertThat(defaultTopic, exists());
+        assertThat(topic, exists());
     }
 
     @Test
-    void shouldHandleTopicExisting() {
+    void shouldHandleTopicAlreadyExisting() {
         // Given:
-        givenTopicExists(defaultTopic);
+        givenTopicExists(topic);
 
         // When:
-        client.ensure(List.of(defaultTopic));
+        client.ensureExternalResources(List.of(topic));
 
         // Then:
-        assertThat(defaultTopic, exists());
-    }
-
-    @Test
-    void shouldHandleTopicsForMultipleClusters() {
-        // When:
-        client.ensure(List.of(defaultTopic, otherTopic));
-
-        // Then:
-        assertThat(defaultTopic, exists());
-        assertThat(otherTopic, exists());
+        assertThat(topic, exists());
     }
 
     private void givenTopicExists(final CreatableKafkaTopic<?, ?> topic) {

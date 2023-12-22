@@ -19,6 +19,7 @@ import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 /** Provider test utils for testing serde providers. */
 module creek.kafka.serde.test {
     requires transitive creek.kafka.serde;
+    requires com.github.spotbugs.annotations;
 
     exports org.creekservice.api.kafka.serde.test;
 

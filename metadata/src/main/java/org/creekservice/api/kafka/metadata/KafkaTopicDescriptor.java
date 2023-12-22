@@ -18,6 +18,7 @@ package org.creekservice.api.kafka.metadata;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 
 /**
@@ -66,6 +67,13 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
      * @return metadata about the topic's value:
      */
     PartDescriptor<V> value();
+
+    /**
+     * @return stream of the topics parts.
+     */
+    default Stream<PartDescriptor<?>> parts() {
+        return Stream.of(key(), value());
+    }
 
     /** Descriptor for part of a topic's record. */
     interface PartDescriptor<T> {

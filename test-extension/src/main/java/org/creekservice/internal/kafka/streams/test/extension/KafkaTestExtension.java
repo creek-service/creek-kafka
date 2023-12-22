@@ -30,7 +30,6 @@ import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.StartKafkaTestListener;
-import org.creekservice.internal.kafka.streams.test.extension.testsuite.TearDownTestListener;
 import org.creekservice.internal.kafka.streams.test.extension.testsuite.TopicValidatingListener;
 
 /**
@@ -64,8 +63,6 @@ public final class KafkaTestExtension implements CreekTestExtension {
 
         final TopicValidatingListener topicValidator = new TopicValidatingListener(api);
         testListeners.append(topicValidator);
-
-        testListeners.append(new TearDownTestListener(clientsExt));
 
         initializeModel(
                 api.tests().model(),

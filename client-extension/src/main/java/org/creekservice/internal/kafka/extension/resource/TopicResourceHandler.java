@@ -17,54 +17,149 @@
 package org.creekservice.internal.kafka.extension.resource;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import org.creekservice.api.kafka.extension.client.TopicClient;
+import java.util.Map;
+import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.extension.config.TypeOverrides;
+import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ResourceHandler;
+import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.observability.logging.structured.StructuredLogger;
+import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
+import org.creekservice.api.service.extension.component.model.ResourceHandler;
+import org.creekservice.internal.kafka.extension.client.KafkaTopicClient;
+import org.creekservice.internal.kafka.extension.client.TopicClient;
 
 /** Resource handle for topics. */
 public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor<?, ?>> {
 
-    private final TopicClient topicClient;
+    private final StructuredLogger logger;
+    private final TopicRegistrar resources;
+    private final ClustersProperties properties;
+    private final ClustersSerdeProviders serdeProviders;
+    private final TopicClient.Factory topicClientFactory;
+    private final TopicResourceFactory topicResourceFactory;
 
     /**
-     * @param topicClient the topic client to use.
+     * @param typeOverrides known type overrides, used to customise functionality.
+     * @param resources the resource registry to register topics in.
+     * @param properties Kafka properties of all known clusters.
      */
-    public TopicResourceHandler(final TopicClient topicClient) {
-        this.topicClient = requireNonNull(topicClient, "topicClient");
+    public TopicResourceHandler(
+            final TypeOverrides typeOverrides,
+            final TopicRegistrar resources,
+            final ClustersProperties properties) {
+        this(typeOverrides, properties, resources, new ClustersSerdeProviders(typeOverrides));
     }
 
-    @Override
-    public void ensure(final Collection<? extends KafkaTopicDescriptor<?, ?>> resources) {
-        final List<? extends CreatableKafkaTopic<?, ?>> creatable =
-                resources.stream()
-                        .map(TopicResourceHandler::toCreatable)
-                        .collect(Collectors.toList());
-
-        topicClient.ensure(creatable);
+    private TopicResourceHandler(
+            final TypeOverrides typeOverrides,
+            final ClustersProperties properties,
+            final TopicRegistrar resources,
+            final ClustersSerdeProviders serdeProviders) {
+        this(
+                typeOverrides.get(TopicClient.Factory.class).orElse(KafkaTopicClient::new),
+                properties,
+                serdeProviders,
+                resources,
+                new TopicResourceFactory(serdeProviders),
+                StructuredLoggerFactory.internalLogger(KafkaTopicClient.class));
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final TopicResourceHandler that = (TopicResourceHandler) o;
-        return Objects.equals(topicClient, that.topicClient);
+    @VisibleForTesting
+    TopicResourceHandler(
+            final TopicClient.Factory topicClientFactory,
+            final ClustersProperties properties,
+            final ClustersSerdeProviders serdeProviders,
+            final TopicRegistrar resources,
+            final TopicResourceFactory topicResourceFactory,
+            final StructuredLogger logger) {
+        this.topicClientFactory = requireNonNull(topicClientFactory, "topicClientFactory");
+        this.properties = requireNonNull(properties, "properties");
+        this.serdeProviders = requireNonNull(serdeProviders, "serdeProviders");
+        this.resources = requireNonNull(resources, "resources");
+        this.topicResourceFactory = requireNonNull(topicResourceFactory, "topicFactory");
+        this.logger = requireNonNull(logger, "logger");
     }
 
+    /**
+     * Called to ensure external resources exist for the topic.
+     *
+     * <p>e.g. ensure the topic itself exists, plus any schemas the key and value need, etc.
+     *
+     * @param topics the collection of topic to ensure.
+     */
     @Override
-    public int hashCode() {
-        return Objects.hash(topicClient);
+    public void ensure(final Collection<? extends KafkaTopicDescriptor<?, ?>> topics) {
+        topics.stream()
+                .map(TopicResourceHandler::toCreatable)
+                .collect(groupingBy(KafkaTopicDescriptor::cluster))
+                .forEach(this::ensure);
+    }
+
+    /**
+     * Called to allow the extension to prepare any internal state for working with this topic.
+     *
+     * <p>e.g. prepare serde for the key and value, etc.
+     *
+     * @param topics the collection of topics to prepare for.
+     */
+    @Override
+    public void prepare(final Collection<? extends KafkaTopicDescriptor<?, ?>> topics) {
+        topics.stream().collect(groupingBy(KafkaTopicDescriptor::cluster)).forEach(this::prepare);
+    }
+
+    private void ensure(
+            final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
+        ensureTopicResources(cluster, topics);
+        ensureSerdeResources(cluster, topics);
+    }
+
+    private void ensureTopicResources(
+            final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
+        topicClientFactory.create(cluster, properties.get(cluster)).ensureExternalResources(topics);
+    }
+
+    private void ensureSerdeResources(
+            final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
+
+        logger.debug(
+                "Ensuring topic resources",
+                log ->
+                        log.with(
+                                LoggingField.topicIds,
+                                topics.stream().map(KafkaTopicDescriptor::id).collect(toList())));
+
+        topics.stream()
+                .flatMap(KafkaTopicDescriptor::parts)
+                .collect(groupingBy(PartDescriptor::format))
+                .forEach(
+                        (format, parts) ->
+                                serdeProviders.get(format, cluster).ensureExternalResources(parts));
+    }
+
+    private void prepare(
+            final String cluster, final List<? extends KafkaTopicDescriptor<?, ?>> topics) {
+
+        logger.debug(
+                "Preparing topics",
+                log ->
+                        log.with(
+                                LoggingField.topicIds,
+                                topics.stream().map(KafkaTopicDescriptor::id).collect(toList())));
+
+        final Map<String, Object> kafkaProperties = properties.get(cluster);
+
+        topics.stream()
+                .map(topic -> topicResourceFactory.create(topic, kafkaProperties))
+                .forEach(resources::register);
     }
 
     private static CreatableKafkaTopic<?, ?> toCreatable(final KafkaTopicDescriptor<?, ?> topic) {

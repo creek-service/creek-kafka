@@ -28,13 +28,14 @@ module creek.kafka.clients.extension {
     requires creek.observability.logging;
 
     exports org.creekservice.api.kafka.extension;
-    exports org.creekservice.api.kafka.extension.client;
     exports org.creekservice.api.kafka.extension.config;
     exports org.creekservice.api.kafka.extension.logging;
     exports org.creekservice.api.kafka.extension.resource;
     exports org.creekservice.internal.kafka.extension to
             creek.kafka.streams.extension,
             creek.kafka.test.extension;
+    exports org.creekservice.internal.kafka.extension.client to
+            creek.kafka.streams.test;
     exports org.creekservice.internal.kafka.extension.config to
             creek.kafka.streams.extension,
             creek.kafka.test.extension;

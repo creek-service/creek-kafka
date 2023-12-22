@@ -118,7 +118,7 @@ class KafkaTestExtensionFunctionalTest {
                 errorMessage(result, 0),
                 containsString(
                         "Test run failed for test case: unknown input topic, cause: "
-                                + "The record's cluster or topic is not known. "
+                                + "The input record's cluster or topic is not known. "
                                 + "cluster: default, topic: unknown-input"));
 
         assertThat(

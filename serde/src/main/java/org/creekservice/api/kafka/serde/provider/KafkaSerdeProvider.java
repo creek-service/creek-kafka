@@ -16,7 +16,8 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.Optional;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
@@ -38,28 +39,54 @@ public interface KafkaSerdeProvider {
     SerializationFormat format();
 
     /**
-     * Ensure any resources associated with a topic part are registered, e.g. schemas registered in
-     * the appropriate schema store.
+     * Initialise a {@link SerdeProvider} for the supplied {@code clusterName}.
      *
-     * <p>The method allows serde providers to optionally create / register resources associated
-     * with a topic's key or value. Implementations should only ensure resources for the supplied
-     * {@code topicPart}.
+     * <p>This method exists to allow serde providers to initialise per-Kafka-cluster state. For
+     * example, to cache any required schemas.
      *
-     * @param part the descriptor for the topic part.
-     * @param clusterProperties the properties of the cluster the {@code topic} belongs to.
+     * @param clusterName the logical name of the cluster, as used in topic descriptors.
+     * @param params provides access to additional types and information in an extendable way.
+     * @return an initialised serde provider.
      */
-    default void ensureTopicPartResources(
-            PartDescriptor<?> part, Map<String, Object> clusterProperties) {}
+    SerdeProvider initialize(String clusterName, InitializeParams params);
 
-    /**
-     * Get the serde for the supplied Kafka topic {@code part}.
-     *
-     * <p>{@link Serde#configure} will be called on the returned serde.
-     *
-     * @param <T> the type of the part.
-     * @param part the descriptor for the topic part.
-     * @return the serde to use to serialize and deserialize the part.
-     */
-    <T> Serde<T> create(PartDescriptor<T> part);
+    /** Extendable way of providing additional information to the {@link #initialize} method. */
+    interface InitializeParams {
+
+        /**
+         * Retrieve the override instance for the supplied {@code type}, if one is set.
+         *
+         * @param type the type to look up.
+         * @return the instance to use, if set, otherwise {@link Optional#empty()}.
+         * @param <T> the type to look up.
+         */
+        <T> Optional<T> typeOverride(Class<T> type);
+    }
+
+    /** Initialised, per-cluster, provider of serde instances. */
+    interface SerdeProvider {
+        /**
+         * Ensure any resources associated with a topic part are registered, e.g. schemas registered
+         * in the appropriate schema store.
+         *
+         * <p>The method allows serde providers to optionally create / register resources associated
+         * with a topic's key or value. Implementations should only ensure resources for the
+         * supplied {@code topicPart}.
+         *
+         * @param parts the descriptors for the topic parts.
+         */
+        default void ensureExternalResources(Collection<? extends PartDescriptor<?>> parts) {}
+
+        /**
+         * Get the serde for the supplied Kafka topic {@code part}.
+         *
+         * <p>{@link Serde#configure} will be called on the returned serde.
+         *
+         * @param <T> the type of the part.
+         * @param part the descriptor for the topic part.
+         * @return the serde to use to serialize and deserialize the part.
+         */
+        <T> Serde<T> createSerde(PartDescriptor<T> part);
+    }
 }
 // end-snippet

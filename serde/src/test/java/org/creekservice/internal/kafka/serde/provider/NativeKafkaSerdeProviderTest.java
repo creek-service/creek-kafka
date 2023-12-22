@@ -33,6 +33,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,11 +43,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class NativeKafkaSerdeProviderTest {
 
-    private NativeKafkaSerdeProvider provider;
+    private KafkaSerdeProvider.SerdeProvider provider;
 
     @BeforeEach
     void setUp() {
-        provider = new NativeKafkaSerdeProvider();
+        provider = new NativeKafkaSerdeProvider().initialize("bob", null);
     }
 
     @Test
@@ -64,7 +65,7 @@ class NativeKafkaSerdeProviderTest {
         final PartDescriptor<?> part = partWithType(type);
 
         // When:
-        final Serde<?> serde = provider.create(part);
+        final Serde<?> serde = provider.createSerde(part);
 
         // Then:
         assertThat(serde, is(instanceOf(expectedSerdeType)));
@@ -78,7 +79,7 @@ class NativeKafkaSerdeProviderTest {
 
         // When:
         final Exception e =
-                assertThrows(IllegalArgumentException.class, () -> provider.create(part));
+                assertThrows(IllegalArgumentException.class, () -> provider.createSerde(part));
 
         // Then:
         assertThat(

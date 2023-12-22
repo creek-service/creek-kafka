@@ -25,9 +25,9 @@ import java.util.Optional;
 import org.apache.kafka.streams.StreamsConfig;
 import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
-import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
+import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
 import org.creekservice.api.kafka.streams.extension.observation.LifecycleObserver;
@@ -93,8 +93,8 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     }
 
     @Override
-    public Optional<TopicClient> topicClient() {
-        return clientOptions.topicClient();
+    public TypeOverrides typeOverrides() {
+        return clientOptions.typeOverrides();
     }
 
     /**
@@ -205,8 +205,8 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
         }
 
         @Override
-        public Builder withTopicClient(final TopicClient topicClient) {
-            clientOptionsBuilder.withTopicClient(topicClient);
+        public <T> Builder withTypeOverride(final Class<T> type, final T instance) {
+            clientOptionsBuilder.withTypeOverride(type, instance);
             return this;
         }
 
