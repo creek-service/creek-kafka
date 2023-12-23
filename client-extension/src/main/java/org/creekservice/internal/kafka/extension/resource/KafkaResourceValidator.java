@@ -17,18 +17,14 @@
 package org.creekservice.internal.kafka.extension.resource;
 
 import static java.lang.System.lineSeparator;
-import static java.util.stream.Collectors.groupingBy;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
 /**
  * Validator of Kafka based service resources, e.g. {@link KafkaTopicDescriptor}, etc.
@@ -36,36 +32,14 @@ import org.creekservice.api.platform.metadata.ComponentDescriptor;
  * <p>Resources such as {@link KafkaTopicDescriptor} are just interfaces. Services are free to
  * implement however they choose. Because of this, validation is a good thing!
  */
-public final class KafkaResourceValidator {
+final class KafkaResourceValidator {
 
     /**
-     * Validate Kafka resources used by each of the supplied {@code components}
-     *
-     * @param components the components to validate
-     */
-    public void validate(final Stream<? extends ComponentDescriptor> components) {
-        final List<? extends KafkaTopicDescriptor<?, ?>> topics =
-                components
-                        .flatMap(ComponentDescriptor::resources)
-                        .filter(KafkaTopicDescriptor.class::isInstance)
-                        .map(d -> (KafkaTopicDescriptor<?, ?>) d)
-                        .collect(Collectors.toList());
-
-        topics.forEach(KafkaResourceValidator::validateTopic);
-
-        topics.stream()
-                .collect(groupingBy(KafkaTopicDescriptor::id))
-                .values()
-                .forEach(this::validateGroup);
-    }
-
-    /**
-     * Validate a group of resources that all describe the same topic.
+     * Validate a group of resources that all describe the same topic, i.e. all have the same id.
      *
      * @param resourceGroup the group of descriptors to validate.
      */
-    public void validateGroup(
-            final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
+    void validateGroup(final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
         resourceGroup.forEach(KafkaResourceValidator::validateTopic);
         validateTopicGroup(resourceGroup);
     }
@@ -145,7 +119,7 @@ public final class KafkaResourceValidator {
     private static String requireNonBlank(
             final String name, final String value, final KafkaTopicDescriptor<?, ?> descriptor) {
         requireNonNull(name, value, descriptor);
-        if (descriptor.name().isBlank()) {
+        if (value.isBlank()) {
             throw new InvalidTopicDescriptorException(name + " is blank", descriptor);
         }
         return value;

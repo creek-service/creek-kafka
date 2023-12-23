@@ -46,6 +46,7 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
     private final ClustersSerdeProviders serdeProviders;
     private final TopicClient.Factory topicClientFactory;
     private final TopicResourceFactory topicResourceFactory;
+    private final KafkaResourceValidator validator;
 
     /**
      * @param typeOverrides known type overrides, used to customise functionality.
@@ -70,6 +71,7 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
                 serdeProviders,
                 resources,
                 new TopicResourceFactory(serdeProviders),
+                new KafkaResourceValidator(),
                 StructuredLoggerFactory.internalLogger(KafkaTopicClient.class));
     }
 
@@ -80,13 +82,20 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
             final ClustersSerdeProviders serdeProviders,
             final TopicRegistrar resources,
             final TopicResourceFactory topicResourceFactory,
+            final KafkaResourceValidator validator,
             final StructuredLogger logger) {
         this.topicClientFactory = requireNonNull(topicClientFactory, "topicClientFactory");
         this.properties = requireNonNull(properties, "properties");
         this.serdeProviders = requireNonNull(serdeProviders, "serdeProviders");
         this.resources = requireNonNull(resources, "resources");
         this.topicResourceFactory = requireNonNull(topicResourceFactory, "topicFactory");
+        this.validator = requireNonNull(validator, "validator");
         this.logger = requireNonNull(logger, "logger");
+    }
+
+    @Override
+    public void validate(final Collection<? extends KafkaTopicDescriptor<?, ?>> resourceGroup) {
+        validator.validateGroup(resourceGroup);
     }
 
     /**

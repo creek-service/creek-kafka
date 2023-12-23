@@ -29,7 +29,6 @@ import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.extension.config.ClustersPropertiesFactory;
-import org.creekservice.internal.kafka.extension.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.extension.resource.TopicRegistrar;
 import org.creekservice.internal.kafka.extension.resource.TopicRegistry;
@@ -39,7 +38,6 @@ import org.creekservice.internal.kafka.extension.resource.TopicResourceHandler;
 public final class KafkaClientsExtensionProvider
         implements CreekExtensionProvider<KafkaClientsExtension> {
 
-    private final KafkaResourceValidator resourceValidator;
     private final ClustersPropertiesFactory propertiesFactory;
     private final ResourceRegistry resourceRegistry;
     private final HandlerFactory handlerFactory;
@@ -48,7 +46,6 @@ public final class KafkaClientsExtensionProvider
     /** Constructor */
     public KafkaClientsExtensionProvider() {
         this(
-                new KafkaResourceValidator(),
                 new ClustersPropertiesFactory(),
                 new ResourceRegistry(),
                 TopicResourceHandler::new,
@@ -57,12 +54,10 @@ public final class KafkaClientsExtensionProvider
 
     @VisibleForTesting
     KafkaClientsExtensionProvider(
-            final KafkaResourceValidator resourceValidator,
             final ClustersPropertiesFactory propertiesFactory,
             final ResourceRegistry resourceRegistry,
             final HandlerFactory handlerFactory,
             final ExtensionFactory extensionFactory) {
-        this.resourceValidator = requireNonNull(resourceValidator, "kafkaResourceValidator");
         this.propertiesFactory = requireNonNull(propertiesFactory, "configFactory");
         this.resourceRegistry = requireNonNull(resourceRegistry, "resourceRegistry");
         this.handlerFactory = requireNonNull(handlerFactory, "handlerFactory");
@@ -73,8 +68,6 @@ public final class KafkaClientsExtensionProvider
     public KafkaClientsExtension initialize(final CreekService api) {
         final List<ComponentDescriptor> components =
                 api.components().descriptors().stream().collect(Collectors.toList());
-
-        resourceValidator.validate(components.stream());
 
         final ClientsExtensionOptions options =
                 api.options()
