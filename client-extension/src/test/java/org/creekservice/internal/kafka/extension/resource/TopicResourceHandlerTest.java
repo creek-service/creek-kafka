@@ -89,6 +89,7 @@ class TopicResourceHandlerTest {
     @Mock private SerdeProvider kafkaSerdeProvider;
     @Mock private SerdeProvider otherSerdeProvider;
     @Mock private KafkaTopic<?, ?> topic;
+    @Mock private KafkaResourceValidator validator;
 
     private final TestStructuredLogger logger = TestStructuredLogger.create();
     private TopicResourceHandler handler;
@@ -103,6 +104,7 @@ class TopicResourceHandlerTest {
                         serdeProviders,
                         resources,
                         topicResourceFactory,
+                        validator,
                         logger);
 
         when(properties.get(CLUSTER_A)).thenReturn(kafkaProperties4A);
@@ -324,5 +326,27 @@ class TopicResourceHandlerTest {
                 hasItem(
                         "DEBUG: {message=Preparing topics,"
                                 + " topicIds=[kafka-topic://Anna/topic-1]}"));
+    }
+
+    @Test
+    void shouldCallValidatorOnValidate() {
+        // When:
+        handler.validate(List.of(TOPIC_1_A));
+
+        // Then:
+        verify(validator).validateGroup(List.of(TOPIC_1_A));
+    }
+
+    @Test
+    void shouldThrowIfValidatorThrows() {
+        // Given:
+        final RuntimeException expected = new RuntimeException("BOOM");
+        doThrow(expected).when(validator).validateGroup(any());
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> handler.validate(List.of()));
+
+        // Then:
+        assertThat(e, is(expected));
     }
 }

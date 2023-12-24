@@ -27,14 +27,11 @@ import static org.mockito.Mockito.withSettings;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
-import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,8 +46,6 @@ class KafkaResourceValidatorTest {
 
     private static final SerializationFormat SOME_FORMAT = serializationFormat("something");
 
-    @Mock private ComponentDescriptor componentA;
-    @Mock private ComponentDescriptor componentB;
     @Mock private PartDescriptor<Long> topicKey;
     @Mock private PartDescriptor<String> topicValue;
     @Mock private PartDescriptor<String> topicValue2;
@@ -74,21 +69,7 @@ class KafkaResourceValidatorTest {
         setUpMock(topic);
         setUpMock(topic2);
 
-        when(componentA.resources()).thenReturn(Stream.of(topic));
-
         validator = new KafkaResourceValidator();
-    }
-
-    @Test
-    void shouldNotBlowUpIfNoKafkaResources() {
-        // Given:
-        final ResourceDescriptor otherResource = mock(ResourceDescriptor.class);
-        when(componentA.resources()).thenReturn(Stream.of(otherResource));
-
-        // When:
-        validator.validate(Stream.of(componentA));
-
-        // Then: did not blow up
     }
 
     @Test
@@ -98,8 +79,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: name() is null"));
@@ -113,8 +93,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: name() is blank"));
@@ -128,8 +107,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: cluster() is null"));
@@ -137,14 +115,17 @@ class KafkaResourceValidatorTest {
     }
 
     @Test
-    void shouldNotThrowOnBlankClusterName() {
+    void shouldThrowOnBlankClusterName() {
         // Given:
         when(topic.cluster()).thenReturn("");
 
         // When:
-        validator.validate(Stream.of(componentA));
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
-        // Then: did not throw.
+        // Then:
+        assertThat(e.getMessage(), startsWith("Invalid topic descriptor: cluster() is blank"));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
     }
 
     @Test
@@ -154,8 +135,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(
@@ -173,8 +153,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: key() is null"));
@@ -188,8 +167,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: key().type() is null"));
@@ -203,8 +181,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: key().format() is null"));
@@ -218,8 +195,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: value() is null"));
@@ -233,8 +209,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(e.getMessage(), startsWith("Invalid topic descriptor: value().type() is null"));
@@ -248,8 +223,7 @@ class KafkaResourceValidatorTest {
 
         // When:
         final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
+                assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
         // Then:
         assertThat(
@@ -268,41 +242,13 @@ class KafkaResourceValidatorTest {
                                 withSettings().extraInterfaces(CreatableKafkaTopic.class)));
         when(((CreatableKafkaTopic<?, ?>) topic).config()).thenReturn(null);
 
-        when(componentA.resources()).thenReturn(Stream.of(topic));
-
-        // When:
-        final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> validator.validate(Stream.of(componentA)));
-
-        // Then:
-        assertThat(e.getMessage(), startsWith("Invalid topic descriptor: config() is null"));
-        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
-    }
-
-    @Test
-    void shouldCheckEachComponent() {
-        // Given:
-        when(componentA.resources()).thenReturn(Stream.of());
-        when(componentB.resources()).thenReturn(Stream.of(topic));
-        when(topicValue.type()).thenReturn(null);
-
-        // Then:
-        assertThrows(
-                RuntimeException.class,
-                () -> validator.validate(Stream.of(componentA, componentB)));
-    }
-
-    @Test
-    void shouldValidateDescriptorsInGroup() {
-        // Given:
-        when(topicValue.format()).thenReturn(null);
-
         // When:
         final Exception e =
                 assertThrows(RuntimeException.class, () -> validator.validateGroup(List.of(topic)));
 
-        assertThat(e.getMessage(), containsString("value().format() is null"));
+        // Then:
+        assertThat(e.getMessage(), startsWith("Invalid topic descriptor: config() is null"));
+        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
     }
 
     @Test

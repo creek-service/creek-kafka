@@ -19,21 +19,15 @@ package org.creekservice.api.kafka.extension;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -42,19 +36,16 @@ import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.extension.config.ClustersPropertiesFactory;
-import org.creekservice.internal.kafka.extension.resource.KafkaResourceValidator;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.extension.resource.TopicResourceHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.mockito.stubbing.Answer;
 
 @SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
@@ -70,7 +61,6 @@ class KafkaClientsExtensionProviderTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ClientsExtensionOptions userOptions;
 
-    @Mock private KafkaResourceValidator resourceValidator;
     @Mock private ClustersPropertiesFactory propertiesFactory;
     @Mock private KafkaClientsExtensionProvider.HandlerFactory handlerFactory;
     @Mock private KafkaClientsExtensionProvider.ExtensionFactory extensionFactory;
@@ -81,22 +71,15 @@ class KafkaClientsExtensionProviderTest {
 
     private Collection<? extends ComponentDescriptor> components;
 
-    private final List<ComponentDescriptor> validatedComponents = new ArrayList<>();
-
     private KafkaClientsExtensionProvider provider;
 
     @BeforeEach
     void setUp() {
         components = List.of(mock(ServiceDescriptor.class), mock(AggregateDescriptor.class));
-        validatedComponents.clear();
 
         provider =
                 new KafkaClientsExtensionProvider(
-                        resourceValidator,
-                        propertiesFactory,
-                        resourceRegistry,
-                        handlerFactory,
-                        extensionFactory);
+                        propertiesFactory, resourceRegistry, handlerFactory, extensionFactory);
 
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
         when(handlerFactory.create(any(), any(), any())).thenReturn(topicHandler);
@@ -104,45 +87,6 @@ class KafkaClientsExtensionProviderTest {
 
         when(api.options().get(any())).thenReturn(Optional.empty());
         when(api.components().descriptors().stream()).thenAnswer(inv -> components.stream());
-    }
-
-    @Test
-    void shouldValidateResources() {
-        // Given:
-        doAnswer(trackValidatedComponents()).when(resourceValidator).validate(any());
-
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        assertThat(validatedComponents, is(components));
-    }
-
-    @Test
-    void shouldValidateResourcesFirst() {
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        final InOrder inOrder = inOrder(resourceValidator, propertiesFactory, handlerFactory);
-
-        inOrder.verify(resourceValidator).validate(any());
-        inOrder.verify(propertiesFactory).create(any(), any());
-        inOrder.verify(handlerFactory).create(any(), any(), any());
-    }
-
-    @Test
-    void shouldThrowIfValidatorThrows() {
-        // Given:
-        final IllegalArgumentException cause = new IllegalArgumentException("Boom");
-        doThrow(cause).when(resourceValidator).validate(any());
-
-        // When:
-        final Exception e =
-                assertThrows(IllegalArgumentException.class, () -> provider.initialize(api));
-
-        // Then:
-        assertThat(e, is(sameInstance(cause)));
     }
 
     @Test
@@ -215,13 +159,5 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         assertThat(result, is(sameInstance(clientsExtension)));
-    }
-
-    private Answer<Void> trackValidatedComponents() {
-        return inv -> {
-            final Stream<? extends ComponentDescriptor> s = inv.getArgument(0);
-            s.forEachOrdered(validatedComponents::add);
-            return null;
-        };
     }
 }
