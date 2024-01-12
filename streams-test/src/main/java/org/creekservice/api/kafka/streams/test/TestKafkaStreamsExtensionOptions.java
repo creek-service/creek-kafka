@@ -19,7 +19,7 @@ package org.creekservice.api.kafka.streams.test;
 import java.util.List;
 import java.util.Map;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.test.util.Temp;
 import org.creekservice.internal.kafka.extension.client.TopicClient;
@@ -71,8 +71,7 @@ public final class TestKafkaStreamsExtensionOptions {
         private MockTopicClient(final String clusterName, final Map<String, ?> kafkaProperties) {}
 
         @Override
-        public void ensureExternalResources(
-                final List<? extends CreatableKafkaTopic<?, ?>> topics) {
+        public void ensureTopicsExist(final List<? extends CreatableKafkaTopic<?, ?>> topics) {
             // No-op.
         }
     }

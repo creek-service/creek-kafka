@@ -17,14 +17,12 @@
 package org.creekservice.internal.kafka.extension.resource;
 
 import static java.util.stream.Collectors.toMap;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,10 +33,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector.CollectedTopics;
@@ -139,6 +137,23 @@ class TopicCollectorTest {
     }
 
     @Test
+    void shouldCollectNestedTopics() {
+        // Given:
+        final ResourceDescriptor resource = mock();
+        when(resource.resources()).thenReturn(Stream.of(topic));
+        when(componentA.resources()).thenReturn(Stream.of(resource));
+
+        // When:
+        final CollectedTopics result = collector.collectTopics(List.of(componentA));
+
+        // Then:
+        assertThat(result.clusters(), is(Set.of(DEFAULT_CLUSTER_NAME)));
+        assertThat(
+                result.stream().collect(toMap(Map.Entry::getKey, Map.Entry::getValue)),
+                is(Map.of(topic.id(), List.of(topic))));
+    }
+
+    @Test
     void shouldHandleTopicsWithSameNameOnDifferentClusters() {
         // Given:
         when(topic.name()).thenReturn("topicDef");
@@ -190,57 +205,6 @@ class TopicCollectorTest {
                 result.stream().collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         assertThat(topics.get(creatableTopic.id()), is(List.of(creatableTopic, creatableTopic2)));
         assertThat(topics.entrySet(), hasSize(1));
-    }
-
-    @Test
-    void shouldThrowOnDuplicateResourceMismatch() {
-        // Given:
-        when(creatableTopic.name()).thenReturn("topicDef");
-        when(creatableTopicValue.format()).thenReturn(serializationFormat("different"));
-
-        // When:
-        final Exception e =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> collector.collectTopics(List.of(componentA, componentB)));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                startsWith(
-                        "Topic descriptor mismatch: "
-                                + "multiple topic descriptors share the same topic name, "
-                                + "but have different attributes."
-                                + System.lineSeparator()));
-
-        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(topic)));
-        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(creatableTopic)));
-    }
-
-    @Test
-    void shouldThrowOnDuplicateCreatableResourceMismatch() {
-        // Given:
-        when(topic.name()).thenReturn("creatableTopicDef");
-        when(creatableTopic2.config()).thenReturn(() -> 1); // <-- different
-
-        when(componentA.resources()).thenReturn(Stream.of(topic, creatableTopic, creatableTopic2));
-
-        // When:
-        final Exception e =
-                assertThrows(
-                        RuntimeException.class, () -> collector.collectTopics(List.of(componentA)));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                startsWith(
-                        "Topic descriptor mismatch: "
-                                + "multiple topic descriptors share the same topic name, "
-                                + "but have different attributes."
-                                + System.lineSeparator()));
-
-        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(creatableTopic)));
-        assertThat(e.getMessage(), containsString(KafkaTopicDescriptors.asString(creatableTopic2)));
     }
 
     @Test

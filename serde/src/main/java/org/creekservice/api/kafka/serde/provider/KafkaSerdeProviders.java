@@ -17,29 +17,41 @@
 package org.creekservice.api.kafka.serde.provider;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider.SerdeFactory;
+import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.internal.kafka.serde.provider.ProviderLoader;
 
 /** Discovers Kafka serde providers available at runtime. */
 public final class KafkaSerdeProviders {
 
-    private final Map<SerializationFormat, KafkaSerdeProvider> providers;
+    private final Map<SerializationFormat, SerdeFactory> providers;
 
     /**
      * Factory method
      *
      * @return an instance.
      */
-    public static KafkaSerdeProviders create() {
-        return new KafkaSerdeProviders(new ProviderLoader().load());
+    public static KafkaSerdeProviders create(
+            final CreekService api, final KafkaSerdeProvider.InitializeParams params) {
+        return new KafkaSerdeProviders(api, params, new ProviderLoader().load());
     }
 
     @VisibleForTesting
-    KafkaSerdeProviders(final Map<SerializationFormat, KafkaSerdeProvider> providers) {
-        this.providers = Map.copyOf(requireNonNull(providers, "providers"));
+    KafkaSerdeProviders(
+            final CreekService api,
+            final KafkaSerdeProvider.InitializeParams params,
+            final Map<SerializationFormat, KafkaSerdeProvider> providers) {
+        this.providers =
+                requireNonNull(providers, "providers").entrySet().stream()
+                        .collect(
+                                toUnmodifiableMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().initialize(api, params)));
     }
 
     /**
@@ -48,8 +60,8 @@ public final class KafkaSerdeProviders {
      * @param format the format
      * @return the serde provider.
      */
-    public KafkaSerdeProvider get(final SerializationFormat format) {
-        final KafkaSerdeProvider found = providers.get(format);
+    public SerdeFactory get(final SerializationFormat format) {
+        final SerdeFactory found = providers.get(format);
         if (found == null) {
             throw new UnknownSerializationFormatException(format);
         }

@@ -1,7 +1,7 @@
 ---
 name: errors
 services:
-  - test-service
+  - native-service
 tests:
   - name: unknown input topic
     notes: attempting to write input to an unknown topic should cause the test to fail
@@ -28,7 +28,7 @@ tests:
     expectations:
       - output
   - name: bad output key
-    notes: the test service will deliberatly produce a record with an invalid key, which the system tests will fail to deserialize
+    notes: the test service will deliberately produce a record with an invalid key, which the system tests will fail to deserialize
     inputs:
       - bad_output_key
     expectations:

@@ -1,7 +1,7 @@
 ---
 name: main
 services:
-  - test-service
+  - native-service
 tests:
   - name: additional output
     inputs:

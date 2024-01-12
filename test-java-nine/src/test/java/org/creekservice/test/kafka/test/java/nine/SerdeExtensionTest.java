@@ -18,44 +18,71 @@ package org.creekservice.test.kafka.test.java.nine;
 
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
+import org.creekservice.api.kafka.metadata.serde.NativeKafkaSerde;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
+import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class SerdeExtensionTest {
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private CreekService api;
+
+    @Mock private KafkaSerdeProvider.InitializeParams params;
 
     private KafkaSerdeProviders providers;
 
     @BeforeEach
     void setUp() {
-        providers = KafkaSerdeProviders.create();
+        providers = KafkaSerdeProviders.create(api, params);
     }
 
     @Test
     void shouldFindKafkaFormat() {
+        // When:
+        final KafkaSerdeProvider.SerdeFactory actual = providers.get(NativeKafkaSerde.format());
+
+        // Then:
+        assertThat(actual, is(notNullValue()));
         assertThat(
-                providers.get(serializationFormat("kafka")).getClass().getSimpleName(),
-                is("NativeKafkaSerdeProvider"));
+                actual.getClass().getName(),
+                is("org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider$1"));
     }
 
     @Test
     void shouldFindPublicTestSerde() {
+        // When:
+        final KafkaSerdeProvider.SerdeFactory actual =
+                providers.get(PublicTestSerdeProvider.FORMAT);
+
+        // Then:
+        assertThat(actual, is(notNullValue()));
         assertThat(
-                providers.get(PublicTestSerdeProvider.FORMAT),
-                is(instanceOf(PublicTestSerdeProvider.class)));
+                actual.getClass().getName(),
+                is("org.creekservice.test.api.kafka.serde.test.PublicTestSerdeProvider$1"));
     }
 
     @Test
     void shouldFindPrivateTestSerde() {
         // When:
-        final KafkaSerdeProvider result = providers.get(serializationFormat("test-private"));
+        final KafkaSerdeProvider.SerdeFactory actual =
+                providers.get(serializationFormat("test-private"));
 
         // Then:
-        assertThat(result.getClass().getSimpleName(), is("PrivateTestSerdeProvider"));
+        assertThat(actual, is(notNullValue()));
+        assertThat(
+                actual.getClass().getName(),
+                is("org.creekservice.test.internal.kafka.serde.test.PrivateTestSerdeProvider$1"));
     }
 }

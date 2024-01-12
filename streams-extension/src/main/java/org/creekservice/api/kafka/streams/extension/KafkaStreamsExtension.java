@@ -19,7 +19,7 @@ package org.creekservice.api.kafka.streams.extension;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 
 /** Kafka streams extension to Creek. */
 public interface KafkaStreamsExtension extends KafkaClientsExtension {
@@ -31,7 +31,7 @@ public interface KafkaStreamsExtension extends KafkaClientsExtension {
      * @param clusterName the name of the Kafka cluster to get client properties for. Often will be
      *     {@link KafkaTopicDescriptor#DEFAULT_CLUSTER_NAME}. Note, topics used in streams
      *     topologies must all be in the same cluster.
-     * @return the streams app.
+     * @return the stream app.
      */
     KafkaStreams build(Topology topology, String clusterName);
 

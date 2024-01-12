@@ -31,7 +31,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.extension.resource.TopicRegistry;
 
 /** Kafka Client Creek extension. */

@@ -141,8 +141,8 @@ class KafkaTestExtensionFunctionalTest {
                 containsString(
                         "Test run failed for test case: bad input value, cause: The record's value"
                             + " is not compatible with the topic's value type. value: not a number,"
-                            + " value_type: java.lang.String, topic_value_type: java.lang.Long,"
-                            + " topic: input"));
+                            + " value_type: java.lang.String, topic_value_type: long, topic:"
+                            + " input"));
 
         assertThat(
                 errorMessage(result, 4),

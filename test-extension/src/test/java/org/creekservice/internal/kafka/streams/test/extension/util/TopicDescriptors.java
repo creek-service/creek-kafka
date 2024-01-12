@@ -18,21 +18,21 @@ package org.creekservice.internal.kafka.streams.test.extension.util;
 
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 
 import java.net.URI;
 import java.util.Optional;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopicInternal;
-import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
-import org.creekservice.api.kafka.metadata.KafkaTopicInput;
-import org.creekservice.api.kafka.metadata.KafkaTopicInternal;
-import org.creekservice.api.kafka.metadata.KafkaTopicOutput;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicInput;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopicInternal;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicConfig;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor.Part;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicInput;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicInternal;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicOutput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
 
 /**
  * Helper for creating topic descriptors.
@@ -288,7 +288,7 @@ public final class TopicDescriptors {
             }
 
             @Override
-            public Part part() {
+            public Part name() {
                 return part;
             }
 

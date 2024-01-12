@@ -28,11 +28,12 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
+import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.internal.kafka.extension.client.KafkaTopicClient;
 import org.creekservice.internal.kafka.extension.client.TopicClient;
@@ -43,7 +44,6 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
     private final StructuredLogger logger;
     private final TopicRegistrar resources;
     private final ClustersProperties properties;
-    private final ClustersSerdeProviders serdeProviders;
     private final TopicClient.Factory topicClientFactory;
     private final TopicResourceFactory topicResourceFactory;
     private final KafkaResourceValidator validator;
@@ -52,41 +52,32 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
      * @param typeOverrides known type overrides, used to customise functionality.
      * @param resources the resource registry to register topics in.
      * @param properties Kafka properties of all known clusters.
+     * @param serdeProviders Known serde providers.
      */
     public TopicResourceHandler(
             final TypeOverrides typeOverrides,
             final TopicRegistrar resources,
-            final ClustersProperties properties) {
-        this(typeOverrides, properties, resources, new ClustersSerdeProviders(typeOverrides));
-    }
-
-    private TopicResourceHandler(
-            final TypeOverrides typeOverrides,
             final ClustersProperties properties,
-            final TopicRegistrar resources,
-            final ClustersSerdeProviders serdeProviders) {
+            final KafkaSerdeProviders serdeProviders) {
         this(
                 typeOverrides.get(TopicClient.Factory.class).orElse(KafkaTopicClient::new),
                 properties,
-                serdeProviders,
                 resources,
                 new TopicResourceFactory(serdeProviders),
                 new KafkaResourceValidator(),
-                StructuredLoggerFactory.internalLogger(KafkaTopicClient.class));
+                StructuredLoggerFactory.internalLogger(TopicResourceHandler.class));
     }
 
     @VisibleForTesting
     TopicResourceHandler(
             final TopicClient.Factory topicClientFactory,
             final ClustersProperties properties,
-            final ClustersSerdeProviders serdeProviders,
             final TopicRegistrar resources,
             final TopicResourceFactory topicResourceFactory,
             final KafkaResourceValidator validator,
             final StructuredLogger logger) {
         this.topicClientFactory = requireNonNull(topicClientFactory, "topicClientFactory");
         this.properties = requireNonNull(properties, "properties");
-        this.serdeProviders = requireNonNull(serdeProviders, "serdeProviders");
         this.resources = requireNonNull(resources, "resources");
         this.topicResourceFactory = requireNonNull(topicResourceFactory, "topicFactory");
         this.validator = requireNonNull(validator, "validator");
@@ -127,31 +118,15 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
 
     private void ensure(
             final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
-        ensureTopicResources(cluster, topics);
-        ensureSerdeResources(cluster, topics);
-    }
-
-    private void ensureTopicResources(
-            final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
-        topicClientFactory.create(cluster, properties.get(cluster)).ensureExternalResources(topics);
-    }
-
-    private void ensureSerdeResources(
-            final String cluster, final List<? extends CreatableKafkaTopic<?, ?>> topics) {
 
         logger.debug(
-                "Ensuring topic resources",
+                "Ensuring topics",
                 log ->
                         log.with(
                                 LoggingField.topicIds,
-                                topics.stream().map(KafkaTopicDescriptor::id).collect(toList())));
+                                topics.stream().map(ResourceDescriptor::id).collect(toList())));
 
-        topics.stream()
-                .flatMap(KafkaTopicDescriptor::parts)
-                .collect(groupingBy(PartDescriptor::format))
-                .forEach(
-                        (format, parts) ->
-                                serdeProviders.get(format, cluster).ensureExternalResources(parts));
+        topicClientFactory.create(cluster, properties.get(cluster)).ensureTopicsExist(topics);
     }
 
     private void prepare(
@@ -177,9 +152,11 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
         }
         throw new IllegalArgumentException(
                 "Topic descriptor is not creatable: "
-                        + KafkaTopicDescriptors.asString(topic)
-                        + " ("
-                        + codeLocation(topic)
-                        + ")");
+                        + "id: "
+                        + topic.id()
+                        + ", type: "
+                        + topic.getClass().getName()
+                        + ", location: "
+                        + codeLocation(topic));
     }
 }

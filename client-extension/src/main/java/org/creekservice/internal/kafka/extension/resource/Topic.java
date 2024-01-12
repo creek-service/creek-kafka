@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 
 /**
  * Implementation of {@link KafkaTopic}

@@ -23,18 +23,18 @@ import java.util.function.Supplier;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.serde.NativeKafkaSerde;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.service.extension.CreekService;
 
 /** Serde provider for Kafka's own in-built serde classes. */
 public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
 
-    /** The serialization format name for the native Kafka format. */
-    public static final SerializationFormat FORMAT =
-            SerializationFormat.serializationFormat("kafka");
-
-    private static final Map<Class<?>, Supplier<Serde<?>>> SUPPLIERS =
+    @VisibleForTesting
+    static final Map<Class<?>, Supplier<Serde<?>>> SUPPLIERS =
             Map.ofEntries(
                     Map.entry(UUID.class, Serdes::UUID),
                     Map.entry(long.class, Serdes::Long),
@@ -55,13 +55,12 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
 
     @Override
     public SerializationFormat format() {
-        return FORMAT;
+        return NativeKafkaSerde.format();
     }
 
     @Override
-    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
-        return new SerdeProvider() {
-
+    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
+        return new SerdeFactory() {
             @SuppressWarnings("unchecked")
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
@@ -73,16 +72,6 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
                 return (Serde<T>) supplier.get();
             }
         };
-    }
-
-    /**
-     * Check if this provider supports the supplied {@code type}.
-     *
-     * @param type the type to check
-     * @return {@code true} if supported, {@code false} otherwise.
-     */
-    public static boolean supports(final Class<?> type) {
-        return SUPPLIERS.containsKey(type);
     }
 
     private static final class UnsupportedTypeException extends IllegalArgumentException {

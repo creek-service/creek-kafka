@@ -16,11 +16,11 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
-import java.util.Collection;
 import java.util.Optional;
 import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.service.extension.CreekService;
 
 // begin-snippet: kafka-serde-provider
 /**
@@ -38,17 +38,7 @@ public interface KafkaSerdeProvider {
      */
     SerializationFormat format();
 
-    /**
-     * Initialise a {@link SerdeProvider} for the supplied {@code clusterName}.
-     *
-     * <p>This method exists to allow serde providers to initialise per-Kafka-cluster state. For
-     * example, to cache any required schemas.
-     *
-     * @param clusterName the logical name of the cluster, as used in topic descriptors.
-     * @param params provides access to additional types and information in an extendable way.
-     * @return an initialised serde provider.
-     */
-    SerdeProvider initialize(String clusterName, InitializeParams params);
+    SerdeFactory initialize(CreekService api, InitializeParams params);
 
     /** Extendable way of providing additional information to the {@link #initialize} method. */
     interface InitializeParams {
@@ -63,19 +53,7 @@ public interface KafkaSerdeProvider {
         <T> Optional<T> typeOverride(Class<T> type);
     }
 
-    /** Initialised, per-cluster, provider of serde instances. */
-    interface SerdeProvider {
-        /**
-         * Ensure any resources associated with a topic part are registered, e.g. schemas registered
-         * in the appropriate schema store.
-         *
-         * <p>The method allows serde providers to optionally create / register resources associated
-         * with a topic's key or value. Implementations should only ensure resources for the
-         * supplied {@code topicPart}.
-         *
-         * @param parts the descriptors for the topic parts.
-         */
-        default void ensureExternalResources(Collection<? extends PartDescriptor<?>> parts) {}
+    interface SerdeFactory {
 
         /**
          * Get the serde for the supplied Kafka topic {@code part}.

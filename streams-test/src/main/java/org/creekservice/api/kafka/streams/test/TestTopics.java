@@ -29,7 +29,7 @@ import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 
 /**

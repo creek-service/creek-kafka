@@ -23,7 +23,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicConfig;
 
 @SuppressWarnings("unused") // What is unused today may be used tomorrow...
 public final class TopicConfigBuilder {
@@ -89,15 +89,15 @@ public final class TopicConfigBuilder {
     }
 
     public KafkaTopicConfig build() {
-        return new KafkaTopicConfigImpl(partitions, config);
+        return new TopicConfig(partitions, config);
     }
 
-    private static final class KafkaTopicConfigImpl implements KafkaTopicConfig {
+    private static final class TopicConfig implements KafkaTopicConfig {
 
         private final int partitions;
         private final Map<String, String> config;
 
-        KafkaTopicConfigImpl(final int partitions, final Map<String, String> config) {
+        TopicConfig(final int partitions, final Map<String, String> config) {
             this.partitions = partitions;
             this.config = Map.copyOf(requireNonNull(config, "config"));
         }

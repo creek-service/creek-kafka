@@ -17,7 +17,7 @@
 package org.creekservice.internal.kafka.extension.resource;
 
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 
 /** Type responsible for providing lookups of topic resources. */
 public interface TopicRegistry {

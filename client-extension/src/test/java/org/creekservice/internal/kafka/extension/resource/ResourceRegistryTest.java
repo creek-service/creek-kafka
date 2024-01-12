@@ -18,15 +18,18 @@ package org.creekservice.internal.kafka.extension.resource;
 
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import java.util.List;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +42,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ResourceRegistryTest {
 
+    @Mock private KafkaResourceValidator validator;
     @Mock private Topic<Long, String> topicA;
     @Mock private Topic<String, Long> topicB;
     @Mock private KafkaTopicDescriptor<Long, String> topicDefA;
@@ -48,7 +52,7 @@ class ResourceRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry = new ResourceRegistry();
+        registry = new ResourceRegistry(validator);
 
         when(topicA.name()).thenCallRealMethod();
         when(topicB.name()).thenCallRealMethod();
@@ -131,22 +135,17 @@ class ResourceRegistryTest {
         // Given:
         registry.register(topicA);
 
-        setUpTopicDef(def, "topic-A", Long.class, String.class);
+        setUpTopicDef(def, "topic-A", long.class, String.class);
+
+        final Exception exception = new RuntimeException("boom");
+        doThrow(exception).when(validator).validateGroup(any());
 
         // When:
-        final Exception e = assertThrows(IllegalArgumentException.class, () -> registry.topic(def));
+        final Exception e = assertThrows(RuntimeException.class, () -> registry.topic(def));
 
         // Then:
-        assertThat(
-                e.getMessage(),
-                startsWith(
-                        "The supplied topic descriptor does not match the topic descriptor found"
-                                + " when inspecting components."));
-        assertThat(
-                e.getMessage(), containsString("supplied=" + KafkaTopicDescriptors.asString(def)));
-        assertThat(
-                e.getMessage(),
-                containsString("actual=" + KafkaTopicDescriptors.asString(topicDefA)));
+        verify(validator).validateGroup(List.of(def, topicA.descriptor()));
+        assertThat(e, is(sameInstance(exception)));
     }
 
     @Test

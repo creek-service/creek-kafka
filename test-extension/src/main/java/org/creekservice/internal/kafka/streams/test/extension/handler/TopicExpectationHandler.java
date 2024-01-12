@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;

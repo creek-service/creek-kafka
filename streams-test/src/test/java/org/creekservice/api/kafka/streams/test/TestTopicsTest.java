@@ -18,7 +18,7 @@ package org.creekservice.api.kafka.streams.test;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.apache.kafka.streams.KeyValue.pair;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor.InputTopic;
 import static org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor.OutputTopic;
 import static org.hamcrest.MatcherAssert.assertThat;

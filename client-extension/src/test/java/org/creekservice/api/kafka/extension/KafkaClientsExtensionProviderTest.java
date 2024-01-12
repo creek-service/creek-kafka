@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
@@ -42,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -52,7 +55,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaClientsExtensionProviderTest {
 
-    public static final KafkaClientsExtensionOptions DEFAULT_OPTIONS =
+    private static final KafkaClientsExtensionOptions DEFAULT_OPTIONS =
             KafkaClientsExtensionOptions.builder().build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -62,8 +65,10 @@ class KafkaClientsExtensionProviderTest {
     private ClientsExtensionOptions userOptions;
 
     @Mock private ClustersPropertiesFactory propertiesFactory;
+    @Mock private KafkaClientsExtensionProvider.KafkaSerdeProvidersFactory serdeProvidersFactory;
     @Mock private KafkaClientsExtensionProvider.HandlerFactory handlerFactory;
     @Mock private KafkaClientsExtensionProvider.ExtensionFactory extensionFactory;
+    @Mock private KafkaSerdeProviders serdeProviders;
     @Mock private ClustersProperties clustersProperties;
     @Mock private ResourceRegistry resourceRegistry;
     @Mock private ClientsExtension clientsExtension;
@@ -79,11 +84,16 @@ class KafkaClientsExtensionProviderTest {
 
         provider =
                 new KafkaClientsExtensionProvider(
-                        propertiesFactory, resourceRegistry, handlerFactory, extensionFactory);
+                        propertiesFactory,
+                        resourceRegistry,
+                        handlerFactory,
+                        extensionFactory,
+                        serdeProvidersFactory);
 
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
-        when(handlerFactory.create(any(), any(), any())).thenReturn(topicHandler);
+        when(handlerFactory.create(any(), any(), any(), any())).thenReturn(topicHandler);
         when(extensionFactory.create(any(), any())).thenReturn(clientsExtension);
+        when(serdeProvidersFactory.create(any(), any())).thenReturn(serdeProviders);
 
         when(api.options().get(any())).thenReturn(Optional.empty());
         when(api.components().descriptors().stream()).thenAnswer(inv -> components.stream());
@@ -96,7 +106,11 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(handlerFactory)
-                .create(DEFAULT_OPTIONS.typeOverrides(), resourceRegistry, clustersProperties);
+                .create(
+                        DEFAULT_OPTIONS.typeOverrides(),
+                        resourceRegistry,
+                        clustersProperties,
+                        serdeProviders);
     }
 
     @Test
@@ -109,7 +123,11 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(handlerFactory)
-                .create(userOptions.typeOverrides(), resourceRegistry, clustersProperties);
+                .create(
+                        userOptions.typeOverrides(),
+                        resourceRegistry,
+                        clustersProperties,
+                        serdeProviders);
     }
 
     @SuppressWarnings("unchecked")
@@ -141,6 +159,49 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(propertiesFactory).create(components, userOptions);
+    }
+
+    @Test
+    void shouldBuildSerdeProvidersWithDefaultOptions() {
+        // Given:
+        final ArgumentCaptor<KafkaSerdeProvider.InitializeParams> capture =
+                ArgumentCaptor.forClass(KafkaSerdeProvider.InitializeParams.class);
+
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(serdeProvidersFactory).create(eq(api), capture.capture());
+
+        final KafkaSerdeProvider.InitializeParams params = capture.getValue();
+
+        // When:
+        final Optional<?> result = params.typeOverride(String.class);
+
+        // Then:
+        assertThat(result, is(Optional.empty()));
+    }
+
+    @Test
+    void shouldBuildSerdeProvidersWithWithUserOptions() {
+        // Given:
+        when(api.options().get(ClientsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
+        final ArgumentCaptor<KafkaSerdeProvider.InitializeParams> capture =
+                ArgumentCaptor.forClass(KafkaSerdeProvider.InitializeParams.class);
+
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(serdeProvidersFactory).create(eq(api), capture.capture());
+
+        final KafkaSerdeProvider.InitializeParams params = capture.getValue();
+
+        // When:
+        params.typeOverride(String.class);
+
+        // Then:
+        verify(userOptions.typeOverrides()).get(String.class);
     }
 
     @Test

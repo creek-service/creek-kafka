@@ -23,14 +23,15 @@ import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 
 /** Factory class that builds the {@link Topic} resources */
 final class TopicResourceFactory {
 
-    private final ClustersSerdeProviders serdeProviders;
+    private final KafkaSerdeProviders serdeProviders;
     private final TopicFactory topicFactory;
 
     /**
@@ -38,13 +39,13 @@ final class TopicResourceFactory {
      *
      * @param serdeProviders all known serde providers.
      */
-    TopicResourceFactory(final ClustersSerdeProviders serdeProviders) {
+    TopicResourceFactory(final KafkaSerdeProviders serdeProviders) {
         this(serdeProviders, Topic::new);
     }
 
     @VisibleForTesting
     TopicResourceFactory(
-            final ClustersSerdeProviders serdeProviders, final TopicFactory topicFactory) {
+            final KafkaSerdeProviders serdeProviders, final TopicFactory topicFactory) {
         this.serdeProviders = requireNonNull(serdeProviders, "serdeProviders");
         this.topicFactory = requireNonNull(topicFactory, "topicFactory");
     }
@@ -65,15 +66,15 @@ final class TopicResourceFactory {
 
     private <T> Serde<T> serde(
             final PartDescriptor<T> part, final Map<String, ?> clusterProperties) {
-        final KafkaSerdeProvider.SerdeProvider provider = provider(part);
+        final KafkaSerdeProvider.SerdeFactory provider = provider(part);
         final Serde<T> serde = provider.createSerde(part);
-        serde.configure(clusterProperties, part.part().isKey());
+        serde.configure(clusterProperties, part.name().isKey());
         return serde;
     }
 
-    private <T> KafkaSerdeProvider.SerdeProvider provider(final PartDescriptor<T> part) {
+    private <T> KafkaSerdeProvider.SerdeFactory provider(final PartDescriptor<T> part) {
         try {
-            return serdeProviders.get(part.format(), part.topic().cluster());
+            return serdeProviders.get(part.format());
         } catch (final Exception e) {
             throw new UnknownSerializationFormatException(part, e);
         }
@@ -90,7 +91,7 @@ final class TopicResourceFactory {
         UnknownSerializationFormatException(final PartDescriptor<?> part, final Throwable cause) {
             super(
                     "Unknown "
-                            + part.part()
+                            + part.name()
                             + " serialization format encountered."
                             + " format="
                             + part.format()
