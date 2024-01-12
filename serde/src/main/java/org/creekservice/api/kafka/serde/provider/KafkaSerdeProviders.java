@@ -34,6 +34,8 @@ public final class KafkaSerdeProviders {
     /**
      * Factory method
      *
+     * @param api Creek api passed to serde providers to initialize.
+     * @param params Additional params.
      * @return an instance.
      */
     public static KafkaSerdeProviders create(
