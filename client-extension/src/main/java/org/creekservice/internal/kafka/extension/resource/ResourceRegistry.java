@@ -16,16 +16,30 @@
 
 package org.creekservice.internal.kafka.extension.resource;
 
+import static java.util.Objects.requireNonNull;
+
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 
 /** A registry of all known Kafka resources. */
 public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
 
     private final Map<URI, KafkaTopic<?, ?>> topics = new HashMap<>();
+    private final KafkaResourceValidator validator;
+
+    public ResourceRegistry() {
+        this(new KafkaResourceValidator());
+    }
+
+    @VisibleForTesting
+    ResourceRegistry(final KafkaResourceValidator validator) {
+        this.validator = requireNonNull(validator, "validator");
+    }
 
     @Override
     public void register(final KafkaTopic<?, ?> topic) {
@@ -52,9 +66,7 @@ public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
     public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> def) {
         final KafkaTopic<?, ?> found = find(def.id());
 
-        if (!KafkaTopicDescriptors.matches(found.descriptor(), def)) {
-            throw new TopicDescriptorMismatchException(def, found.descriptor());
-        }
+        validator.validateGroup(List.of(def, found.descriptor()));
 
         return (KafkaTopic) found;
     }
@@ -88,18 +100,6 @@ public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
     private static final class UnknownTopicException extends IllegalArgumentException {
         UnknownTopicException(final URI id) {
             super("Unknown topic. No topic has the supplied id. id=" + id);
-        }
-    }
-
-    private static final class TopicDescriptorMismatchException extends IllegalArgumentException {
-        TopicDescriptorMismatchException(
-                final KafkaTopicDescriptor<?, ?> supplied, final KafkaTopicDescriptor<?, ?> found) {
-            super(
-                    "The supplied topic descriptor does not match the topic descriptor found when"
-                            + " inspecting components. supplied="
-                            + KafkaTopicDescriptors.asString(supplied)
-                            + " actual="
-                            + KafkaTopicDescriptors.asString(found));
         }
     }
 }

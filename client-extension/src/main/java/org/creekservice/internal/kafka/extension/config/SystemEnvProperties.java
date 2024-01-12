@@ -32,7 +32,7 @@ public final class SystemEnvProperties {
      * Get the environment variable name prefix for the supplied {@code clusterName}
      *
      * @param clusterName the cluster name, as returned by {@link
-     *     org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#cluster()}
+     *     org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor#cluster()}
      * @return the environment variable name prefix.
      */
     public static String prefix(final String clusterName) {

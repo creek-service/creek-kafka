@@ -18,8 +18,8 @@ package org.creekservice.internal.kafka.extension.config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.testing.NullPointerTester;
 import java.util.Optional;
 import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,13 +35,12 @@ class TypeOverridesBuilderTest {
     }
 
     @Test
-    void shouldThrowOnNullType() {
-        assertThrows(NullPointerException.class, () -> builder.set(null, new Object()));
-    }
+    void shouldThrowNPEs() {
+        final NullPointerTester tester =
+                new NullPointerTester().setDefault(Class.class, String.class);
 
-    @Test
-    void shouldThrowOnNullValue() {
-        assertThrows(NullPointerException.class, () -> builder.set(String.class, null));
+        tester.testAllPublicInstanceMethods(builder);
+        tester.testAllPublicInstanceMethods(builder.build());
     }
 
     @Test

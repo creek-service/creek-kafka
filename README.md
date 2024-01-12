@@ -24,7 +24,6 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
 * **[serde](serde)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-serde)]: defines the base types used to define Kafka Serde (serializers and deserializers),
   and a `kafka` serialization format which uses the standard Kafka client serde.
 * **[serde-test](serde-test)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-serde-test)]: Test utils for testing serde 
-* **[json-serde](json-serde)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-json-serde)]: provides JSON serde implementations. 
 * **[streams-test](streams-test)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test)]: Helpers for writing tests for Kafka streams based microservices.
 * **[test-extension](test-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-test-extension)]: Creek system-test extension to allow system testing of Kafka based microservices.
 
@@ -34,7 +33,7 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
 * **[test-serde](test-serde)**: test-only serde extension implementation.
 * **[test-serde-java-eight](test-serde-java-eight)**: test-only serde extension implementation that only registers itself
   using the Java 8 `META-INF/services` method.
-* **[test-service](test-service)**: test-only microservice implementation.
+* **[test-service-native](test-service-native)**: test-only microservice implementation using inbuilt/native Kafka serde.
 
 ### Docs:
 * **[docs](docs)**: doc site accessible on https://www.creekservice.org/creek-kafka.

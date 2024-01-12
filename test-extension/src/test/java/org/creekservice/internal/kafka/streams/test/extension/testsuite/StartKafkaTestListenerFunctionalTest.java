@@ -17,9 +17,9 @@
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
-import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.InputTopic;
-import static org.creekservice.api.kafka.test.service.TestServiceDescriptor.OutputTopic;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.api.kafka.test.service.inbuilt.NativeServiceDescriptor.InputTopic;
+import static org.creekservice.api.kafka.test.service.inbuilt.NativeServiceDescriptor.OutputTopic;
 import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.tester;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -61,7 +61,7 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
@@ -93,7 +93,7 @@ class StartKafkaTestListenerFunctionalTest {
     private static final CreekSystemTestExtensionTester EXT_TESTER =
             tester()
                     // Uncomment the line below to debug the test service using attach me plugin:
-                    // .withDebugServices("test-service")
+                    // .withDebugServices("native-service")
                     .build();
 
     private static StartKafkaTestListener listener;
@@ -113,7 +113,7 @@ class StartKafkaTestListenerFunctionalTest {
         when(api.tests().env().currentSuite().services().add(any()))
                 .thenAnswer(inv -> services.add(inv.getArgument(0)));
 
-        testService = services.add(EXT_TESTER.serviceDefinitions().get("test-service"));
+        testService = services.add(EXT_TESTER.serviceDefinitions().get("native-service"));
 
         when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(testService));

@@ -6,4 +6,7 @@ module creek.kafka.metadata {
     requires transitive creek.platform.metadata;
 
     exports org.creekservice.api.kafka.metadata;
+    exports org.creekservice.api.kafka.metadata.schema;
+    exports org.creekservice.api.kafka.metadata.serde;
+    exports org.creekservice.api.kafka.metadata.topic;
 }

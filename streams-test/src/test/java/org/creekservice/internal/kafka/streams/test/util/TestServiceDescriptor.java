@@ -16,15 +16,15 @@
 
 package org.creekservice.internal.kafka.streams.test.util;
 
-import static org.creekservice.internal.kafka.streams.test.util.TopicConfigBuilder.withPartitions;
+import static org.creekservice.internal.kafka.streams.test.util.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.creekservice.internal.kafka.streams.test.util.TopicDescriptors.inputTopic;
 import static org.creekservice.internal.kafka.streams.test.util.TopicDescriptors.outputTopic;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicInput;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
 import org.creekservice.api.platform.metadata.ComponentInput;
 import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;

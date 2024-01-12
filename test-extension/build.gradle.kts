@@ -33,7 +33,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
-    testImplementation(project(":test-service"))
+    testImplementation(project(":test-service-native"))
     testImplementation("org.creekservice:creek-system-test-executor:$creekVersion")
     testImplementation("org.creekservice:creek-system-test-test-util:$creekVersion")
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
@@ -41,5 +41,5 @@ dependencies {
 }
 
 tasks.test {
-    dependsOn(":test-service:buildAppImage")
+    dependsOn(":test-service-native:buildAppImage")
 }

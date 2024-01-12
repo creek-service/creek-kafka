@@ -5,7 +5,7 @@ options:
     notes: test using an older kafka server
     kafkaDockerImage: "confluentinc/cp-kafka:7.1.4"
 services:
-  - test-service
+  - native-service
 tests:
   - name: test 1
     inputs:

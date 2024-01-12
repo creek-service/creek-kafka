@@ -18,6 +18,7 @@ package org.creekservice.test.api.kafka.serde.test;
 
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.service.extension.CreekService;
 
 @SuppressWarnings("unused") // Deliberately not registered
 public final class NeitherTestSerdeProvider implements KafkaSerdeProvider {
@@ -33,7 +34,7 @@ public final class NeitherTestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
+    public SerdeFactory initialize(final CreekService api) {
         return null;
     }
 }

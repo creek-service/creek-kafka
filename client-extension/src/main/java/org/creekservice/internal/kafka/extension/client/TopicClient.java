@@ -18,7 +18,7 @@ package org.creekservice.internal.kafka.extension.client;
 
 import java.util.List;
 import java.util.Map;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 
 /** Client for working with Kafka topics. */
 public interface TopicClient {
@@ -28,7 +28,7 @@ public interface TopicClient {
      *
      * @param topics the topics to ensure. all topics belong to a single Kafka cluster.
      */
-    void ensureExternalResources(List<? extends CreatableKafkaTopic<?, ?>> topics);
+    void ensureTopicsExist(List<? extends CreatableKafkaTopic<?, ?>> topics);
 
     /**
      * Type responsible for creating {@link TopicClient}'s.

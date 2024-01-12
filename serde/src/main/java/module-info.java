@@ -21,6 +21,7 @@ import org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider;
 module creek.kafka.serde {
     requires transitive creek.kafka.metadata;
     requires transitive creek.base.annotation;
+    requires transitive creek.service.api;
     requires transitive kafka.clients;
 
     exports org.creekservice.api.kafka.serde.provider;

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.TypeOverrides;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
@@ -42,6 +43,7 @@ public final class KafkaClientsExtensionProvider
     private final ResourceRegistry resourceRegistry;
     private final HandlerFactory handlerFactory;
     private final ExtensionFactory extensionFactory;
+    private final KafkaSerdeProvidersFactory serdeProvidersFactory;
 
     /** Constructor */
     public KafkaClientsExtensionProvider() {
@@ -49,7 +51,8 @@ public final class KafkaClientsExtensionProvider
                 new ClustersPropertiesFactory(),
                 new ResourceRegistry(),
                 TopicResourceHandler::new,
-                ClientsExtension::new);
+                ClientsExtension::new,
+                KafkaSerdeProviders::create);
     }
 
     @VisibleForTesting
@@ -57,11 +60,13 @@ public final class KafkaClientsExtensionProvider
             final ClustersPropertiesFactory propertiesFactory,
             final ResourceRegistry resourceRegistry,
             final HandlerFactory handlerFactory,
-            final ExtensionFactory extensionFactory) {
+            final ExtensionFactory extensionFactory,
+            final KafkaSerdeProvidersFactory serdeProvidersFactory) {
         this.propertiesFactory = requireNonNull(propertiesFactory, "configFactory");
         this.resourceRegistry = requireNonNull(resourceRegistry, "resourceRegistry");
         this.handlerFactory = requireNonNull(handlerFactory, "handlerFactory");
         this.extensionFactory = requireNonNull(extensionFactory, "extensionFactory");
+        this.serdeProvidersFactory = requireNonNull(serdeProvidersFactory, "serdeProvidersFactory");
     }
 
     @Override
@@ -76,12 +81,17 @@ public final class KafkaClientsExtensionProvider
 
         final ClustersProperties properties = propertiesFactory.create(components, options);
 
+        final KafkaSerdeProviders serdeProviders = serdeProvidersFactory.create(api);
+
         api.components()
                 .model()
                 .addResource(
                         new HandlerTypeRef<>() {},
                         handlerFactory.create(
-                                options.typeOverrides(), resourceRegistry, properties));
+                                options.typeOverrides(),
+                                resourceRegistry,
+                                properties,
+                                serdeProviders));
 
         return extensionFactory.create(properties, resourceRegistry);
     }
@@ -91,11 +101,17 @@ public final class KafkaClientsExtensionProvider
         TopicResourceHandler create(
                 TypeOverrides typeOverrides,
                 TopicRegistrar resources,
-                ClustersProperties properties);
+                ClustersProperties properties,
+                KafkaSerdeProviders serdeProviders);
     }
 
     @VisibleForTesting
     interface ExtensionFactory {
         ClientsExtension create(ClustersProperties clustersProperties, TopicRegistry resources);
+    }
+
+    @VisibleForTesting
+    interface KafkaSerdeProvidersFactory {
+        KafkaSerdeProviders create(CreekService api);
     }
 }

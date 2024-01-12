@@ -32,7 +32,8 @@ import java.util.stream.Stream;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.metadata.serde.NativeKafkaSerde;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,11 +44,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class NativeKafkaSerdeProviderTest {
 
-    private KafkaSerdeProvider.SerdeProvider provider;
+    private KafkaSerdeProvider.SerdeFactory serdeFactory;
 
     @BeforeEach
     void setUp() {
-        provider = new NativeKafkaSerdeProvider().initialize("bob", null);
+        serdeFactory = new NativeKafkaSerdeProvider().initialize(null);
     }
 
     @Test
@@ -65,7 +66,7 @@ class NativeKafkaSerdeProviderTest {
         final PartDescriptor<?> part = partWithType(type);
 
         // When:
-        final Serde<?> serde = provider.createSerde(part);
+        final Serde<?> serde = serdeFactory.createSerde(part);
 
         // Then:
         assertThat(serde, is(instanceOf(expectedSerdeType)));
@@ -79,7 +80,7 @@ class NativeKafkaSerdeProviderTest {
 
         // When:
         final Exception e =
-                assertThrows(IllegalArgumentException.class, () -> provider.createSerde(part));
+                assertThrows(IllegalArgumentException.class, () -> serdeFactory.createSerde(part));
 
         // Then:
         assertThat(
@@ -87,6 +88,12 @@ class NativeKafkaSerdeProviderTest {
                 is(
                         "The supplied type is not supported by the kafka format: "
                                 + AtomicInteger.class.getName()));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("supportedTypes")
+    void shouldBeKeptInlineWithNativeKafkaSerde(final Class<?> type) {
+        assertThat(NativeKafkaSerde.supports(type), is(true));
     }
 
     public static Stream<Arguments> supportedTypesAndExpectedSerde() {
@@ -107,6 +114,10 @@ class NativeKafkaSerdeProviderTest {
                 arguments(Bytes.class, Serdes.BytesSerde.class),
                 arguments(byte[].class, Serdes.ByteArraySerde.class),
                 arguments(Void.class, Serdes.VoidSerde.class));
+    }
+
+    public static Stream<Class<?>> supportedTypes() {
+        return NativeKafkaSerdeProvider.SUPPLIERS.keySet().stream();
     }
 
     @SuppressWarnings("unchecked")

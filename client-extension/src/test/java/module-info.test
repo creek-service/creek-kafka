@@ -24,3 +24,6 @@
 
 --add-opens
   creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=junit.jupiter
+
+--add-opens
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.config=guava.testlib

@@ -18,46 +18,57 @@ package org.creekservice.internal.kafka.streams.test.util;
 
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
-import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
+import static org.creekservice.api.kafka.metadata.schema.SchemaDescriptor.DEFAULT_SCHEMA_REGISTRY_NAME;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 
-import java.net.URI;
+import java.text.NumberFormat;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopicInternal;
-import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
-import org.creekservice.api.kafka.metadata.KafkaTopicInput;
-import org.creekservice.api.kafka.metadata.KafkaTopicInternal;
-import org.creekservice.api.kafka.metadata.KafkaTopicOutput;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicInput;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
+import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
+import org.creekservice.api.kafka.metadata.schema.OwnedJsonSchemaDescriptor;
+import org.creekservice.api.kafka.metadata.schema.SchemaDescriptor;
+import org.creekservice.api.kafka.metadata.schema.UnownedJsonSchemaDescriptor;
+import org.creekservice.api.kafka.metadata.serde.JsonSchemaKafkaSerde;
+import org.creekservice.api.kafka.metadata.serde.NativeKafkaSerde;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopicInternal;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicConfig;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor.Part;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicInput;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicInternal;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicOutput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
+import org.creekservice.api.platform.metadata.OwnedResource;
+import org.creekservice.api.platform.metadata.ResourceDescriptor;
 
 /**
  * Helper for creating topic descriptors.
  *
- * <p>Wondering where the builds are for {@link org.creekservice.api.kafka.metadata.KafkaTopicInput}
- * or {@link org.creekservice.api.kafka.metadata.KafkaTopicOutput}? These should only be created by
- * calling {@link org.creekservice.api.kafka.metadata.OwnedKafkaTopicInput#toOutput()} and {@link
+ * <p>Wondering where the builds are for {@link KafkaTopicInput} or {@link KafkaTopicOutput}? These
+ * should only be created by calling {@link OwnedKafkaTopicInput#toOutput()} and {@link
  * OwnedKafkaTopicOutput#toInput()} on an owned topic descriptor, respectively.
+ *
+ * <p>Supports native {@code kafka} serde and {@code json-schema} serde.
  */
 @SuppressWarnings("unused") // What is unused today may be used tomorrow...
 public final class TopicDescriptors {
-
-    public static final SerializationFormat KAFKA_FORMAT = serializationFormat("kafka");
 
     private TopicDescriptors() {}
 
     /**
      * Create an input Kafka topic descriptor.
      *
-     * <p>Looking for a version that returns {@link
-     * org.creekservice.api.kafka.metadata.KafkaTopicInput}? Get one of those by calling {@link
-     * org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput#toInput()} on the topic descriptor
-     * defined in the upstream component.
+     * <p>Looking for a version that returns {@link KafkaTopicInput}? Get one of those by calling
+     * {@link OwnedKafkaTopicOutput#toInput()} on the topic descriptor defined in the upstream
+     * component.
      *
-     * @param topicName the name of the topic
+     * @param topicName the logic name of the topic
      * @param keyType the type serialized into the Kafka record key.
      * @param valueType the type serialized into the Kafka record value.
      * @param config the config of the topic.
@@ -70,18 +81,24 @@ public final class TopicDescriptors {
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
-        return inputTopic(DEFAULT_CLUSTER_NAME, topicName, keyType, valueType, config);
+        return inputTopic(
+                DEFAULT_CLUSTER_NAME,
+                DEFAULT_SCHEMA_REGISTRY_NAME,
+                topicName,
+                keyType,
+                valueType,
+                config);
     }
 
     /**
      * Create an input Kafka topic descriptor.
      *
-     * <p>Looking for a version that returns {@link
-     * org.creekservice.api.kafka.metadata.KafkaTopicInput}? Get one of those by calling {@link
-     * org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput#toInput()} on the topic descriptor
-     * defined in the upstream component.
+     * <p>Looking for a version that returns {@link KafkaTopicInput}? Get one of those by calling
+     * {@link OwnedKafkaTopicOutput#toInput()} on the topic descriptor defined in the upstream
+     * component.
      *
-     * @param clusterName the name of the Kafka cluster the topic is in.
+     * @param clusterName the logic name of the Kafka cluster the topic is in.
+     * @param schemaRegistryName the logic name of schema registry the schemas are stored in.
      * @param topicName the name of the topic
      * @param keyType the type serialized into the Kafka record key.
      * @param valueType the type serialized into the Kafka record value.
@@ -92,11 +109,13 @@ public final class TopicDescriptors {
      */
     public static <K, V> OwnedKafkaTopicInput<K, V> inputTopic(
             final String clusterName,
+            final String schemaRegistryName,
             final String topicName,
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
-        return new InputTopicDescriptor<>(clusterName, topicName, keyType, valueType, config);
+        return new OwnedInputTopicDescriptor<>(
+                clusterName, schemaRegistryName, topicName, keyType, valueType, config);
     }
 
     /**
@@ -116,7 +135,8 @@ public final class TopicDescriptors {
      */
     public static <K, V> KafkaTopicInternal<K, V> internalTopic(
             final String topicName, final Class<K> keyType, final Class<V> valueType) {
-        return internalTopic(DEFAULT_CLUSTER_NAME, topicName, keyType, valueType);
+        return internalTopic(
+                DEFAULT_CLUSTER_NAME, DEFAULT_SCHEMA_REGISTRY_NAME, topicName, keyType, valueType);
     }
 
     /**
@@ -127,7 +147,8 @@ public final class TopicDescriptors {
      *
      * <p>For an internal topic that you want Creek to create, use {@link #creatableInternalTopic}.
      *
-     * @param clusterName the name of the Kafka cluster the topic is in.
+     * @param clusterName the logical name of the Kafka cluster the topic is in.
+     * @param schemaRegistryName the logical name of the Schema Registry schemas are stored in.
      * @param topicName the name of the topic
      * @param keyType the type serialized into the Kafka record key.
      * @param valueType the type serialized into the Kafka record value.
@@ -137,10 +158,12 @@ public final class TopicDescriptors {
      */
     public static <K, V> KafkaTopicInternal<K, V> internalTopic(
             final String clusterName,
+            final String schemaRegistryName,
             final String topicName,
             final Class<K> keyType,
             final Class<V> valueType) {
-        return new InternalTopicDescriptor<>(clusterName, topicName, keyType, valueType);
+        return new InternalTopicDescriptor<>(
+                clusterName, schemaRegistryName, topicName, keyType, valueType);
     }
 
     /**
@@ -164,7 +187,13 @@ public final class TopicDescriptors {
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
-        return creatableInternalTopic(DEFAULT_CLUSTER_NAME, topicName, keyType, valueType, config);
+        return creatableInternalTopic(
+                DEFAULT_CLUSTER_NAME,
+                DEFAULT_SCHEMA_REGISTRY_NAME,
+                topicName,
+                keyType,
+                valueType,
+                config);
     }
 
     /**
@@ -175,7 +204,8 @@ public final class TopicDescriptors {
      *
      * <p>For an internal topic that you want Creek to create, use this method.
      *
-     * @param clusterName the name of the Kafka cluster the topic is in.
+     * @param clusterName the logical name of the Kafka cluster the topic is in.
+     * @param schemaRegistryName the logical name of the Schema Registry schemas are stored in.
      * @param topicName the name of the topic
      * @param keyType the type serialized into the Kafka record key.
      * @param valueType the type serialized into the Kafka record value.
@@ -186,20 +216,21 @@ public final class TopicDescriptors {
      */
     public static <K, V> CreatableKafkaTopicInternal<K, V> creatableInternalTopic(
             final String clusterName,
+            final String schemaRegistryName,
             final String topicName,
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
         return new CreatableInternalTopicDescriptor<>(
-                clusterName, topicName, keyType, valueType, config);
+                clusterName, schemaRegistryName, topicName, keyType, valueType, config);
     }
 
     /**
      * Create an output Kafka topic descriptor.
      *
-     * <p>Looking for a version that returns {@link
-     * org.creekservice.api.kafka.metadata.KafkaTopicOutput}? Get one of those by calling {@link
-     * OwnedKafkaTopicInput#toOutput()} on the topic descriptor defined in the downstream component.
+     * <p>Looking for a version that returns {@link KafkaTopicOutput}? Get one of those by calling
+     * {@link OwnedKafkaTopicInput#toOutput()} on the topic descriptor defined in the downstream
+     * component.
      *
      * @param topicName the name of the topic
      * @param keyType the type serialized into the Kafka record key.
@@ -214,17 +245,24 @@ public final class TopicDescriptors {
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
-        return outputTopic(DEFAULT_CLUSTER_NAME, topicName, keyType, valueType, config);
+        return outputTopic(
+                DEFAULT_CLUSTER_NAME,
+                DEFAULT_SCHEMA_REGISTRY_NAME,
+                topicName,
+                keyType,
+                valueType,
+                config);
     }
 
     /**
      * Create an output Kafka topic descriptor.
      *
-     * <p>Looking for a version that returns {@link
-     * org.creekservice.api.kafka.metadata.KafkaTopicOutput}? Get one of those by calling {@link
-     * OwnedKafkaTopicInput#toOutput()} on the topic descriptor defined in the downstream component.
+     * <p>Looking for a version that returns {@link KafkaTopicOutput}? Get one of those by calling
+     * {@link OwnedKafkaTopicInput#toOutput()} on the topic descriptor defined in the downstream
+     * component.
      *
-     * @param clusterName the name of the Kafka cluster the topic is in.
+     * @param clusterName the logical name of the Kafka cluster the topic is in.
+     * @param schemaRegistryName the logical name of the Schema Registry the schemas are in.
      * @param topicName the name of the topic
      * @param keyType the type serialized into the Kafka record key.
      * @param valueType the type serialized into the Kafka record value.
@@ -235,30 +273,42 @@ public final class TopicDescriptors {
      */
     public static <K, V> OwnedKafkaTopicOutput<K, V> outputTopic(
             final String clusterName,
+            final String schemaRegistryName,
             final String topicName,
             final Class<K> keyType,
             final Class<V> valueType,
             final TopicConfigBuilder config) {
-        return new OutputTopicDescriptor<>(clusterName, topicName, keyType, valueType, config);
+        return new OwnedOutputTopicDescriptor<>(
+                clusterName, schemaRegistryName, topicName, keyType, valueType, config);
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private abstract static class TopicDescriptor<K, V> implements KafkaTopicDescriptor<K, V> {
+        private final String clusterName;
+        private final String schemaRegistryName;
         private final String topicName;
-        private final PartDescriptor<K> key;
-        private final PartDescriptor<V> value;
+        private final TopicPart<K> key;
+        private final TopicPart<V> value;
         private final Optional<KafkaTopicConfig> config;
 
         TopicDescriptor(
                 final String clusterName,
+                final String schemaRegistryName,
                 final String topicName,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final Optional<TopicConfigBuilder> config) {
+            this.clusterName = requireNonBlank(clusterName, "clusterName");
+            this.schemaRegistryName = requireNonBlank(schemaRegistryName, "schemaRegistryName");
             this.topicName = requireNonBlank(topicName, "topicName");
-            this.key = new KafkaPart<>(Part.key, keyType);
-            this.value = new KafkaPart<>(Part.value, valueType);
+            this.key = new TopicPart<>(Part.key, keyType, schemaRegistryName);
+            this.value = new TopicPart<>(Part.value, valueType, schemaRegistryName);
             this.config = requireNonNull(config, "config").map(TopicConfigBuilder::build);
+        }
+
+        @Override
+        public String cluster() {
+            return clusterName;
         }
 
         @Override
@@ -280,24 +330,43 @@ public final class TopicDescriptors {
             return config.orElseThrow();
         }
 
-        private final class KafkaPart<T> implements PartDescriptor<T> {
+        String schemaRegistryName() {
+            return schemaRegistryName;
+        }
+
+        @Override
+        public Stream<? extends ResourceDescriptor> resources() {
+            return Stream.of(key, value).flatMap(TopicPart::resources);
+        }
+
+        private final class TopicPart<T> implements PartDescriptor<T> {
 
             private final Part part;
             private final Class<T> type;
+            private final Optional<? extends SchemaDescriptor<T>> schema;
 
-            KafkaPart(final Part part, final Class<T> type) {
+            TopicPart(final Part part, final Class<T> type, final String schemaRegistryName) {
                 this.part = requireNonNull(part, "part");
                 this.type = requireNonNull(type, "type");
+                this.schema =
+                        NativeKafkaSerde.supports(type)
+                                ? Optional.empty()
+                                : Optional.of(
+                                        topic() instanceof OwnedResource
+                                                ? new OwnedJsonSchema(schemaRegistryName)
+                                                : new UnownedJsonSchema(schemaRegistryName));
             }
 
             @Override
-            public Part part() {
+            public Part name() {
                 return part;
             }
 
             @Override
             public SerializationFormat format() {
-                return KAFKA_FORMAT;
+                return schema.isPresent()
+                        ? JsonSchemaKafkaSerde.format()
+                        : NativeKafkaSerde.format();
             }
 
             @Override
@@ -309,94 +378,128 @@ public final class TopicDescriptors {
             public KafkaTopicDescriptor<?, ?> topic() {
                 return TopicDescriptor.this;
             }
+
+            @Override
+            public Stream<? extends ResourceDescriptor> resources() {
+                return schema.stream();
+            }
+
+            public Optional<? extends SchemaDescriptor<T>> schema() {
+                return schema;
+            }
+
+            private abstract class BaseJsonSchema implements JsonSchemaDescriptor<T> {
+
+                final String schemaRegistryName;
+
+                private BaseJsonSchema(final String schemaRegistryName) {
+                    this.schemaRegistryName =
+                            requireNonBlank(schemaRegistryName, "schemaRegistryName");
+                }
+
+                @Override
+                public String schemaRegistryName() {
+                    return schemaRegistryName;
+                }
+
+                @Override
+                public KafkaTopicDescriptor.PartDescriptor<T> part() {
+                    return TopicPart.this;
+                }
+            }
+
+            private final class OwnedJsonSchema extends BaseJsonSchema
+                    implements OwnedJsonSchemaDescriptor<T> {
+                private OwnedJsonSchema(final String schemaRegistryName) {
+                    super(schemaRegistryName);
+                }
+            }
+
+            private final class UnownedJsonSchema extends BaseJsonSchema
+                    implements UnownedJsonSchemaDescriptor<T> {
+
+                private UnownedJsonSchema(final String schemaRegistryName) {
+                    super(schemaRegistryName);
+                }
+            }
         }
     }
 
-    private static final class OutputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
+    private static final class OwnedOutputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
             implements OwnedKafkaTopicOutput<K, V> {
 
-        OutputTopicDescriptor(
+        OwnedOutputTopicDescriptor(
                 final String clusterName,
+                final String schemaRegistryName,
                 final String topicName,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final TopicConfigBuilder config) {
-            super(clusterName, topicName, keyType, valueType, Optional.of(config));
+            super(
+                    clusterName,
+                    schemaRegistryName,
+                    topicName,
+                    keyType,
+                    valueType,
+                    Optional.of(config));
         }
 
         @Override
         public KafkaTopicInput<K, V> toInput() {
-            final OwnedKafkaTopicOutput<K, V> output = this;
-            return new KafkaTopicInput<>() {
-                @Override
-                public URI id() {
-                    return output.id();
-                }
-
-                @Override
-                public String cluster() {
-                    return output.cluster();
-                }
-
-                @Override
-                public String name() {
-                    return output.name();
-                }
-
-                @Override
-                public PartDescriptor<K> key() {
-                    return output.key();
-                }
-
-                @Override
-                public PartDescriptor<V> value() {
-                    return output.value();
-                }
-            };
+            return new UnownedInputTopicDescriptor<>(
+                    cluster(), schemaRegistryName(), name(), key().type(), value().type());
         }
     }
 
-    private static final class InputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
+    private static final class OwnedInputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
             implements OwnedKafkaTopicInput<K, V> {
 
-        InputTopicDescriptor(
+        OwnedInputTopicDescriptor(
                 final String clusterName,
+                final String schemaRegistryName,
                 final String topicName,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final TopicConfigBuilder config) {
-            super(clusterName, topicName, keyType, valueType, Optional.of(config));
+            super(
+                    clusterName,
+                    schemaRegistryName,
+                    topicName,
+                    keyType,
+                    valueType,
+                    Optional.of(config));
         }
 
         @Override
         public KafkaTopicOutput<K, V> toOutput() {
-            final OwnedKafkaTopicInput<K, V> input = this;
-            return new KafkaTopicOutput<>() {
-                @Override
-                public URI id() {
-                    return input.id();
-                }
+            return new UnownedOutputTopicDescriptor<>(
+                    cluster(), schemaRegistryName(), name(), key().type(), value().type());
+        }
+    }
 
-                @Override
-                public String cluster() {
-                    return input.cluster();
-                }
+    private static final class UnownedOutputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
+            implements KafkaTopicOutput<K, V> {
 
-                @Override
-                public String name() {
-                    return input.name();
-                }
+        UnownedOutputTopicDescriptor(
+                final String clusterName,
+                final String schemaRegistryName,
+                final String topicName,
+                final Class<K> keyType,
+                final Class<V> valueType) {
+            super(clusterName, schemaRegistryName, topicName, keyType, valueType, Optional.empty());
+        }
+    }
 
-                @Override
-                public PartDescriptor<K> key() {
-                    return input.key();
-                }
+    private static final class UnownedInputTopicDescriptor<K, V> extends TopicDescriptor<K, V>
+            implements KafkaTopicInput<K, V> {
 
-                @Override
-                public PartDescriptor<V> value() {
-                    return input.value();
-                }
-            };
+        UnownedInputTopicDescriptor(
+                final String clusterName,
+                final String schemaRegistryName,
+                final String topicName,
+                final Class<K> keyType,
+                final Class<V> valueType) {
+            super(clusterName, schemaRegistryName, topicName, keyType, valueType, Optional.empty());
         }
     }
 
@@ -405,10 +508,11 @@ public final class TopicDescriptors {
 
         InternalTopicDescriptor(
                 final String clusterName,
+                final String schemaRegistryName,
                 final String topicName,
                 final Class<K> keyType,
                 final Class<V> valueType) {
-            super(clusterName, topicName, keyType, valueType, Optional.empty());
+            super(clusterName, schemaRegistryName, topicName, keyType, valueType, Optional.empty());
         }
     }
 
@@ -417,11 +521,106 @@ public final class TopicDescriptors {
 
         CreatableInternalTopicDescriptor(
                 final String clusterName,
+                final String schemaRegistryName,
                 final String topicName,
                 final Class<K> keyType,
                 final Class<V> valueType,
                 final TopicConfigBuilder config) {
-            super(clusterName, topicName, keyType, valueType, Optional.of(config));
+            super(
+                    clusterName,
+                    schemaRegistryName,
+                    topicName,
+                    keyType,
+                    valueType,
+                    Optional.of(config));
+        }
+    }
+
+    public static final class TopicConfigBuilder {
+
+        private static final int MAX_PARTITIONS = 10_000;
+
+        private final int partitions;
+        private final Map<String, String> config = new HashMap<>();
+
+        public static TopicConfigBuilder withPartitions(final int partitions) {
+            return builder(partitions, false);
+        }
+
+        public static TopicConfigBuilder builder(final int partitions, final boolean allowCrazy) {
+            if (partitions <= 0) {
+                final NumberFormat format = NumberFormat.getInstance(Locale.ROOT);
+                throw new IllegalArgumentException(
+                        "partition count must be positive, but was " + format.format(partitions));
+            }
+            if (!allowCrazy && partitions > MAX_PARTITIONS) {
+                final NumberFormat format = NumberFormat.getInstance(Locale.ROOT);
+                throw new IllegalArgumentException(
+                        "partition count should be less than "
+                                + format.format(MAX_PARTITIONS)
+                                + ", but was "
+                                + format.format(partitions));
+            }
+            return new TopicConfigBuilder(partitions);
+        }
+
+        private TopicConfigBuilder(final int partitions) {
+            this.partitions = partitions;
+        }
+
+        public TopicConfigBuilder withConfig(final String key, final String value) {
+            this.config.put(requireNonNull(key, "key"), requireNonNull(value, "value"));
+            return this;
+        }
+
+        public TopicConfigBuilder withConfigs(final Map<String, String> config) {
+            config.forEach(this::withConfig);
+            return this;
+        }
+
+        public TopicConfigBuilder withKeyCompaction() {
+            return withConfig("cleanup.policy", "compact");
+        }
+
+        public TopicConfigBuilder withKeyCompactionAndDeletion() {
+            return withConfig("cleanup.policy", "compact,delete");
+        }
+
+        public TopicConfigBuilder withRetentionTime(final Duration duration) {
+            return withConfig("retention.ms", String.valueOf(duration.toMillis()));
+        }
+
+        public TopicConfigBuilder withInfiniteRetention() {
+            return withConfig("retention.ms", "-1");
+        }
+
+        public TopicConfigBuilder withSegmentSize(final long segmentBytes) {
+            return withConfig("segment.bytes", String.valueOf(segmentBytes));
+        }
+
+        public KafkaTopicConfig build() {
+            return new TopicConfig(partitions, config);
+        }
+
+        private static final class TopicConfig implements KafkaTopicConfig {
+
+            private final int partitions;
+            private final Map<String, String> config;
+
+            TopicConfig(final int partitions, final Map<String, String> config) {
+                this.partitions = partitions;
+                this.config = Map.copyOf(requireNonNull(config, "config"));
+            }
+
+            @Override
+            public int partitions() {
+                return partitions;
+            }
+
+            @Override
+            public Map<String, String> config() {
+                return config;
+            }
         }
     }
 }

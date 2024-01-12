@@ -6,7 +6,7 @@ options:
     extraTimeout: PT0.000001S
     notes: short timeouts to keep tests fast.
 services:
-  - test-service
+  - native-service
 tests:
   - name: test
     # No input...

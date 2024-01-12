@@ -28,10 +28,11 @@ import java.net.URI;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.PartDescriptor.Part;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor.Part;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.internal.kafka.extension.resource.TopicResourceFactory.UnknownSerializationFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,10 +53,10 @@ class TopicResourceFactoryTest {
             SerializationFormat.serializationFormat("val");
 
     @Mock private KafkaTopicDescriptor<Long, String> descriptor;
-    @Mock private ClustersSerdeProviders serdeProviders;
+    @Mock private KafkaSerdeProviders serdeProviders;
     @Mock private TopicResourceFactory.TopicFactory topicFactory;
     @Mock private Map<String, ?> kafkaProperties;
-    @Mock private KafkaSerdeProvider.SerdeProvider serdeProvider;
+    @Mock private KafkaSerdeProvider.SerdeFactory serdeFactory;
     @Mock private KafkaTopicDescriptor.PartDescriptor<Long> key;
     @Mock private KafkaTopicDescriptor.PartDescriptor<String> value;
     @Mock private Serde<Long> keySerde;
@@ -73,21 +74,21 @@ class TopicResourceFactoryTest {
         when(descriptor.value()).thenReturn(value);
         when(key.format()).thenReturn(KEY_FORMAT);
         when(value.format()).thenReturn(VAL_FORMAT);
-        when(key.part()).thenReturn(Part.key);
-        when(value.part()).thenReturn(Part.value);
+        when(key.name()).thenReturn(Part.key);
+        when(value.name()).thenReturn(Part.value);
         when(key.topic()).thenReturn((KafkaTopicDescriptor) descriptor);
         when(value.topic()).thenReturn((KafkaTopicDescriptor) descriptor);
 
-        when(serdeProviders.get(any(), any())).thenReturn(serdeProvider);
-        when(serdeProvider.createSerde(key)).thenReturn(keySerde);
-        when(serdeProvider.createSerde(value)).thenReturn(valSerde);
+        when(serdeProviders.get(any())).thenReturn(serdeFactory);
+        when(serdeFactory.createSerde(key)).thenReturn(keySerde);
+        when(serdeFactory.createSerde(value)).thenReturn(valSerde);
     }
 
     @Test
-    void shouldThrowOnFailureToInitializeSerdeProvider() {
+    void shouldThrowOnUnknownFormat() {
         // Given:
         final RuntimeException expected = new RuntimeException("Boom");
-        when(serdeProviders.get(any(), any())).thenThrow(expected);
+        when(serdeProviders.get(any())).thenThrow(expected);
 
         // When:
         final Exception e =
@@ -110,7 +111,8 @@ class TopicResourceFactoryTest {
         topicResourceFactory.create(descriptor, kafkaProperties);
 
         // Then:
-        verify(serdeProviders).get(KEY_FORMAT, "cluster");
+        verify(serdeProviders).get(KEY_FORMAT);
+        verify(serdeProviders).get(VAL_FORMAT);
     }
 
     @Test

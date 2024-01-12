@@ -18,7 +18,7 @@ package org.creekservice.internal.kafka.extension.client;
 
 import static java.lang.System.lineSeparator;
 import static org.apache.kafka.common.KafkaFuture.completedFuture;
-import static org.creekservice.test.TopicConfigBuilder.withPartitions;
+import static org.creekservice.test.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.creekservice.test.TopicDescriptors.outputTopic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -39,7 +39,7 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.errors.BrokerNotAvailableException;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.internals.KafkaFutureImpl;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class KafkaTopicClientTest {
 
     private static final String CLUSTER = "c";
     private static final CreatableKafkaTopic<Long, Object> TOPIC_A =
-            outputTopic(CLUSTER, "t", Long.class, Object.class, withPartitions(1));
+            outputTopic(CLUSTER, "ignored", "t", Long.class, Object.class, withPartitions(1));
     private static final Map<String, Object> A_CLUSTER_PROPS = Map.of("a", 1);
 
     @Mock private Function<Map<String, Object>, Admin> adminFactory;
@@ -80,7 +80,7 @@ class KafkaTopicClientTest {
     @Test
     void shouldCreateAdmin() {
         // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
+        client.ensureTopicsExist(List.of(TOPIC_A));
 
         // Then:
         verify(adminFactory).apply(A_CLUSTER_PROPS);
@@ -89,7 +89,7 @@ class KafkaTopicClientTest {
     @Test
     void shouldCloseAdmin() {
         // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
+        client.ensureTopicsExist(List.of(TOPIC_A));
 
         // Then:
         verify(admin).close();
@@ -101,8 +101,7 @@ class KafkaTopicClientTest {
         when(admin.createTopics(any())).thenThrow(new RuntimeException("Boom"));
 
         // When:
-        assertThrows(
-                RuntimeException.class, () -> client.ensureExternalResources(List.of(TOPIC_A)));
+        assertThrows(RuntimeException.class, () -> client.ensureTopicsExist(List.of(TOPIC_A)));
 
         // Then:
         verify(admin).close();
@@ -114,7 +113,7 @@ class KafkaTopicClientTest {
         givenTopicExists();
 
         // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
+        client.ensureTopicsExist(List.of(TOPIC_A));
 
         // Then: did not throw.
     }
@@ -130,8 +129,7 @@ class KafkaTopicClientTest {
         // When:
         final Exception e =
                 assertThrows(
-                        RuntimeException.class,
-                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
+                        RuntimeException.class, () -> client.ensureTopicsExist(List.of(TOPIC_A)));
 
         // Then:
         assertThat(e.getMessage(), is("Failed to create topic. topicId: kafka-topic://c/t"));
@@ -150,8 +148,7 @@ class KafkaTopicClientTest {
         // When:
         final Exception e =
                 assertThrows(
-                        RuntimeException.class,
-                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
+                        RuntimeException.class, () -> client.ensureTopicsExist(List.of(TOPIC_A)));
 
         // Then:
         assertThat(e.getMessage(), is("Failed to create topic. topicId: kafka-topic://c/t"));
@@ -159,20 +156,9 @@ class KafkaTopicClientTest {
     }
 
     @Test
-    void shouldLogTopicsOnEnsure() {
-        // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
-
-        // Then:
-        assertThat(
-                logger.textEntries(),
-                hasItem("DEBUG: {message=Ensuring topics, topicIds=[kafka-topic://c/t]}"));
-    }
-
-    @Test
     void shouldLogOnTopicCreation() {
         // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
+        client.ensureTopicsExist(List.of(TOPIC_A));
 
         // Then:
         assertThat(
@@ -186,7 +172,7 @@ class KafkaTopicClientTest {
         givenTopicExists();
 
         // When:
-        client.ensureExternalResources(List.of(TOPIC_A));
+        client.ensureTopicsExist(List.of(TOPIC_A));
 
         // Then:
         assertThat(
@@ -203,7 +189,7 @@ class KafkaTopicClientTest {
         final Exception e =
                 assertThrows(
                         IllegalArgumentException.class,
-                        () -> client.ensureExternalResources(List.of(TOPIC_A)));
+                        () -> client.ensureTopicsExist(List.of(TOPIC_A)));
 
         // Then:
         assertThat(

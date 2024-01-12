@@ -19,7 +19,7 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.creekservice.internal.kafka.streams.test.extension.yaml.TypeCoercer;

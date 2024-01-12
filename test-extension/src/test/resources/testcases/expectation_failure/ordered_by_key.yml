@@ -1,7 +1,7 @@
 ---
 name: order by key
 services:
-  - test-service
+  - native-service
 options:
   - !creek/kafka-options@1
     outputOrdering: BY_KEY

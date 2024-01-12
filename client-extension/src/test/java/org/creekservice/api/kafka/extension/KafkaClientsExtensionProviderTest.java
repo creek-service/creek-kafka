@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
@@ -52,7 +53,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaClientsExtensionProviderTest {
 
-    public static final KafkaClientsExtensionOptions DEFAULT_OPTIONS =
+    private static final KafkaClientsExtensionOptions DEFAULT_OPTIONS =
             KafkaClientsExtensionOptions.builder().build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -62,8 +63,10 @@ class KafkaClientsExtensionProviderTest {
     private ClientsExtensionOptions userOptions;
 
     @Mock private ClustersPropertiesFactory propertiesFactory;
+    @Mock private KafkaClientsExtensionProvider.KafkaSerdeProvidersFactory serdeProvidersFactory;
     @Mock private KafkaClientsExtensionProvider.HandlerFactory handlerFactory;
     @Mock private KafkaClientsExtensionProvider.ExtensionFactory extensionFactory;
+    @Mock private KafkaSerdeProviders serdeProviders;
     @Mock private ClustersProperties clustersProperties;
     @Mock private ResourceRegistry resourceRegistry;
     @Mock private ClientsExtension clientsExtension;
@@ -79,11 +82,16 @@ class KafkaClientsExtensionProviderTest {
 
         provider =
                 new KafkaClientsExtensionProvider(
-                        propertiesFactory, resourceRegistry, handlerFactory, extensionFactory);
+                        propertiesFactory,
+                        resourceRegistry,
+                        handlerFactory,
+                        extensionFactory,
+                        serdeProvidersFactory);
 
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
-        when(handlerFactory.create(any(), any(), any())).thenReturn(topicHandler);
+        when(handlerFactory.create(any(), any(), any(), any())).thenReturn(topicHandler);
         when(extensionFactory.create(any(), any())).thenReturn(clientsExtension);
+        when(serdeProvidersFactory.create(any())).thenReturn(serdeProviders);
 
         when(api.options().get(any())).thenReturn(Optional.empty());
         when(api.components().descriptors().stream()).thenAnswer(inv -> components.stream());
@@ -96,7 +104,11 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(handlerFactory)
-                .create(DEFAULT_OPTIONS.typeOverrides(), resourceRegistry, clustersProperties);
+                .create(
+                        DEFAULT_OPTIONS.typeOverrides(),
+                        resourceRegistry,
+                        clustersProperties,
+                        serdeProviders);
     }
 
     @Test
@@ -109,7 +121,11 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(handlerFactory)
-                .create(userOptions.typeOverrides(), resourceRegistry, clustersProperties);
+                .create(
+                        userOptions.typeOverrides(),
+                        resourceRegistry,
+                        clustersProperties,
+                        serdeProviders);
     }
 
     @SuppressWarnings("unchecked")
@@ -141,6 +157,15 @@ class KafkaClientsExtensionProviderTest {
 
         // Then:
         verify(propertiesFactory).create(components, userOptions);
+    }
+
+    @Test
+    void shouldInitialiseSerdeProviders() {
+        // When:
+        provider.initialize(api);
+
+        // Then:
+        verify(serdeProvidersFactory).create(api);
     }
 
     @Test

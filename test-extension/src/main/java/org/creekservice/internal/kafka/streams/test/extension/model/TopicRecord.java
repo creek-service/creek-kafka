@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.creekservice.internal.kafka.streams.test.extension.yaml.JsonLocation;
 

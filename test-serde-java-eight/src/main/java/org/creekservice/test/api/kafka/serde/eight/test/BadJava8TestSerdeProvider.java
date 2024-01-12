@@ -17,9 +17,10 @@
 package org.creekservice.test.api.kafka.serde.eight.test;
 
 import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.service.extension.CreekService;
 
 @SuppressWarnings("unused") // Deliberately not registered
 public final class BadJava8TestSerdeProvider implements KafkaSerdeProvider {
@@ -35,8 +36,8 @@ public final class BadJava8TestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeProvider initialize(final String clusterName, final InitializeParams params) {
-        return new SerdeProvider() {
+    public SerdeFactory initialize(final CreekService api) {
+        return new SerdeFactory() {
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
                 return null;

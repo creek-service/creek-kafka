@@ -37,8 +37,8 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.observability.logging.structured.LogEntryCustomizer;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
@@ -80,15 +80,8 @@ public final class KafkaTopicClient implements TopicClient {
         this.logger = requireNonNull(logger, "logger");
     }
 
-    public void ensureExternalResources(final List<? extends CreatableKafkaTopic<?, ?>> topics) {
+    public void ensureTopicsExist(final List<? extends CreatableKafkaTopic<?, ?>> topics) {
         validateCluster(topics);
-
-        logger.debug(
-                "Ensuring topics",
-                log ->
-                        log.with(
-                                LoggingField.topicIds,
-                                topics.stream().map(CreatableKafkaTopic::id).collect(toList())));
 
         try (Admin admin = adminFactory.apply(kafkaProperties)) {
             create(topics, admin);

@@ -20,20 +20,17 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.base.type.Lists;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.ResourceCollection;
 
 /**
  * Collects {@link KafkaTopicDescriptor topic descriptors} from {@link ComponentDescriptor component
@@ -52,58 +49,12 @@ public final class TopicCollector {
 
         final Map<URI, List<KafkaTopicDescriptor<?, ?>>> found =
                 components.stream()
-                        .flatMap(ComponentDescriptor::resources)
+                        .flatMap(ResourceCollection::collectResources)
                         .filter(KafkaTopicDescriptor.class::isInstance)
                         .map(d -> (KafkaTopicDescriptor<?, ?>) d)
                         .collect(groupingBy(KafkaTopicDescriptor::id));
 
-        found.values().forEach(TopicCollector::throwOnDescriptorMismatch);
-
         return new CollectedTopics(found);
-    }
-
-    private static void throwOnDescriptorMismatch(final List<KafkaTopicDescriptor<?, ?>> defs) {
-
-        final List<KafkaTopicDescriptor<?, ?>> reduced =
-                defs.stream()
-                        .reduce(
-                                new ArrayList<>(1),
-                                TopicCollector::accumulateTopics,
-                                Lists::combineList);
-
-        if (reduced.size() != 1) {
-            throw new TopicDescriptorMismatchException(defs);
-        }
-    }
-
-    private static List<KafkaTopicDescriptor<?, ?>> accumulateTopics(
-            final List<KafkaTopicDescriptor<?, ?>> collected,
-            final KafkaTopicDescriptor<?, ?> def) {
-        final Optional<KafkaTopicDescriptor<?, ?>> matching =
-                collected.stream().filter(d -> KafkaTopicDescriptors.matches(d, def)).findAny();
-
-        if (matching.isEmpty()) {
-            collected.add(def);
-        } else if (def instanceof CreatableKafkaTopic
-                && !(matching.get() instanceof CreatableKafkaTopic)) {
-            collected.remove(matching.get());
-            collected.add(def);
-        }
-
-        return collected;
-    }
-
-    private static final class TopicDescriptorMismatchException extends RuntimeException {
-        TopicDescriptorMismatchException(
-                final List<? extends KafkaTopicDescriptor<?, ?>> descriptors) {
-            super(
-                    "Topic descriptor mismatch: multiple topic descriptors share the same topic"
-                            + " name, but have different attributes."
-                            + System.lineSeparator()
-                            + descriptors.stream()
-                                    .map(KafkaTopicDescriptors::asString)
-                                    .collect(Collectors.joining(System.lineSeparator())));
-        }
     }
 
     /** Holds the result of a topic collection. */

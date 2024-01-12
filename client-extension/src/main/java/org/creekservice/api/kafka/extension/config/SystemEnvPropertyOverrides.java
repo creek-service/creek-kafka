@@ -52,8 +52,8 @@ import org.creekservice.internal.kafka.extension.config.SystemEnvProperties;
  *
  * <ul>
  *   <li><i>CLUSTER_NAME</i> is the specific name of the Kafka cluster, as returned by {@link
- *       org.creekservice.api.kafka.metadata.KafkaTopicDescriptor#cluster()}), in uppercase and any
- *       dashes {@code -} replaced with underscores {@code _}.
+ *       org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor#cluster()}), in uppercase
+ *       and any dashes {@code -} replaced with underscores {@code _}.
  *   <li><i>PROPERTY_NAME</i> is Kafka client property name, in uppercase, with periods {@code .}
  *       replaced with underscores {@code _}
  * </ul>

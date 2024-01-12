@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThrows;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.creekservice.internal.kafka.streams.test.extension.util.TopicConfigBuilder;

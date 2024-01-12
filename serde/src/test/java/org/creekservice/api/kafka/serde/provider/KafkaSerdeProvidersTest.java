@@ -20,9 +20,13 @@ import static org.creekservice.api.kafka.metadata.SerializationFormat.serializat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.service.extension.CreekService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,17 +38,29 @@ class KafkaSerdeProvidersTest {
 
     private static final SerializationFormat FORMAT = serializationFormat("A");
 
+    @Mock private CreekService api;
     @Mock private KafkaSerdeProvider provider;
+    @Mock private KafkaSerdeProvider.SerdeFactory serdeFactory;
     private KafkaSerdeProviders providers;
 
     @BeforeEach
     void setUp() {
-        providers = new KafkaSerdeProviders(Map.of(FORMAT, provider));
+        when(provider.initialize(any())).thenReturn(serdeFactory);
+
+        providers = new KafkaSerdeProviders(api, Map.of(FORMAT, provider));
+    }
+
+    @Test
+    void shouldInitialiseProvidersOnConstruction() {
+        // When: constructor called in setUp method
+
+        // Then:
+        verify(provider).initialize(api);
     }
 
     @Test
     void shouldGetProvider() {
-        assertThat(providers.get(FORMAT), is(provider));
+        assertThat(providers.get(FORMAT), is(serdeFactory));
     }
 
     @Test

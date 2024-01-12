@@ -18,7 +18,8 @@ package org.creekservice.internal.kafka.extension.client;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.test.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -37,9 +38,8 @@ import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
-import org.creekservice.api.kafka.metadata.CreatableKafkaTopic;
-import org.creekservice.api.kafka.metadata.OwnedKafkaTopicOutput;
-import org.creekservice.test.TopicConfigBuilder;
+import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
 import org.creekservice.test.TopicDescriptors;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -103,13 +103,13 @@ class KafkaTopicClientFunctionalTest {
         client = new KafkaTopicClient(DEFAULT_CLUSTER_NAME, kafkaProperties);
 
         // Then:
-        assertThrows(KafkaException.class, () -> client.ensureExternalResources(List.of(topic)));
+        assertThrows(KafkaException.class, () -> client.ensureTopicsExist(List.of(topic)));
     }
 
     @Test
     void shouldCreateTopicsThatDoNotExist() {
         // When:
-        client.ensureExternalResources(List.of(topic));
+        client.ensureTopicsExist(List.of(topic));
 
         // Then:
         assertThat(topic, exists());
@@ -121,7 +121,7 @@ class KafkaTopicClientFunctionalTest {
         givenTopicExists(topic);
 
         // When:
-        client.ensureExternalResources(List.of(topic));
+        client.ensureTopicsExist(List.of(topic));
 
         // Then:
         assertThat(topic, exists());
@@ -146,10 +146,11 @@ class KafkaTopicClientFunctionalTest {
     private OwnedKafkaTopicOutput<Long, String> createTopicDescriptor(final String cluster) {
         return TopicDescriptors.outputTopic(
                 cluster,
+                "ignored",
                 UUID.randomUUID().toString(),
                 Long.class,
                 String.class,
-                TopicConfigBuilder.withPartitions(3).withInfiniteRetention());
+                withPartitions(3).withInfiniteRetention());
     }
 
     private Matcher<? super CreatableKafkaTopic<?, ?>> exists() {
