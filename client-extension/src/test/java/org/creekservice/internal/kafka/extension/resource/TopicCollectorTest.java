@@ -136,11 +136,12 @@ class TopicCollectorTest {
                                 List.of(creatableTopic))));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     void shouldCollectNestedTopics() {
         // Given:
         final ResourceDescriptor resource = mock();
-        when(resource.resources()).thenReturn(Stream.of(topic));
+        when(resource.resources()).thenReturn((Stream) Stream.of(topic));
         when(componentA.resources()).thenReturn(Stream.of(resource));
 
         // When:

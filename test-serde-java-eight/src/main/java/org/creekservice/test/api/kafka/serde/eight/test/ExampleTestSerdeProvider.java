@@ -35,7 +35,7 @@ public final class ExampleTestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
+    public SerdeFactory initialize(final CreekService api) {
         return new SerdeFactory() {
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {

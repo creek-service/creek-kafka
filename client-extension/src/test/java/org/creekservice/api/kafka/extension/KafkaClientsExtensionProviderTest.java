@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -44,7 +43,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -93,7 +91,7 @@ class KafkaClientsExtensionProviderTest {
         when(propertiesFactory.create(any(), any())).thenReturn(clustersProperties);
         when(handlerFactory.create(any(), any(), any(), any())).thenReturn(topicHandler);
         when(extensionFactory.create(any(), any())).thenReturn(clientsExtension);
-        when(serdeProvidersFactory.create(any(), any())).thenReturn(serdeProviders);
+        when(serdeProvidersFactory.create(any())).thenReturn(serdeProviders);
 
         when(api.options().get(any())).thenReturn(Optional.empty());
         when(api.components().descriptors().stream()).thenAnswer(inv -> components.stream());
@@ -162,46 +160,12 @@ class KafkaClientsExtensionProviderTest {
     }
 
     @Test
-    void shouldBuildSerdeProvidersWithDefaultOptions() {
-        // Given:
-        final ArgumentCaptor<KafkaSerdeProvider.InitializeParams> capture =
-                ArgumentCaptor.forClass(KafkaSerdeProvider.InitializeParams.class);
-
+    void shouldInitialiseSerdeProviders() {
         // When:
         provider.initialize(api);
 
         // Then:
-        verify(serdeProvidersFactory).create(eq(api), capture.capture());
-
-        final KafkaSerdeProvider.InitializeParams params = capture.getValue();
-
-        // When:
-        final Optional<?> result = params.typeOverride(String.class);
-
-        // Then:
-        assertThat(result, is(Optional.empty()));
-    }
-
-    @Test
-    void shouldBuildSerdeProvidersWithWithUserOptions() {
-        // Given:
-        when(api.options().get(ClientsExtensionOptions.class)).thenReturn(Optional.of(userOptions));
-        final ArgumentCaptor<KafkaSerdeProvider.InitializeParams> capture =
-                ArgumentCaptor.forClass(KafkaSerdeProvider.InitializeParams.class);
-
-        // When:
-        provider.initialize(api);
-
-        // Then:
-        verify(serdeProvidersFactory).create(eq(api), capture.capture());
-
-        final KafkaSerdeProvider.InitializeParams params = capture.getValue();
-
-        // When:
-        params.typeOverride(String.class);
-
-        // Then:
-        verify(userOptions.typeOverrides()).get(String.class);
+        verify(serdeProvidersFactory).create(api);
     }
 
     @Test

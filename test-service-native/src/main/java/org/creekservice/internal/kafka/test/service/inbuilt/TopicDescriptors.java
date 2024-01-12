@@ -335,7 +335,7 @@ public final class TopicDescriptors {
         }
 
         @Override
-        public Stream<ResourceDescriptor> resources() {
+        public Stream<? extends ResourceDescriptor> resources() {
             return Stream.of(key, value).flatMap(TopicPart::resources);
         }
 
