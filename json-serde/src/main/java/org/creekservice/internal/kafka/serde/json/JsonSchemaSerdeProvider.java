@@ -26,6 +26,7 @@ import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
 import org.creekservice.api.kafka.metadata.serde.JsonSchemaKafkaSerde;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
@@ -68,15 +69,20 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public JsonSerdeFactory initialize(final CreekService api, final InitializeParams params) {
+    public JsonSerdeFactory initialize(final CreekService api) {
+        final JsonSerdeExtensionOptions options =
+                api.options()
+                        .get(JsonSerdeExtensionOptions.class)
+                        .orElseGet(() -> JsonSerdeExtensionOptions.builder().build());
+
         final JsonSchemaStoreClient.Factory clientFactory =
-                params.typeOverride(JsonSchemaStoreClient.Factory.class)
+                options.typeOverride(JsonSchemaStoreClient.Factory.class)
                         .orElse(defaultStoreClientFactory);
 
         final SrSchemaStores schemaStores =
                 schemaStoresFactory.create(
                         schemaRegistryName ->
-                                clientFactory.create(schemaRegistryName, params::typeOverride));
+                                clientFactory.create(schemaRegistryName, options::typeOverride));
 
         api.components()
                 .model()

@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -153,5 +154,19 @@ class KafkaClientsExtensionOptionsTest {
         assertThat(
                 builder.build().propertiesBuilder().build(Set.of()).get("any"),
                 not(hasEntry("name", "value")));
+    }
+
+    @Test
+    void shouldDefaultToNoOverride() {
+        assertThat(builder.build().typeOverride(String.class), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldSupportOverrides() {
+        // When:
+        builder.withTypeOverride(String.class, "value");
+
+        // Then:
+        assertThat(builder.build().typeOverride(String.class), is(Optional.of("value")));
     }
 }
