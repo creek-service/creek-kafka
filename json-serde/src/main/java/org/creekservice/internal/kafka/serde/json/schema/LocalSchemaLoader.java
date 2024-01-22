@@ -20,18 +20,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.schema.GeneratedSchemas;
 
 public final class LocalSchemaLoader {
 
-    private static final Path SCHEMA_DIRECTORY = Paths.get(File.separator, "schema", "json");
+    private static final String SCHEMA_DIRECTORY = "/schema/json/";
 
     private static final ObjectMapper yamlMapper =
             new ObjectMapper(new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES));
@@ -51,8 +49,8 @@ public final class LocalSchemaLoader {
     }
 
     private static URL findResource(final Path schemaFile) {
-        final Path path = SCHEMA_DIRECTORY.resolve(schemaFile);
-        final URL resource = LocalSchemaLoader.class.getResource(path.toString());
+        final String path = SCHEMA_DIRECTORY + schemaFile;
+        final URL resource = LocalSchemaLoader.class.getResource(path);
         if (resource == null) {
             throw new SchemaResourceNotFoundException(
                     "Failed to load schema resource: " + path + ". Resource not found.");
