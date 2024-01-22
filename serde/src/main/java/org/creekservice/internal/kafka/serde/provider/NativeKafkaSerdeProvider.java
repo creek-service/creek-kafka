@@ -59,7 +59,7 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
+    public SerdeFactory initialize(final CreekService api) {
         return new SerdeFactory() {
             @SuppressWarnings("unchecked")
             @Override
