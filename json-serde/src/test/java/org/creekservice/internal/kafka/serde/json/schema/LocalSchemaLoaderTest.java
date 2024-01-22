@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.dataformat.yaml.JacksonYAMLParseException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
-import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,9 +63,8 @@ class LocalSchemaLoaderTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Failed to load schema resource: "
-                                + Paths.get(File.separator + "schema", "json", "u_wont_find_me.yml")
-                                + ". Resource not found."));
+                        "Failed to load schema resource: /schema/json/u_wont_find_me.yml."
+                                + " Resource not found."));
     }
 
     @Test
@@ -130,11 +128,11 @@ class LocalSchemaLoaderTest {
         final Path jarPath =
                 TestPaths.moduleRoot("json-serde").resolve("src/test/resources/schema.jar");
 
-        final Path schemaPath = Paths.get("schema", "test-schema.yml");
+        final String schemaPath = "/schema/test-schema.yml";
 
         // When:
         final JsonSchema schema =
-                LocalSchemaLoader.load(new URL("jar:file:" + jarPath + "!/" + schemaPath));
+                LocalSchemaLoader.load(new URL("jar:file:" + jarPath + "!" + schemaPath));
 
         // Then:
         assertThat(schema.getString("$id"), is("test-schema.yml"));

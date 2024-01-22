@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.serde.json.mapper;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -54,7 +55,8 @@ class BaseJsonMapperTest {
     @Test
     void shouldIndentOutput() throws Exception {
         assertThat(
-                mapper.writeValueAsString(new WithPrimitiveTypes(12)), is("{\n  \"id\" : 12\n}"));
+                mapper.writeValueAsString(new WithPrimitiveTypes(12)),
+                is("{" + lineSeparator() + "  \"id\" : 12" + lineSeparator() + "}"));
     }
 
     @Test
@@ -126,16 +128,36 @@ class BaseJsonMapperTest {
         assertThat(
                 json,
                 is(
-                        "{\n"
-                                + "  \"localDate\" : \"2024-01-16\",\n"
-                                + "  \"localDateTime\" : \"2024-01-16T13:49:58.670944\",\n"
-                                + "  \"localTime\" : \"13:49:58.670943\",\n"
-                                + "  \"monthDay\" : \"--01-16\",\n"
-                                + "  \"offsetDateTime\" : \"2024-01-16T13:49:58.670947-03:00\",\n"
-                                + "  \"offsetTime\" : \"13:49:58.670946+02:00\",\n"
-                                + "  \"year\" : \"2024\",\n"
-                                + "  \"yearMonth\" : \"2024-01\",\n"
-                                + "  \"zonedDateTime\" : \"2024-01-16T13:49:58.670945+01:00\"\n"
+                        "{"
+                                + lineSeparator()
+                                + ""
+                                + "  \"localDate\" : \"2024-01-16\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"localDateTime\" : \"2024-01-16T13:49:58.670944\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"localTime\" : \"13:49:58.670943\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"monthDay\" : \"--01-16\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"offsetDateTime\" : \"2024-01-16T13:49:58.670947-03:00\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"offsetTime\" : \"13:49:58.670946+02:00\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"year\" : \"2024\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"yearMonth\" : \"2024-01\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"zonedDateTime\" : \"2024-01-16T13:49:58.670945+01:00\""
+                                + lineSeparator()
+                                + ""
                                 + "}"));
         assertThat(result.getLocalTime(), is(localTime));
         assertThat(result.getLocalDate(), is(localDate));
@@ -168,10 +190,18 @@ class BaseJsonMapperTest {
         assertThat(
                 json,
                 is(
-                        "{\n"
-                                + "  \"duration\" : 183840.345000025,\n"
-                                + "  \"instant\" : \"2007-12-03T10:15:30Z\",\n"
-                                + "  \"period\" : \"P1Y2M3D\"\n"
+                        "{"
+                                + lineSeparator()
+                                + ""
+                                + "  \"duration\" : 183840.345000025,"
+                                + lineSeparator()
+                                + ""
+                                + "  \"instant\" : \"2007-12-03T10:15:30Z\","
+                                + lineSeparator()
+                                + ""
+                                + "  \"period\" : \"P1Y2M3D\""
+                                + lineSeparator()
+                                + ""
                                 + "}"));
         assertThat(result.getDuration(), is(duration));
         assertThat(result.getPeriod(), is(period));
