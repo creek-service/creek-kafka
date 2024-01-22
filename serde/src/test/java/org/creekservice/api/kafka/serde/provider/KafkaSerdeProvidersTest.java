@@ -39,16 +39,15 @@ class KafkaSerdeProvidersTest {
     private static final SerializationFormat FORMAT = serializationFormat("A");
 
     @Mock private CreekService api;
-    @Mock private KafkaSerdeProvider.InitializeParams params;
     @Mock private KafkaSerdeProvider provider;
     @Mock private KafkaSerdeProvider.SerdeFactory serdeFactory;
     private KafkaSerdeProviders providers;
 
     @BeforeEach
     void setUp() {
-        when(provider.initialize(any(), any())).thenReturn(serdeFactory);
+        when(provider.initialize(any())).thenReturn(serdeFactory);
 
-        providers = new KafkaSerdeProviders(api, params, Map.of(FORMAT, provider));
+        providers = new KafkaSerdeProviders(api, Map.of(FORMAT, provider));
     }
 
     @Test
@@ -56,7 +55,7 @@ class KafkaSerdeProvidersTest {
         // When: constructor called in setUp method
 
         // Then:
-        verify(provider).initialize(api, params);
+        verify(provider).initialize(api);
     }
 
     @Test
