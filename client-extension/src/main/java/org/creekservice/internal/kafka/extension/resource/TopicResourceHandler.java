@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
@@ -35,7 +34,6 @@ import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.service.extension.component.model.ResourceHandler;
-import org.creekservice.internal.kafka.extension.client.KafkaTopicClient;
 import org.creekservice.internal.kafka.extension.client.TopicClient;
 
 /** Resource handle for topics. */
@@ -49,18 +47,18 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
     private final KafkaResourceValidator validator;
 
     /**
-     * @param typeOverrides known type overrides, used to customise functionality.
+     * @param topicClientFactory topic client factory.
      * @param resources the resource registry to register topics in.
      * @param properties Kafka properties of all known clusters.
      * @param serdeProviders Known serde providers.
      */
     public TopicResourceHandler(
-            final TypeOverrides typeOverrides,
+            final TopicClient.Factory topicClientFactory,
             final TopicRegistrar resources,
             final ClustersProperties properties,
             final KafkaSerdeProviders serdeProviders) {
         this(
-                typeOverrides.get(TopicClient.Factory.class).orElse(KafkaTopicClient::new),
+                topicClientFactory,
                 properties,
                 resources,
                 new TopicResourceFactory(serdeProviders),

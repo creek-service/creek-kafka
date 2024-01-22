@@ -29,6 +29,7 @@ import java.util.OptionalInt;
 import org.creekservice.api.kafka.metadata.schema.SchemaDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
+import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
 import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderFunctionalFixture;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderFunctionalFixture.Tester;
@@ -79,9 +80,12 @@ public class SchemaEvolutionTest {
     static void classSetUp() {
         tester =
                 TEST_FIXTURE
-                        .withTypeOverride(
-                                SchemaRegistryEndpoint.Loader.class,
-                                clusterName -> SCHEMA_REGISTRY.clientEndpoint())
+                        .withExtensionOption(
+                                JsonSerdeExtensionOptions.builder()
+                                        .withTypeOverride(
+                                                SchemaRegistryEndpoint.Loader.class,
+                                                clusterName -> SCHEMA_REGISTRY.clientEndpoint())
+                                        .build())
                         .start();
     }
 

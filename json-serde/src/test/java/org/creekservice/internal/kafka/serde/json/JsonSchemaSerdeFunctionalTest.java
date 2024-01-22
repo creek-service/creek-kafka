@@ -38,6 +38,7 @@ import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
 import org.creekservice.api.kafka.metadata.schema.SchemaDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
+import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
 import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderFunctionalFixture;
 import org.creekservice.internal.kafka.serde.json.model.IncompatibleValue;
@@ -160,9 +161,15 @@ class JsonSchemaSerdeFunctionalTest {
 
         tester =
                 TEST_FIXTURE
-                        .withTypeOverride(
-                                SchemaRegistryEndpoint.Loader.class,
-                                clusterName -> srInstances.get(clusterName).clientEndpoint())
+                        .withExtensionOption(
+                                JsonSerdeExtensionOptions.builder()
+                                        .withTypeOverride(
+                                                SchemaRegistryEndpoint.Loader.class,
+                                                clusterName ->
+                                                        srInstances
+                                                                .get(clusterName)
+                                                                .clientEndpoint())
+                                        .build())
                         .start();
 
         srClients =
