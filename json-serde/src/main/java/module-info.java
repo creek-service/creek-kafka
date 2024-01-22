@@ -33,5 +33,6 @@ module creek.kafka.serde.json.schema {
     provides KafkaSerdeProvider with
             JsonSchemaSerdeProvider;
 
+    exports org.creekservice.api.kafka.serde.json;
     exports org.creekservice.api.kafka.serde.json.schema.store.endpoint;
 }

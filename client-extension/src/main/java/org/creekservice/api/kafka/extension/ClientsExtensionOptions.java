@@ -16,9 +16,9 @@
 
 package org.creekservice.api.kafka.extension;
 
+import java.util.Optional;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
-import org.creekservice.api.kafka.extension.config.TypeOverrides;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 
 /**
@@ -34,9 +34,13 @@ public interface ClientsExtensionOptions extends CreekExtensionOptions {
     ClustersProperties.Builder propertiesBuilder();
 
     /**
-     * @return explicit topic client to use
+     * Retrieve the override instance for the supplied {@code type}, if one is set.
+     *
+     * @param type the type to look up.
+     * @return the instance to use, if set, otherwise {@link Optional#empty()}.
+     * @param <T> the type to look up.
      */
-    TypeOverrides typeOverrides();
+    <T> Optional<T> typeOverride(Class<T> type);
 
     /** Build of client extension options. */
     interface Builder {

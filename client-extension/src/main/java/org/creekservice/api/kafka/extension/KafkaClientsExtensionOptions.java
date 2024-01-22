@@ -18,15 +18,15 @@ package org.creekservice.api.kafka.extension;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.extension.config.SystemEnvPropertyOverrides;
-import org.creekservice.api.kafka.extension.config.TypeOverrides;
-import org.creekservice.internal.kafka.extension.config.TypeOverridesBuilder;
 
 /** Options for the Kafka client extension. */
 public final class KafkaClientsExtensionOptions implements ClientsExtensionOptions {
@@ -45,7 +45,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
                     ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 
     private final ClustersProperties.Builder properties;
-    private final TypeOverrides typeOverrides;
+    private final Map<Class<?>, ?> typeOverrides;
 
     /**
      * @return new builder instance.
@@ -55,9 +55,9 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
     }
 
     private KafkaClientsExtensionOptions(
-            final ClustersProperties.Builder properties, final TypeOverrides typeOverrides) {
+            final ClustersProperties.Builder properties, final Map<Class<?>, ?> typeOverrides) {
         this.properties = requireNonNull(properties, "properties");
-        this.typeOverrides = requireNonNull(typeOverrides, "typeOverrides");
+        this.typeOverrides = Map.copyOf(requireNonNull(typeOverrides, "typeOverrides"));
     }
 
     @Override
@@ -65,9 +65,10 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         return properties;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public TypeOverrides typeOverrides() {
-        return typeOverrides;
+    public <T> Optional<T> typeOverride(final Class<T> type) {
+        return Optional.ofNullable((T) typeOverrides.get(type));
     }
 
     @Override
@@ -104,7 +105,7 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
         private final ClustersProperties.Builder properties =
                 ClustersProperties.propertiesBuilder();
 
-        private final TypeOverridesBuilder typeOverrides = new TypeOverridesBuilder();
+        private final Map<Class<?>, Object> typeOverrides = new HashMap<>();
 
         private Builder() {
             CLIENT_DEFAULTS.forEach(properties::putCommon);
@@ -134,12 +135,12 @@ public final class KafkaClientsExtensionOptions implements ClientsExtensionOptio
 
         @Override
         public <T> Builder withTypeOverride(final Class<T> type, final T instance) {
-            typeOverrides.set(type, instance);
+            typeOverrides.put(requireNonNull(type, "type"), requireNonNull(instance, "instance"));
             return this;
         }
 
         public KafkaClientsExtensionOptions build() {
-            return new KafkaClientsExtensionOptions(properties, typeOverrides.build());
+            return new KafkaClientsExtensionOptions(properties, typeOverrides);
         }
     }
 }

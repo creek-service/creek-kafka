@@ -26,7 +26,6 @@ import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
@@ -51,6 +51,7 @@ import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
+import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
@@ -80,7 +81,7 @@ public final class KafkaSerdeProviderFunctionalFixture {
     private final Network network = Network.newNetwork();
     private final Map<String, KafkaContainer> brokerByCluster;
     private final List<CreatableKafkaTopic<?, ?>> topics;
-    private final Map<Class<?>, Object> typeOverrides = new HashMap<>();
+    private final List<CreekExtensionOptions> options = new ArrayList<>();
     private final List<Tester> testers = new ArrayList<>();
 
     /**
@@ -118,9 +119,23 @@ public final class KafkaSerdeProviderFunctionalFixture {
                                                                 "false")));
     }
 
-    public <T> KafkaSerdeProviderFunctionalFixture withTypeOverride(
-            final Class<T> type, final T instance) {
-        this.typeOverrides.put(type, instance);
+    /**
+     * Customise an extension by providing its options class.
+     *
+     * <p>The {@link ClientsExtensionOptions kafka client options} can not be customised, as they
+     * are handled by the fixture themselves.
+     *
+     * @param options the options instance to apply.
+     * @return self, to allow chaining.
+     */
+    public KafkaSerdeProviderFunctionalFixture withExtensionOption(
+            final CreekExtensionOptions options) {
+
+        if (options instanceof ClientsExtensionOptions) {
+            throw new IllegalArgumentException("Client options are handled by the fixture");
+        }
+
+        this.options.add(options);
         return this;
     }
 
@@ -151,13 +166,11 @@ public final class KafkaSerdeProviderFunctionalFixture {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private KafkaClientsExtensionOptions options() {
+    private KafkaClientsExtensionOptions kafkaOptions() {
         final KafkaClientsExtensionOptions.Builder options =
                 KafkaClientsExtensionOptions.builder()
                         .withKafkaProperty(AUTO_OFFSET_RESET_CONFIG, "earliest")
                         .withKafkaProperty(GROUP_ID_CONFIG, UUID.randomUUID().toString());
-
-        typeOverrides.forEach((k, v) -> options.withTypeOverride((Class) k, v));
 
         brokerByCluster.forEach(
                 (cluster, broker) ->
@@ -210,10 +223,12 @@ public final class KafkaSerdeProviderFunctionalFixture {
         private final AtomicBoolean closed = new AtomicBoolean(false);
 
         private Tester(final Collection<? extends CreatableKafkaTopic<?, ?>> topics) {
-            this.creek =
-                    CreekServices.builder(new TestServiceDescriptor(topics))
-                            .with(options())
-                            .build();
+            final CreekServices.Builder builder =
+                    CreekServices.builder(new TestServiceDescriptor(topics)).with(kafkaOptions());
+
+            options.forEach(builder::with);
+
+            this.creek = builder.build();
             this.extension = creek.extension(KafkaClientsExtension.class);
             testers.add(this);
         }

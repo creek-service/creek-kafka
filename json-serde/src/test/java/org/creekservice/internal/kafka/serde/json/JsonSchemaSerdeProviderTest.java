@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.creekservice.api.service.extension.CreekService;
@@ -111,15 +112,13 @@ class JsonSchemaSerdeProviderTest {
         @Mock(answer = Answers.RETURNS_DEEP_STUBS)
         private CreekService api;
 
-        @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-        private KafkaSerdeProvider.InitializeParams params;
-
         private JsonSchemaSerdeProvider provider;
 
         @BeforeEach
         void setUp() {
             provider = new JsonSchemaSerdeProvider(defaultStoreClientFactory, schemaStoresFactory);
 
+            when(api.options().get(any())).thenReturn(Optional.empty());
             when(schemaStoresFactory.create(any())).thenReturn(schemaStores);
         }
 
@@ -138,10 +137,13 @@ class JsonSchemaSerdeProviderTest {
             final ArgumentCaptor<ClientFactory> clientFactoryCaptor =
                     ArgumentCaptor.forClass(ClientFactory.class);
 
-            when(params.typeOverride(String.class)).thenReturn(Optional.of("customised"));
+            final JsonSerdeExtensionOptions options = mock();
+            when(api.options().get(JsonSerdeExtensionOptions.class))
+                    .thenReturn(Optional.of(options));
+            when(options.typeOverride(String.class)).thenReturn(Optional.of("customised"));
 
             // When:
-            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api, params);
+            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api);
 
             // Then:
             verify(schemaStoresFactory).create(clientFactoryCaptor.capture());
@@ -169,19 +171,22 @@ class JsonSchemaSerdeProviderTest {
             // Given:
             final JsonSchemaStoreClient.Factory customStoreClientFactory =
                     mock(JsonSchemaStoreClient.Factory.class);
-            when(params.typeOverride(JsonSchemaStoreClient.Factory.class))
+
+            final JsonSerdeExtensionOptions options = mock();
+            when(api.options().get(JsonSerdeExtensionOptions.class))
+                    .thenReturn(Optional.of(options));
+            when(options.typeOverride(JsonSchemaStoreClient.Factory.class))
                     .thenReturn(Optional.of(customStoreClientFactory));
+            when(options.typeOverride(String.class)).thenReturn(Optional.of("customised"));
 
             final JsonSchemaStoreClient storeClient = mock();
             when(customStoreClientFactory.create(any(), any())).thenReturn(storeClient);
-
-            when(params.typeOverride(String.class)).thenReturn(Optional.of("customised"));
 
             final ArgumentCaptor<ClientFactory> clientFactoryCaptor =
                     ArgumentCaptor.forClass(ClientFactory.class);
 
             // When:
-            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api, params);
+            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api);
 
             // Then:
             verify(schemaStoresFactory).create(clientFactoryCaptor.capture());
@@ -207,7 +212,7 @@ class JsonSchemaSerdeProviderTest {
         @Test
         void shouldRegisterResourceHandler() {
             // When:
-            provider.initialize(api, params);
+            provider.initialize(api);
 
             // Then:
             verify(api.components().model())

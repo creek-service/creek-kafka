@@ -42,11 +42,11 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
     private final SchemaRegistryClient client;
 
     public DefaultJsonSchemaRegistryClient(
-            final String schemaRegistryName, final Factory.FactoryParams ctx) {
+            final String schemaRegistryName, final Factory.FactoryParams params) {
         this(
                 createClient(
                         schemaRegistryName,
-                        ctx,
+                        params,
                         SystemEnvSchemaRegistryEndpointLoader::new,
                         CachedSchemaRegistryClient::new));
     }

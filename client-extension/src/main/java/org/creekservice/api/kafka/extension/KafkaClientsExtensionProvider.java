@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
-import org.creekservice.api.kafka.extension.config.TypeOverrides;
-import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
+import org.creekservice.internal.kafka.extension.client.KafkaTopicClient;
+import org.creekservice.internal.kafka.extension.client.TopicClient;
 import org.creekservice.internal.kafka.extension.config.ClustersPropertiesFactory;
 import org.creekservice.internal.kafka.extension.resource.ResourceRegistry;
 import org.creekservice.internal.kafka.extension.resource.TopicRegistrar;
@@ -82,18 +82,17 @@ public final class KafkaClientsExtensionProvider
 
         final ClustersProperties properties = propertiesFactory.create(components, options);
 
-        final KafkaSerdeProviders serdeProviders =
-                serdeProvidersFactory.create(api, options.typeOverrides()::get);
+        final KafkaSerdeProviders serdeProviders = serdeProvidersFactory.create(api);
+
+        final TopicClient.Factory topicClientFactory =
+                options.typeOverride(TopicClient.Factory.class).orElse(KafkaTopicClient::new);
 
         api.components()
                 .model()
                 .addResource(
                         new HandlerTypeRef<>() {},
                         handlerFactory.create(
-                                options.typeOverrides(),
-                                resourceRegistry,
-                                properties,
-                                serdeProviders));
+                                topicClientFactory, resourceRegistry, properties, serdeProviders));
 
         return extensionFactory.create(properties, resourceRegistry);
     }
@@ -101,7 +100,7 @@ public final class KafkaClientsExtensionProvider
     @VisibleForTesting
     interface HandlerFactory {
         TopicResourceHandler create(
-                TypeOverrides typeOverrides,
+                TopicClient.Factory topicClientFactory,
                 TopicRegistrar resources,
                 ClustersProperties properties,
                 KafkaSerdeProviders serdeProviders);
@@ -114,6 +113,6 @@ public final class KafkaClientsExtensionProvider
 
     @VisibleForTesting
     interface KafkaSerdeProvidersFactory {
-        KafkaSerdeProviders create(CreekService api, KafkaSerdeProvider.InitializeParams params);
+        KafkaSerdeProviders create(CreekService api);
     }
 }
