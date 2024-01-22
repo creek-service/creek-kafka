@@ -24,6 +24,7 @@ plugins {
     `creek-sonatype-publishing-convention`
     id("pl.allegro.tech.build.axion-release") version "1.16.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.bmuschko.docker-remote-api") version "9.4.0" apply false
+    id("org.creekservice.schema.json") version "0.4.1" apply false
 }
 
 project.version = scmVersion.version
@@ -48,6 +49,15 @@ subprojects {
         tasks.javadoc { onlyIf { false } }
     }
 
+    repositories {
+        maven {
+            url = uri("https://packages.confluent.io/maven/")
+            mavenContent {
+                includeGroup("io.confluent")
+            }
+        }
+    }
+
     extra.apply {
         set("creekVersion", "0.4.2-SNAPSHOT")
         set("spotBugsVersion", "4.8.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
@@ -61,6 +71,7 @@ subprojects {
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.6.1")            // https://mvnrepository.com/artifact/org.apache.kafka
+        set("confluentVersion", "7.3.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.3.1/
         set("testContainersVersion", "1.19.3")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
@@ -68,6 +79,16 @@ subprojects {
     if (kafkaVersionOverride != null && kafkaVersionOverride.isNotEmpty()) {
         extra.apply {
             set("kafkaVersion", kafkaVersionOverride)
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.apache.kafka") {
+                // Force use of apache Kafka libs, not Confluent's own:
+                val kafkaVersion : String by extra
+                useVersion(kafkaVersion)
+            }
         }
     }
 

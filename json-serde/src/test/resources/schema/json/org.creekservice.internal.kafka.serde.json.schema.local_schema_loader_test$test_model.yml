@@ -1,0 +1,13 @@
+---
+$id: test_model.yml
+$schema: http://json-schema.org/draft-07/schema
+additionalProperties: false
+type: object
+
+properties:
+  id:
+    type: number
+    multipleOf: 1
+
+required:
+  - id

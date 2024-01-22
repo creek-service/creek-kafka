@@ -39,11 +39,13 @@ class SerdeExtensionTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekService api;
 
+    @Mock private KafkaSerdeProvider.InitializeParams params;
+
     private KafkaSerdeProviders providers;
 
     @BeforeEach
     void setUp() {
-        providers = KafkaSerdeProviders.create(api);
+        providers = KafkaSerdeProviders.create(api, params);
     }
 
     @Test

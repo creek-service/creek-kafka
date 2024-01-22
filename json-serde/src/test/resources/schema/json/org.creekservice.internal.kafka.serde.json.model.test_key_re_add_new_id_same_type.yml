@@ -1,0 +1,16 @@
+---
+# timestamp=1701104796540
+$schema: http://json-schema.org/draft-07/schema#
+title: Test Key Re Add New Id Same Type
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: integer
+    minimum: 0
+  newId:
+    type: integer
+  thing:
+    type: integer
+required:
+- id

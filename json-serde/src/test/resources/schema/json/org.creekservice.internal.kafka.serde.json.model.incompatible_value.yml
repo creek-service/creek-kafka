@@ -1,0 +1,15 @@
+---
+# timestamp=1701104796540
+$schema: http://json-schema.org/draft-07/schema#
+title: Incompatible Value
+type: object
+additionalProperties: false
+properties:
+  age:
+    type: integer
+    minimum: 0
+  name:
+    type: integer
+required:
+- age
+- name

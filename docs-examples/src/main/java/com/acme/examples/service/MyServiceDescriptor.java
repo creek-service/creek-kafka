@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.acme.examples.service.TopicConfigBuilder.withPartitions;
 import static com.acme.examples.service.TopicDescriptors.inputTopic;
 import static com.acme.examples.service.TopicDescriptors.outputTopic;
+import static com.acme.examples.service.TopicDescriptors.withPartitions;
 
 public class MyServiceDescriptor implements ServiceDescriptor {
 

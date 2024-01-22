@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
+import static org.creekservice.internal.kafka.streams.test.extension.util.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -27,7 +28,6 @@ import java.util.List;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
-import org.creekservice.internal.kafka.streams.test.extension.util.TopicConfigBuilder;
 import org.creekservice.internal.kafka.streams.test.extension.util.TopicDescriptors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,11 +39,7 @@ class RecordCoercerTest {
     private static final String TOPIC = "topic-b";
     private static final KafkaTopicDescriptor<?, ?> DESCRIPTOR =
             TopicDescriptors.inputTopic(
-                    CLUSTER,
-                    TOPIC,
-                    Long.class,
-                    BigDecimal.class,
-                    TopicConfigBuilder.withPartitions(1));
+                    CLUSTER, "ignored", TOPIC, Long.class, BigDecimal.class, withPartitions(1));
 
     private RecordCoercer coercer;
 

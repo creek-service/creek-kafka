@@ -1,0 +1,14 @@
+---
+# timestamp=1705430838290
+$schema: http://json-schema.org/draft-07/schema#
+title: Test Key V 0
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: integer
+    minimum: 0
+  newId:
+    type: integer
+required:
+- id

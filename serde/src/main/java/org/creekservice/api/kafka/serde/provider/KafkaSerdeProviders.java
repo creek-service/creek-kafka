@@ -35,20 +35,25 @@ public final class KafkaSerdeProviders {
      * Factory method
      *
      * @param api Creek api passed to serde providers to initialize.
+     * @param params Additional params.
      * @return an instance.
      */
-    public static KafkaSerdeProviders create(final CreekService api) {
-        return new KafkaSerdeProviders(api, new ProviderLoader().load());
+    public static KafkaSerdeProviders create(
+            final CreekService api, final KafkaSerdeProvider.InitializeParams params) {
+        return new KafkaSerdeProviders(api, params, new ProviderLoader().load());
     }
 
     @VisibleForTesting
     KafkaSerdeProviders(
-            final CreekService api, final Map<SerializationFormat, KafkaSerdeProvider> providers) {
+            final CreekService api,
+            final KafkaSerdeProvider.InitializeParams params,
+            final Map<SerializationFormat, KafkaSerdeProvider> providers) {
         this.providers =
                 requireNonNull(providers, "providers").entrySet().stream()
                         .collect(
                                 toUnmodifiableMap(
-                                        Map.Entry::getKey, e -> e.getValue().initialize(api)));
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().initialize(api, params)));
     }
 
     /**

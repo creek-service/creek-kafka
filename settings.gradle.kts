@@ -37,6 +37,7 @@ include(
     "streams-test",
     "serde",
     "serde-test",
+    "json-serde",
     "test-extension",
     "test-java-eight",
     "test-java-nine",

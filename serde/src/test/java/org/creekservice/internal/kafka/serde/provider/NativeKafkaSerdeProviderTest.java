@@ -48,7 +48,7 @@ class NativeKafkaSerdeProviderTest {
 
     @BeforeEach
     void setUp() {
-        serdeFactory = new NativeKafkaSerdeProvider().initialize(null);
+        serdeFactory = new NativeKafkaSerdeProvider().initialize(null, null);
     }
 
     @Test

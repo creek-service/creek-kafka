@@ -35,7 +35,7 @@ public final class OnlyModuleTestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeFactory initialize(final CreekService api) {
+    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
         return new SerdeFactory() {
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
