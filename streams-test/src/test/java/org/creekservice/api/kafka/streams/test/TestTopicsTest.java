@@ -19,8 +19,8 @@ package org.creekservice.api.kafka.streams.test;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.apache.kafka.streams.KeyValue.pair;
 import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
-import static org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor.InputTopic;
-import static org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor.OutputTopic;
+import static org.creekservice.internal.kafka.streams.test.util.NativeServiceDescriptor.InputTopic;
+import static org.creekservice.internal.kafka.streams.test.util.NativeServiceDescriptor.OutputTopic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -39,7 +39,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.creekservice.api.kafka.extension.KafkaClientsExtension;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
-import org.creekservice.internal.kafka.streams.test.util.TestServiceDescriptor;
+import org.creekservice.internal.kafka.streams.test.util.NativeServiceDescriptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class TestTopicsTest {
     @BeforeEach
     void setUp() {
         ctx =
-                CreekServices.builder(new TestServiceDescriptor())
+                CreekServices.builder(new NativeServiceDescriptor())
                         .with(TestKafkaStreamsExtensionOptions.defaults())
                         .build();
 

@@ -59,6 +59,9 @@ public interface KafkaClientsExtension extends CreekExtension, Closeable {
      * <p>The {@link KafkaTopic#serializeKey} and {@link KafkaTopic#serializeValue} convenience
      * methods can be used to serialize the key and value for use with this binary producer.
      *
+     * <p>Creek managed the lifecycle of this <i>shared</i> client, calling any {@code close} method
+     * may cause future operations to fail.
+     *
      * @param clusterName the name of the cluster.
      * @return the shared producer.
      */
@@ -82,6 +85,9 @@ public interface KafkaClientsExtension extends CreekExtension, Closeable {
      *
      * <p>The {@link KafkaTopic#deserializeKey} and {@link KafkaTopic#deserializeValue} convenience
      * methods can be used to deserialize the keys and values returned by this binary consumer.
+     *
+     * <p>Creek managed the lifecycle of this <i>shared</i> client, calling any {@code close} method
+     * may cause future operations to fail.
      *
      * @param clusterName the name of the cluster.
      * @return the shared consumer.

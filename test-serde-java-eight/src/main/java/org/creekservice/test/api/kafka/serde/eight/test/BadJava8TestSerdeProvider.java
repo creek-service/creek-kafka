@@ -36,7 +36,7 @@ public final class BadJava8TestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeFactory initialize(final CreekService api) {
+    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
         return new SerdeFactory() {
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {

@@ -48,6 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@SuppressWarnings({"RedundantCast", "unchecked"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TopicCollectorTest {
@@ -99,8 +100,8 @@ class TopicCollectorTest {
         when(creatableTopic2.value()).thenReturn(creatableTopicValue);
         when(creatableTopic2.config()).thenReturn(() -> 0);
 
-        when(componentA.resources()).thenReturn(Stream.of(topic));
-        when(componentB.resources()).thenReturn(Stream.of(creatableTopic));
+        when(componentA.resources()).thenReturn((Stream) Stream.of(topic));
+        when(componentB.resources()).thenReturn((Stream) Stream.of(creatableTopic));
 
         collector = new TopicCollector();
     }
@@ -109,7 +110,7 @@ class TopicCollectorTest {
     void shouldNotBlowUpIfNoKafkaResources() {
         // Given:
         final ResourceDescriptor otherResource = mock(ResourceDescriptor.class);
-        when(componentA.resources()).thenReturn(Stream.of(otherResource));
+        when(componentA.resources()).thenReturn((Stream) Stream.of(otherResource));
 
         // When:
         final CollectedTopics result = collector.collectTopics(List.of(componentA));
@@ -142,7 +143,7 @@ class TopicCollectorTest {
         // Given:
         final ResourceDescriptor resource = mock();
         when(resource.resources()).thenReturn((Stream) Stream.of(topic));
-        when(componentA.resources()).thenReturn(Stream.of(resource));
+        when(componentA.resources()).thenReturn((Stream) Stream.of(resource));
 
         // When:
         final CollectedTopics result = collector.collectTopics(List.of(componentA));
@@ -181,7 +182,7 @@ class TopicCollectorTest {
     @Test
     void shouldHandleDuplicates() {
         // Given:
-        when(componentB.resources()).thenReturn(Stream.of(topic));
+        when(componentB.resources()).thenReturn((Stream) Stream.of(topic));
 
         // When:
         final CollectedTopics result = collector.collectTopics(List.of(componentA, componentB));
@@ -196,7 +197,8 @@ class TopicCollectorTest {
     @Test
     void shouldHandleDuplicateCreatable() {
         // Given:
-        when(componentA.resources()).thenReturn(Stream.of(creatableTopic, creatableTopic2));
+        when(componentA.resources())
+                .thenReturn((Stream) Stream.of(creatableTopic, creatableTopic2));
 
         // When:
         final CollectedTopics result = collector.collectTopics(List.of(componentA));

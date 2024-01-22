@@ -396,7 +396,8 @@ Currently supported serialization formats:
 
 ### `kafka` format
 
-Creek Kafka comes with an in-built `kafka` serialization format, which supports the standard set of Kafka serializers.
+The `creek-kafka-serde.jar` also comes with an in-built `kafka` serialization format, 
+which supports the standard set of Kafka serializers.
 The serializer handles the following types:
 
 | Java type    | Serde class               |

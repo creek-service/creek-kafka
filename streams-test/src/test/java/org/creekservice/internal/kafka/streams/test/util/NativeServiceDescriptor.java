@@ -29,7 +29,8 @@ import org.creekservice.api.platform.metadata.ComponentInput;
 import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
-public final class TestServiceDescriptor implements ServiceDescriptor {
+/** Service descriptor that makes use of native Kafka serde. */
+public final class NativeServiceDescriptor implements ServiceDescriptor {
 
     private static final List<ComponentInput> INPUTS = new ArrayList<>();
     private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();

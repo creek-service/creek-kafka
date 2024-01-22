@@ -1,0 +1,41 @@
+---
+# timestamp=1705844296331
+$schema: http://json-schema.org/draft-07/schema#
+title: Type With Explicit Polymorphism
+type: object
+additionalProperties: false
+properties:
+  inner:
+    oneOf:
+    - $ref: '#/definitions/ExplicitlyNamed'
+    - $ref: '#/definitions/ImplicitlyNamed'
+definitions:
+  ExplicitlyNamed:
+    type: object
+    additionalProperties: false
+    properties:
+      '@type':
+        type: string
+        enum:
+        - ths-explicit-name
+        default: ths-explicit-name
+      text:
+        type: string
+    title: ths-explicit-name
+    required:
+    - '@type'
+  ImplicitlyNamed:
+    type: object
+    additionalProperties: false
+    properties:
+      '@type':
+        type: string
+        enum:
+        - TypeWithExplicitPolymorphism$ImplicitlyNamed
+        default: TypeWithExplicitPolymorphism$ImplicitlyNamed
+      age:
+        type: integer
+    title: TypeWithExplicitPolymorphism$ImplicitlyNamed
+    required:
+    - '@type'
+    - age

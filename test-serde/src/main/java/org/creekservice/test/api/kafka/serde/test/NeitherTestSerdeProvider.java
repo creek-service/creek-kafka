@@ -34,7 +34,7 @@ public final class NeitherTestSerdeProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public SerdeFactory initialize(final CreekService api) {
+    public SerdeFactory initialize(final CreekService api, final InitializeParams params) {
         return null;
     }
 }

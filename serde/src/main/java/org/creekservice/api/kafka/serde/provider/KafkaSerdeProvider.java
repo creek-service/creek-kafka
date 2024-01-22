@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.serde.provider;
 
+import java.util.Optional;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
@@ -37,7 +38,20 @@ public interface KafkaSerdeProvider {
      */
     SerializationFormat format();
 
-    SerdeFactory initialize(CreekService api);
+    SerdeFactory initialize(CreekService api, InitializeParams params);
+
+    /** Extendable way of providing additional information to the {@link #initialize} method. */
+    interface InitializeParams {
+
+        /**
+         * Retrieve the override instance for the supplied {@code type}, if one is set.
+         *
+         * @param type the type to look up.
+         * @return the instance to use, if set, otherwise {@link Optional#empty()}.
+         * @param <T> the type to look up.
+         */
+        <T> Optional<T> typeOverride(Class<T> type);
+    }
 
     interface SerdeFactory {
 

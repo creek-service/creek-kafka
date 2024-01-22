@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.TypeOverrides;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProviders;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
@@ -81,7 +82,8 @@ public final class KafkaClientsExtensionProvider
 
         final ClustersProperties properties = propertiesFactory.create(components, options);
 
-        final KafkaSerdeProviders serdeProviders = serdeProvidersFactory.create(api);
+        final KafkaSerdeProviders serdeProviders =
+                serdeProvidersFactory.create(api, options.typeOverrides()::get);
 
         api.components()
                 .model()
@@ -112,6 +114,6 @@ public final class KafkaClientsExtensionProvider
 
     @VisibleForTesting
     interface KafkaSerdeProvidersFactory {
-        KafkaSerdeProviders create(CreekService api);
+        KafkaSerdeProviders create(CreekService api, KafkaSerdeProvider.InitializeParams params);
     }
 }

@@ -40,11 +40,19 @@ public interface KafkaTopic<K, V> {
     KafkaTopicDescriptor<K, V> descriptor();
 
     /**
+     * The {@link Serde} to use for (de)serializing the topic's key.
+     *
+     * <p>This is a <i>shared</i> instance and, as such, should not be closed by the caller.
+     *
      * @return the serde used to (de)serialize the keys stored in the topic
      */
     Serde<K> keySerde();
 
     /**
+     * The {@link Serde} to use for (de)serializing the topic's value.
+     *
+     * <p>This is a <i>shared</i> instance and, as such, should not be closed by the caller.
+     *
      * @return the serde used to (de)serialize the values stored in the topic
      */
     Serde<V> valueSerde();
@@ -55,6 +63,7 @@ public interface KafkaTopic<K, V> {
      * @param key the key to serialize.
      * @return the binary serialized key.
      */
+    @SuppressWarnings("resource")
     default byte[] serializeKey(final K key) {
         return keySerde().serializer().serialize(name(), key);
     }
@@ -65,6 +74,7 @@ public interface KafkaTopic<K, V> {
      * @param value the value to serialize.
      * @return the binary serialized value.
      */
+    @SuppressWarnings("resource")
     default byte[] serializeValue(final V value) {
         return valueSerde().serializer().serialize(name(), value);
     }
@@ -75,6 +85,7 @@ public interface KafkaTopic<K, V> {
      * @param key the binary key to deserialize.
      * @return the deserialized key.
      */
+    @SuppressWarnings("resource")
     default K deserializeKey(final byte[] key) {
         return keySerde().deserializer().deserialize(name(), key);
     }
@@ -85,6 +96,7 @@ public interface KafkaTopic<K, V> {
      * @param value the binary value to deserialize.
      * @return the deserialized value.
      */
+    @SuppressWarnings("resource")
     default V deserializeValue(final byte[] value) {
         return valueSerde().deserializer().deserialize(name(), value);
     }

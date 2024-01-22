@@ -21,8 +21,17 @@ plugins {
 val creekVersion : String by extra
 val kafkaVersion : String by extra
 val spotBugsVersion : String by extra
+val testContainersVersion : String by extra
 
 dependencies {
     api(project(":serde"))
     api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+
+    implementation(project(":client-extension"))
+    implementation("org.creekservice:creek-service-context:$creekVersion")
+
+    implementation("org.testcontainers:kafka:$testContainersVersion")
 }
+
+// Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
+modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")

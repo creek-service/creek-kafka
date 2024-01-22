@@ -1,0 +1,20 @@
+--add-modules
+  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension
+
+--add-reads
+  creek.kafka.serde.json.schema=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension
+
+--add-reads
+  creek.kafka.serde.json.schema=creek.observability.logging.fixtures
+
+--add-opens
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
+
+--add-opens
+  creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json=junit.jupiter
+
+--add-opens
+  creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.model=com.fasterxml.jackson.databind
+
+  --add-opens
+    creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.mapper=com.fasterxml.jackson.databind
