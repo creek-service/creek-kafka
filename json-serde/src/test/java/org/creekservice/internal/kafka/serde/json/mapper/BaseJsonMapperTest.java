@@ -130,34 +130,24 @@ class BaseJsonMapperTest {
                 is(
                         "{"
                                 + lineSeparator()
-                                + ""
                                 + "  \"localDate\" : \"2024-01-16\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"localDateTime\" : \"2024-01-16T13:49:58.670944\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"localTime\" : \"13:49:58.670943\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"monthDay\" : \"--01-16\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"offsetDateTime\" : \"2024-01-16T13:49:58.670947-03:00\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"offsetTime\" : \"13:49:58.670946+02:00\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"year\" : \"2024\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"yearMonth\" : \"2024-01\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"zonedDateTime\" : \"2024-01-16T13:49:58.670945+01:00\""
                                 + lineSeparator()
-                                + ""
                                 + "}"));
         assertThat(result.getLocalTime(), is(localTime));
         assertThat(result.getLocalDate(), is(localDate));
@@ -192,16 +182,12 @@ class BaseJsonMapperTest {
                 is(
                         "{"
                                 + lineSeparator()
-                                + ""
                                 + "  \"duration\" : 183840.345000025,"
                                 + lineSeparator()
-                                + ""
                                 + "  \"instant\" : \"2007-12-03T10:15:30Z\","
                                 + lineSeparator()
-                                + ""
                                 + "  \"period\" : \"P1Y2M3D\""
                                 + lineSeparator()
-                                + ""
                                 + "}"));
         assertThat(result.getDuration(), is(duration));
         assertThat(result.getPeriod(), is(period));
