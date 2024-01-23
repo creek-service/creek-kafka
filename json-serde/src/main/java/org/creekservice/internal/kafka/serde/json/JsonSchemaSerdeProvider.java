@@ -34,6 +34,7 @@ import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.serde.json.logging.LoggingField;
 import org.creekservice.internal.kafka.serde.json.mapper.GenericMapper;
+import org.creekservice.internal.kafka.serde.json.mapper.GenericMapperFactory;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor;
 import org.creekservice.internal.kafka.serde.json.schema.resource.JsonSchemaResourceHandler;
 import org.creekservice.internal.kafka.serde.json.schema.serde.JsonSchemaSerde;
@@ -92,7 +93,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
         return new JsonSerdeFactory(
                 schemaStores,
                 SchemaFriendValidator::new,
-                GenericMapper::new,
+                new GenericMapperFactory(options.subTypes()),
                 JsonSchemaSerde::new,
                 StructuredLoggerFactory.internalLogger(JsonSchemaSerdeProvider.class));
     }
@@ -103,13 +104,13 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
         private final SrSchemaStores schemaStores;
         private final StructuredLogger logger;
         private final ValidatorFactory validatorFactory;
-        private final MapperFactory mapperFactory;
+        private final GenericMapperFactory mapperFactory;
         private final SerdeFactory jsonSchemaSerdeFactory;
 
         JsonSerdeFactory(
                 final SrSchemaStores schemaStores,
                 final ValidatorFactory validatorFactory,
-                final MapperFactory mapperFactory,
+                final GenericMapperFactory mapperFactory,
                 final SerdeFactory jsonSchemaSerdeFactory,
                 final StructuredLogger logger) {
             this.schemaStores = requireNonNull(schemaStores, "schemaStores");
@@ -166,11 +167,6 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
     @VisibleForTesting
     interface ValidatorFactory {
         SchemaValidator create(JsonSchema schema);
-    }
-
-    @VisibleForTesting
-    interface MapperFactory {
-        <T> GenericMapper<T> create(Class<T> type);
     }
 
     @VisibleForTesting

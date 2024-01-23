@@ -48,6 +48,7 @@ import org.creekservice.internal.kafka.serde.json.model.TestValueV0;
 import org.creekservice.internal.kafka.serde.json.model.TestValueV1;
 import org.creekservice.internal.kafka.serde.json.model.TypeWithEnum;
 import org.creekservice.internal.kafka.serde.json.model.TypeWithExplicitPolymorphism;
+import org.creekservice.internal.kafka.serde.json.model.TypeWithImplicitPolymorphism;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator.JsonSchemaValidationFailed;
 import org.creekservice.internal.kafka.serde.json.util.TopicDescriptors;
@@ -122,6 +123,17 @@ class JsonSchemaSerdeFunctionalTest {
                             TypeWithExplicitPolymorphism.class,
                             withPartitions(1));
 
+    private static final OwnedKafkaTopicInput<
+                    TypeWithImplicitPolymorphism, TypeWithImplicitPolymorphism>
+            IMPLICIT_POLY_TOPIC =
+                    TopicDescriptors.inputTopic(
+                            CLUSTER_NAME_1,
+                            SCHEMA_REGISTRY_NAME_1,
+                            "implicit-polymorphic",
+                            TypeWithImplicitPolymorphism.class,
+                            TypeWithImplicitPolymorphism.class,
+                            withPartitions(1));
+
     private static final KafkaSerdeProviderFunctionalFixture TEST_FIXTURE =
             KafkaSerdeProviderFunctionalFixture.tester(
                     List.of(
@@ -129,7 +141,8 @@ class JsonSchemaSerdeFunctionalTest {
                             TEST_TOPIC_2,
                             EVOLVING_TOPIC,
                             ENUM_TOPIC,
-                            EXPLICIT_POLY_TOPIC));
+                            EXPLICIT_POLY_TOPIC,
+                            IMPLICIT_POLY_TOPIC));
 
     @Container
     private static final SchemaRegistryContainer SCHEMA_REGISTRY_1 =
@@ -169,6 +182,9 @@ class JsonSchemaSerdeFunctionalTest {
                                                         srInstances
                                                                 .get(clusterName)
                                                                 .clientEndpoint())
+                                        .withSubtypes(
+                                                TypeWithImplicitPolymorphism.ImplicitlyNamed.class,
+                                                TypeWithImplicitPolymorphism.ExplicitlyNamed.class)
                                         .build())
                         .start();
 
@@ -349,6 +365,16 @@ class JsonSchemaSerdeFunctionalTest {
                         new TypeWithExplicitPolymorphism.ExplicitlyNamed("something")),
                 new TypeWithExplicitPolymorphism(
                         new TypeWithExplicitPolymorphism.ImplicitlyNamed(12)));
+    }
+
+    @Test
+    void shouldProduceAndConsumeImplicitPolymorphic() {
+        tester.testProduceConsume(
+                IMPLICIT_POLY_TOPIC,
+                new TypeWithImplicitPolymorphism(
+                        new TypeWithImplicitPolymorphism.ExplicitlyNamed("something")),
+                new TypeWithImplicitPolymorphism(
+                        new TypeWithImplicitPolymorphism.ImplicitlyNamed(12)));
     }
 
     private int numSchemaVersions(final KafkaTopicDescriptor.PartDescriptor<?> part)

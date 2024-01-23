@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,12 @@ class JsonSerdeExtensionOptionsTest {
                 .addEqualityGroup(
                         JsonSerdeExtensionOptions.builder().build(),
                         JsonSerdeExtensionOptions.builder().build())
+                .addEqualityGroup(
+                        JsonSerdeExtensionOptions.builder().withSubtypes(String.class).build())
+                .addEqualityGroup(
+                        JsonSerdeExtensionOptions.builder()
+                                .withSubtype(String.class, "name")
+                                .build())
                 .addEqualityGroup(
                         JsonSerdeExtensionOptions.builder()
                                 .withTypeOverride(String.class, "diff")
@@ -68,5 +75,23 @@ class JsonSerdeExtensionOptionsTest {
 
         // Then:
         assertThat(builder.build().typeOverride(String.class), is(Optional.of("value")));
+    }
+
+    @Test
+    void shouldSupportNamedSubTypes() {
+        // When:
+        builder.withSubtype(String.class, "name");
+
+        // Then:
+        assertThat(builder.build().subTypes(), is(Map.of(String.class, "name")));
+    }
+
+    @Test
+    void shouldSupportUnnamedSubTypes() {
+        // When:
+        builder.withSubtypes(String.class, Integer.class);
+
+        // Then:
+        assertThat(builder.build().subTypes(), is(Map.of(String.class, "", Integer.class, "")));
     }
 }

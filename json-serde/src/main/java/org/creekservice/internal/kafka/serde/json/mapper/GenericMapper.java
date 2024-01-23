@@ -21,18 +21,12 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.util.Map;
-import org.creekservice.api.base.annotation.VisibleForTesting;
 
 public final class GenericMapper<T> implements JsonReader<T>, JsonWriter<T> {
 
     private final Class<T> type;
     private final JsonMapper mapper;
 
-    public GenericMapper(final Class<T> type) {
-        this(type, BaseJsonMapper.get());
-    }
-
-    @VisibleForTesting
     GenericMapper(final Class<T> type, final JsonMapper mapper) {
         this.type = requireNonNull(type, "type");
         this.mapper = requireNonNull(mapper, "mapper");
