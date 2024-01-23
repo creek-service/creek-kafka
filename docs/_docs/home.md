@@ -387,10 +387,10 @@ at runtime, on the class-path or module-path.
 
 Currently supported serialization formats:
 
-| Serialization format     | Notes                                              |
-|--------------------------|----------------------------------------------------|
-| [`kafka`](#kafka-format) | Serialization using the Kafka clients serializers. |
-| [`json`](#json-format)   | Schema validated JSON serialization                |
+| Serialization format          | Notes                                              |
+|-------------------------------|----------------------------------------------------|
+| [`kafka`](#kafka-format)      | Serialization using the Kafka clients serializers. |
+| [`json`](#json-schema-format) | Schema validated JSON serialization                |
 
 ...or extend Creek with a [custom format](#custom-formats). 
 
@@ -426,9 +426,65 @@ This format can be used by having [`KafkaTopicDescriptor.PartDescriptor.format()
 For an example of using the `kafka` format in resource descriptors see the [`TopicDescriptors`][topicDescriptors] class,
 or the [basic Kafka Streams tutorial][basicDemo].
 
-### `json` format
+### `json-schema` format
 
-A schema-validated JSON format is currently [in development](https://github.com/creek-service/creek-kafka/issues/25).
+This serialization format is still under development.
+See [issue #25](https://github.com/creek-service/creek-kafka/issues/25) for remaining tasks.
+{: .notice--danger}
+
+The `creek-kafka-json-serde.jar` provides a `json-schema` serialization format.
+This format supports serializing Java types as JSON, where the JSON payload is validated against a schema.
+
+The format supports per-topic key and value schemas. It stores and loads JSON schemas from Confluent's own Schema Registry.
+Producers load their schemas from the classpath at runtime and ensure they are registered in the Schema Registry.
+Consumers load their schemas from the classpath, and _require_ the schema to already be registered in the Schema Registry, i.e. by the producing application.
+See [Capturing schema in the Schema Registry](https://www.creekservice.org/articles/2024/01/09/json-schema-evolution-part-2.html#capturing-schemas-in-a-schema-registry)
+for more information on _why_ only producers register schemas in the Schema Registry.
+
+It is recommended that schemas are generated from Java classes using the [Creek JSON Schema Gradle plugin](https://github.com/creek-service/creek-json-schema-gradle-plugin).
+This plugin will, by default, create the closed content model JSON schemas that this serde requires.
+
+Note, the JSON serde is not currently compatible with Confluent's own JSON serde, as Confluent's serde prefixes
+the serialized JSON with the schema-id.  This is not necessary with Creek's JSON format.
+However, there is a task to track [optionally enabling Confluent JSON serde compatability](https://github.com/creek-service/creek-kafka/issues/455)
+{: .notice--warning}
+
+Note, this serde does not use the standard JSON Schema compatability checks defined in the Confluent Schema Registry.
+We think [Confluent's checks are not fit for purpose](https://github.com/confluentinc/schema-registry/issues/2927).
+See [this article series](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) to understand why,
+and how Creek implements schema compatibility checks for JSON.
+{: .notice--warning}
+
+#### Options
+
+The format supports customisation via the `JsonSerdeExtensionOptions` type.
+
+For example, it is possible to register subtypes of polymorphic base types:
+
+```java
+public final class ServiceMain {
+
+    public static void main(String... args) {
+        CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
+                .with(
+                        JsonSerdeExtensionOptions.builder()
+                                // Register subtypes:
+                                .withSubtypes(
+                                        SubType1.class,
+                                        SubType2.class)
+                                // Register subtype with specific logical name:
+                                .withSubtype(SubType3.class, "type-3")
+                                .build()                        
+                )
+                .build();
+
+        new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
+    }
+}
+```
+
+Manually registering subtypes is only necessary when this information is not available to Jackson already,
+i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubTypes`.
 
 ### Custom formats
 

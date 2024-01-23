@@ -47,6 +47,7 @@ import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
 import org.creekservice.internal.kafka.serde.json.mapper.GenericMapper;
+import org.creekservice.internal.kafka.serde.json.mapper.GenericMapperFactory;
 import org.creekservice.internal.kafka.serde.json.model.TestValueV0;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor;
 import org.creekservice.internal.kafka.serde.json.schema.resource.JsonSchemaResourceHandler;
@@ -237,7 +238,7 @@ class JsonSchemaSerdeProviderTest {
 
         @Mock private RegisteredSchema<TestValueV0> registeredSchema;
         @Mock private JsonSchemaSerdeProvider.ValidatorFactory validatorFactory;
-        @Mock private JsonSchemaSerdeProvider.MapperFactory mapperFactory;
+        @Mock private GenericMapperFactory mapperFactory;
         @Mock private JsonSchemaSerdeProvider.SerdeFactory jsonSchemaSerdeFactory;
         @Mock private SchemaValidator validator;
         @Mock private GenericMapper<Object> mapper;

@@ -18,14 +18,21 @@ package org.creekservice.api.kafka.serde.json;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 
+/**
+ * Options class to customise how the JSON serde operate.
+ *
+ * <p>An instance of this class can be registered via the {@code CreekServices.Builder.with} method.
+ */
 public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
 
+    private final Map<Class<?>, String> subtypes;
     private final Map<Class<?>, ?> typeOverrides;
 
     /**
@@ -35,8 +42,10 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
         return new Builder();
     }
 
-    private JsonSerdeExtensionOptions(final Map<Class<?>, ?> typeOverrides) {
+    private JsonSerdeExtensionOptions(
+            final Map<Class<?>, ?> typeOverrides, final Map<Class<?>, String> subtypes) {
         this.typeOverrides = Map.copyOf(requireNonNull(typeOverrides, "typeOverrides"));
+        this.subtypes = Map.copyOf(requireNonNull(subtypes, "subtypes"));
     }
 
     /**
@@ -51,6 +60,13 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
         return Optional.ofNullable((T) typeOverrides.get(type));
     }
 
+    /**
+     * @return manually registered subtypes
+     */
+    public Map<Class<?>, String> subTypes() {
+        return Map.copyOf(subtypes);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -60,25 +76,67 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
             return false;
         }
         final JsonSerdeExtensionOptions that = (JsonSerdeExtensionOptions) o;
-        return Objects.equals(typeOverrides, that.typeOverrides);
+        return Objects.equals(subtypes, that.subtypes)
+                && Objects.equals(typeOverrides, that.typeOverrides);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(typeOverrides);
+        return Objects.hash(subtypes, typeOverrides);
     }
 
     @Override
     public String toString() {
-        return "JsonSerdeExtensionOptions{" + "typeOverrides=" + typeOverrides + '}';
+        return "JsonSerdeExtensionOptions{"
+                + "subtypes="
+                + subtypes
+                + ", typeOverrides="
+                + typeOverrides
+                + '}';
     }
 
     /** Build of client extension options. */
     public static final class Builder {
 
+        private final Map<Class<?>, String> subtypes = new HashMap<>();
         private final Map<Class<?>, Object> overrides = new HashMap<>();
 
         private Builder() {}
+
+        /**
+         * Register a named subtype of a polymorphic type.
+         *
+         * <p>Use this method to register subtypes when a base type is annotated with {@link
+         * com.fasterxml.jackson.annotation.JsonTypeInfo}, but not with {@link
+         * com.fasterxml.jackson.annotation.JsonSubTypes}.
+         *
+         * @param type the subtype to register
+         * @param logicalName the logical name that should be used in the JSON payload for this
+         *     type. If an empty string, default naming will be used.
+         * @return self, to allow chaining
+         */
+        public Builder withSubtype(final Class<?> type, final String logicalName) {
+            subtypes.put(requireNonNull(type, "type"), requireNonNull(logicalName, "logicalName"));
+            return this;
+        }
+
+        /**
+         * Register subtypes of a polymorphic type.
+         *
+         * <p>Use this method to register subtypes when a base type is annotated with {@link
+         * com.fasterxml.jackson.annotation.JsonTypeInfo}, but not with {@link
+         * com.fasterxml.jackson.annotation.JsonSubTypes}.
+         *
+         * <p>Default naming will be used for each type. Use {@link #withSubtype(Class, String)} to
+         * customise the logical name of a type.
+         *
+         * @param types the subtypes to register
+         * @return self, to allow chaining
+         */
+        public Builder withSubtypes(final Class<?>... types) {
+            Arrays.stream(types).forEach(type -> withSubtype(type, ""));
+            return this;
+        }
 
         /**
          * Override a specific implementation of a {@code type} used internally.
@@ -102,7 +160,7 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
          * @return the built options.
          */
         public JsonSerdeExtensionOptions build() {
-            return new JsonSerdeExtensionOptions(overrides);
+            return new JsonSerdeExtensionOptions(overrides, subtypes);
         }
     }
 }

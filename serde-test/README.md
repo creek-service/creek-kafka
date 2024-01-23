@@ -3,3 +3,5 @@
 # Creek Kafka Serde Test utilities
 
 Contains helper utilities for testing serde providers.
+
+See Javadocs of classes with this model for more information.
