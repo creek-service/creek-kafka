@@ -34,7 +34,7 @@ public final class IncompatibleValue {
     private final int age;
 
     public IncompatibleValue(
-            @JsonProperty(value = "name", required = true) final OptionalLong name,
+            @JsonProperty(value = "name") final OptionalLong name,
             @JsonProperty(value = "age") final int age) {
         this.name = name;
         this.age = age;
