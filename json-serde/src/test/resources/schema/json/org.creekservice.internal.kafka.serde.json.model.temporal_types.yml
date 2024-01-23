@@ -1,0 +1,15 @@
+---
+# timestamp=1706024768544
+$schema: http://json-schema.org/draft-07/schema#
+title: Temporal Types
+type: object
+additionalProperties: false
+properties:
+  duration:
+    type: number
+  instant:
+    type: string
+    format: date-time
+  period:
+    type: string
+    format: duration

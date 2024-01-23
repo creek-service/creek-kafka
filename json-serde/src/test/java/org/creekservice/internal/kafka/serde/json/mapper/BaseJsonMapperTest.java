@@ -46,6 +46,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.creekservice.internal.kafka.serde.json.model.DateTimeTypes;
+import org.creekservice.internal.kafka.serde.json.model.TemporalTypes;
+import org.creekservice.internal.kafka.serde.json.model.WithAmbiguousFloat;
+import org.creekservice.internal.kafka.serde.json.model.WithPrimitiveTypes;
 import org.junit.jupiter.api.Test;
 
 class BaseJsonMapperTest {
@@ -221,7 +225,7 @@ class BaseJsonMapperTest {
                 mapper.readValue("{\"number\":0.1}", WithAmbiguousFloat.class);
 
         // Then:
-        assertThat(result.number, is(new BigDecimal("0.1")));
+        assertThat(result.getNumber(), is(new BigDecimal("0.1")));
     }
 
     @Test
@@ -335,124 +339,6 @@ class BaseJsonMapperTest {
 
         public List<String> getCollection() {
             return collection == null ? null : List.copyOf(collection);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    public static final class WithPrimitiveTypes {
-
-        WithPrimitiveTypes(@JsonProperty("id") final long id) {}
-
-        public long getId() {
-            return 12;
-        }
-    }
-
-    public static final class DateTimeTypes {
-
-        private final LocalTime localTime;
-        private final LocalDate localDate;
-        private final LocalDateTime localDateTime;
-        private final ZonedDateTime zonedDateTime;
-        private final OffsetTime offsetTime;
-        private final OffsetDateTime offsetDateTime;
-        private final MonthDay monthDay;
-        private final YearMonth yearMonth;
-        private final Year year;
-
-        @SuppressWarnings("checkstyle:ParameterNumber")
-        DateTimeTypes(
-                @JsonProperty("localTime") final LocalTime localTime,
-                @JsonProperty("localDate") final LocalDate localDate,
-                @JsonProperty("localDateTime") final LocalDateTime localDateTime,
-                @JsonProperty("zonedDateTime") final ZonedDateTime zonedDateTime,
-                @JsonProperty("offsetTime") final OffsetTime offsetTime,
-                @JsonProperty("offsetDateTime") final OffsetDateTime offsetDateTime,
-                @JsonProperty("monthDay") final MonthDay monthDay,
-                @JsonProperty("yearMonth") final YearMonth yearMonth,
-                @JsonProperty("year") final Year year) {
-            this.localTime = localTime;
-            this.localDate = localDate;
-            this.localDateTime = localDateTime;
-            this.zonedDateTime = zonedDateTime;
-            this.offsetTime = offsetTime;
-            this.offsetDateTime = offsetDateTime;
-            this.monthDay = monthDay;
-            this.yearMonth = yearMonth;
-            this.year = year;
-        }
-
-        public LocalTime getLocalTime() {
-            return localTime;
-        }
-
-        public LocalDate getLocalDate() {
-            return localDate;
-        }
-
-        public LocalDateTime getLocalDateTime() {
-            return localDateTime;
-        }
-
-        public ZonedDateTime getZonedDateTime() {
-            return zonedDateTime;
-        }
-
-        public OffsetTime getOffsetTime() {
-            return offsetTime;
-        }
-
-        public OffsetDateTime getOffsetDateTime() {
-            return offsetDateTime;
-        }
-
-        public MonthDay getMonthDay() {
-            return monthDay;
-        }
-
-        public YearMonth getYearMonth() {
-            return yearMonth;
-        }
-
-        public Year getYear() {
-            return year;
-        }
-    }
-
-    public static final class TemporalTypes {
-
-        private final Duration duration;
-        private final Period period;
-        private final Instant instant;
-
-        TemporalTypes(
-                @JsonProperty("duration") final Duration duration,
-                @JsonProperty("period") final Period period,
-                @JsonProperty("instant") final Instant instant) {
-            this.duration = duration;
-            this.period = period;
-            this.instant = instant;
-        }
-
-        public Duration getDuration() {
-            return duration;
-        }
-
-        public Period getPeriod() {
-            return period;
-        }
-
-        public Instant getInstant() {
-            return instant;
-        }
-    }
-
-    public static final class WithAmbiguousFloat {
-
-        private final Object number;
-
-        WithAmbiguousFloat(@JsonProperty("number") final Object number) {
-            this.number = number;
         }
     }
 }
