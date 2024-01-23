@@ -12,4 +12,3 @@ properties:
     type: integer
 required:
 - age
-- name
