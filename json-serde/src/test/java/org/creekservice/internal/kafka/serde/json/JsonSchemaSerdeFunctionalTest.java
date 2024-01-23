@@ -254,7 +254,9 @@ class JsonSchemaSerdeFunctionalTest {
                 containsString(
                         "proposed consumer schema is not compatible with existing producer"
                                 + " schema"));
-        assertThat(e.getCause().getMessage(), containsString("REQUIRED_PROPERTY_ADDED_TO_UNOPEN_CONTENT_MODEL"));
+        assertThat(
+                e.getCause().getMessage(),
+                containsString("REQUIRED_PROPERTY_ADDED_TO_UNOPEN_CONTENT_MODEL"));
     }
 
     @Test
