@@ -19,7 +19,6 @@ package org.creekservice.internal.kafka.serde.json;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
@@ -33,18 +32,13 @@ import org.creekservice.api.observability.logging.structured.StructuredLoggerFac
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.internal.kafka.serde.json.logging.LoggingField;
-import org.creekservice.internal.kafka.serde.json.mapper.GenericMapper;
-import org.creekservice.internal.kafka.serde.json.mapper.GenericMapperFactory;
-import org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor;
 import org.creekservice.internal.kafka.serde.json.schema.resource.JsonSchemaResourceHandler;
-import org.creekservice.internal.kafka.serde.json.schema.serde.JsonSchemaSerde;
+import org.creekservice.internal.kafka.serde.json.schema.serde.JsonSchemaSerdeFactory;
 import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.store.SchemaStore;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator;
-import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 
 public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
@@ -92,9 +86,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
         return new JsonSerdeFactory(
                 schemaStores,
-                SchemaFriendValidator::new,
-                new GenericMapperFactory(options.subTypes()),
-                JsonSchemaSerde::new,
+                new JsonSchemaSerdeFactory(options.subTypes()),
                 StructuredLoggerFactory.internalLogger(JsonSchemaSerdeProvider.class));
     }
 
@@ -103,21 +95,14 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
         private final SrSchemaStores schemaStores;
         private final StructuredLogger logger;
-        private final ValidatorFactory validatorFactory;
-        private final GenericMapperFactory mapperFactory;
-        private final SerdeFactory jsonSchemaSerdeFactory;
+        private final JsonSchemaSerdeFactory serdeFactory;
 
         JsonSerdeFactory(
                 final SrSchemaStores schemaStores,
-                final ValidatorFactory validatorFactory,
-                final GenericMapperFactory mapperFactory,
-                final SerdeFactory jsonSchemaSerdeFactory,
+                final JsonSchemaSerdeFactory serdeFactory,
                 final StructuredLogger logger) {
             this.schemaStores = requireNonNull(schemaStores, "schemaStores");
-            this.validatorFactory = requireNonNull(validatorFactory, "validatorFactory");
-            this.mapperFactory = requireNonNull(mapperFactory, "mapperFactory");
-            this.jsonSchemaSerdeFactory =
-                    requireNonNull(jsonSchemaSerdeFactory, "jsonSchemaSerdeFactory");
+            this.serdeFactory = requireNonNull(serdeFactory, "jsonSchemaSerdeFactory");
             this.logger = requireNonNull(logger, "logger");
         }
 
@@ -133,11 +118,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
                                     .with(LoggingField.topicId, part.topic().id())
                                     .with(LoggingField.schemaId, schema.id()));
 
-            final SchemaValidator producerValidator = validatorFactory.create(schema.schema());
-            final SchemaValidator consumerValidator =
-                    validatorFactory.create(SchemaConvertor.toConsumerSchema(schema.schema()));
-            final GenericMapper<T> mapper = mapperFactory.create(part.type());
-            return jsonSchemaSerdeFactory.create(consumerValidator, producerValidator, mapper);
+            return serdeFactory.create(schema);
         }
 
         private static String schemaRegistryName(final PartDescriptor<?> part) {
@@ -162,18 +143,5 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
     @VisibleForTesting
     interface SchemaStoresFactory {
         SrSchemaStores create(SrSchemaStores.ClientFactory clientFactory);
-    }
-
-    @VisibleForTesting
-    interface ValidatorFactory {
-        SchemaValidator create(JsonSchema schema);
-    }
-
-    @VisibleForTesting
-    interface SerdeFactory {
-        <T> Serde<T> create(
-                SchemaValidator consumerValidator,
-                SchemaValidator producerValidator,
-                GenericMapper<T> mapper);
     }
 }

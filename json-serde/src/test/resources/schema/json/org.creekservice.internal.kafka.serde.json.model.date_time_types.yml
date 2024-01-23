@@ -1,0 +1,30 @@
+---
+# timestamp=1706024459479
+$schema: http://json-schema.org/draft-07/schema#
+title: Date Time Types
+type: object
+additionalProperties: false
+properties:
+  localDate:
+    type: string
+    format: date
+  localDateTime:
+    type: string
+    format: date-time
+  localTime:
+    type: string
+  monthDay:
+    type: string
+  offsetDateTime:
+    type: string
+    format: date-time
+  offsetTime:
+    type: string
+    format: time
+  year:
+    type: string
+  yearMonth:
+    type: string
+  zonedDateTime:
+    type: string
+    format: date-time

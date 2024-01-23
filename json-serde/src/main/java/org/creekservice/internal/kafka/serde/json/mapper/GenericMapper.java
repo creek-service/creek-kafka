@@ -27,7 +27,7 @@ public final class GenericMapper<T> implements JsonReader<T>, JsonWriter<T> {
     private final Class<T> type;
     private final JsonMapper mapper;
 
-    GenericMapper(final Class<T> type, final JsonMapper mapper) {
+    public GenericMapper(final Class<T> type, final JsonMapper mapper) {
         this.type = requireNonNull(type, "type");
         this.mapper = requireNonNull(mapper, "mapper");
     }

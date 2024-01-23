@@ -62,6 +62,10 @@ public final class RegisteredSchema<T> {
         return schema;
     }
 
+    public Class<T> type() {
+        return type;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(schema, schemaId, subject, type);

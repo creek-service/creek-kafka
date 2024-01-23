@@ -20,9 +20,8 @@ plugins {
 }
 
 repositories {
-    maven {
-        url = uri("https://jitpack.io")
-    }
+    // For net.jimblackler.jsonschemafriend:core:
+    maven { url = uri("https://jitpack.io")  }
 }
 
 val creekVersion : String by extra

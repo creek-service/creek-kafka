@@ -1,0 +1,13 @@
+---
+# timestamp=1706025980508
+$schema: http://json-schema.org/draft-07/schema#
+title: With Enum
+type: object
+additionalProperties: false
+properties:
+  enumType:
+    type: string
+    enum:
+    - one
+    - two
+    - three

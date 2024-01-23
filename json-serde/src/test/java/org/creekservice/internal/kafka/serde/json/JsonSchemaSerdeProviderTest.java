@@ -46,17 +46,14 @@ import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.creekservice.api.service.extension.CreekService;
 import org.creekservice.api.service.extension.component.model.ComponentModelContainer.HandlerTypeRef;
 import org.creekservice.api.test.observability.logging.structured.TestStructuredLogger;
-import org.creekservice.internal.kafka.serde.json.mapper.GenericMapper;
-import org.creekservice.internal.kafka.serde.json.mapper.GenericMapperFactory;
 import org.creekservice.internal.kafka.serde.json.model.TestValueV0;
-import org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor;
 import org.creekservice.internal.kafka.serde.json.schema.resource.JsonSchemaResourceHandler;
+import org.creekservice.internal.kafka.serde.json.schema.serde.JsonSchemaSerdeFactory;
 import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.store.SchemaStore;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores.ClientFactory;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 import org.creekservice.internal.kafka.serde.json.util.TopicDescriptors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -237,11 +234,7 @@ class JsonSchemaSerdeProviderTest {
         @Mock private SchemaStore schemaStore;
 
         @Mock private RegisteredSchema<TestValueV0> registeredSchema;
-        @Mock private JsonSchemaSerdeProvider.ValidatorFactory validatorFactory;
-        @Mock private GenericMapperFactory mapperFactory;
-        @Mock private JsonSchemaSerdeProvider.SerdeFactory jsonSchemaSerdeFactory;
-        @Mock private SchemaValidator validator;
-        @Mock private GenericMapper<Object> mapper;
+        @Mock private JsonSchemaSerdeFactory jsonSchemaSerdeFactory;
         @Mock private Serde<Object> serde;
         private final TestStructuredLogger logger = TestStructuredLogger.create();
         private JsonSchemaSerdeProvider.JsonSerdeFactory factory;
@@ -252,11 +245,7 @@ class JsonSchemaSerdeProviderTest {
         void setUp() {
             factory =
                     new JsonSchemaSerdeProvider.JsonSerdeFactory(
-                            schemaStores,
-                            validatorFactory,
-                            mapperFactory,
-                            jsonSchemaSerdeFactory,
-                            logger);
+                            schemaStores, jsonSchemaSerdeFactory, logger);
 
             producerSchema = new JsonSchema(PRODUCER_SCHEMA);
 
@@ -265,10 +254,7 @@ class JsonSchemaSerdeProviderTest {
             when(schemaStores.get(any())).thenReturn(schemaStore);
             when(schemaStore.loadFromClasspath(part)).thenReturn(registeredSchema);
             when(registeredSchema.schema()).thenReturn(producerSchema);
-
-            when(validatorFactory.create(any())).thenReturn(validator);
-            when(mapperFactory.create(any())).thenReturn(mapper);
-            when(jsonSchemaSerdeFactory.create(any(), any(), any())).thenReturn(serde);
+            when(jsonSchemaSerdeFactory.create(any())).thenReturn(serde);
         }
 
         @Test
@@ -330,18 +316,11 @@ class JsonSchemaSerdeProviderTest {
 
         @Test
         void shouldCreateSerde() {
-            // Given:
-            final SchemaValidator producerValidator = mock();
-            final SchemaValidator consumerValidator = mock();
-            when(validatorFactory.create(producerSchema)).thenReturn(producerValidator);
-            when(validatorFactory.create(SchemaConvertor.toConsumerSchema(producerSchema)))
-                    .thenReturn(consumerValidator);
-
             // When:
             final Serde<TestValueV0> result = factory.createSerde(part);
 
             // Then:
-            verify(jsonSchemaSerdeFactory).create(consumerValidator, producerValidator, mapper);
+            verify(jsonSchemaSerdeFactory).create(registeredSchema);
             assertThat(result, is(sameInstance(serde)));
         }
     }
