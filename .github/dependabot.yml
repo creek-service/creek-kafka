@@ -29,6 +29,11 @@ updates:
       - jit-pack
       - creek-github-packages
     open-pull-requests-limit: 50
+    ignore:
+      - dependency-name: "org.apache.kafka:kafka-*"
+        # Stop dependabot wanting to update Kafka to Confluent's over version.
+        # Stick with Apache Kafka versioning by default:
+        update-types: [ "version-update:semver-major" ]
     schedule:
       interval: monthly
   - package-ecosystem: gradle
