@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.metadata.topic;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -25,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URISyntaxException;
+import java.util.List;
+import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.junit.jupiter.api.Test;
 
 class KafkaTopicDescriptorTest {
@@ -41,6 +44,36 @@ class KafkaTopicDescriptorTest {
         assertThat(
                 descriptor("cluster-a", "topic-b").id().toString(),
                 is("kafka-topic://cluster-a/topic-b"));
+    }
+
+    @Test
+    void shouldDefaultPartResources() {
+        // Given:
+        final KafkaTopicDescriptor.PartDescriptor<?> part =
+                new KafkaTopicDescriptor.PartDescriptor<>() {
+                    @Override
+                    public Part name() {
+                        return null;
+                    }
+
+                    @Override
+                    public SerializationFormat format() {
+                        return null;
+                    }
+
+                    @Override
+                    public Class<Object> type() {
+                        return null;
+                    }
+
+                    @Override
+                    public KafkaTopicDescriptor<?, ?> topic() {
+                        return null;
+                    }
+                };
+
+        // Then:
+        assertThat(part.resources().collect(toList()), is(List.of()));
     }
 
     @Test
