@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.serde.json.schema;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -167,9 +168,9 @@ class ProducerSchemaTest {
         final ConsumerSchema consumerSchema = producerSchema.toConsumerSchema();
 
         // Then:
-        assertThat(consumerSchema.asJsonText(), is(OPEN_JSON));
+        assertThat(consumerSchema.asJsonText(), is(OPEN_JSON.replaceAll("\n", lineSeparator())));
 
-        assertThat(consumerSchema.toString(), is(OPEN_YAML));
+        assertThat(consumerSchema.toString(), is(OPEN_YAML.replaceAll("\n", lineSeparator())));
     }
 
     @Test
@@ -181,9 +182,9 @@ class ProducerSchemaTest {
         final ConsumerSchema consumerSchema = producerSchema.toConsumerSchema();
 
         // Then:
-        assertThat(consumerSchema.toString(), is(OPEN_YAML));
+        assertThat(consumerSchema.toString(), is(OPEN_YAML.replaceAll("\n", lineSeparator())));
 
-        assertThat(consumerSchema.asJsonText(), is(OPEN_JSON));
+        assertThat(consumerSchema.asJsonText(), is(OPEN_JSON.replaceAll("\n", lineSeparator())));
     }
 
     @Test

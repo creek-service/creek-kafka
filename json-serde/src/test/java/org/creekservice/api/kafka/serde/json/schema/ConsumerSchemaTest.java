@@ -16,6 +16,7 @@
 
 package org.creekservice.api.kafka.serde.json.schema;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -77,6 +78,6 @@ class ConsumerSchemaTest {
         final String result = schema.asJsonText();
 
         // Then:
-        assertThat(result, is(OPEN_JSON));
+        assertThat(result, is(OPEN_JSON.replaceAll("\n", lineSeparator())));
     }
 }
