@@ -170,7 +170,7 @@ class ProducerSchemaTest {
         // Then:
         assertThat(consumerSchema.asJsonText(), is(OPEN_JSON.replaceAll("\n", lineSeparator())));
 
-        assertThat(consumerSchema.toString(), is(OPEN_YAML.replaceAll("\n", lineSeparator())));
+        assertThat(consumerSchema.toString(), is(OPEN_YAML));
     }
 
     @Test
@@ -182,7 +182,7 @@ class ProducerSchemaTest {
         final ConsumerSchema consumerSchema = producerSchema.toConsumerSchema();
 
         // Then:
-        assertThat(consumerSchema.toString(), is(OPEN_YAML.replaceAll("\n", lineSeparator())));
+        assertThat(consumerSchema.toString(), is(OPEN_YAML));
 
         assertThat(consumerSchema.asJsonText(), is(OPEN_JSON.replaceAll("\n", lineSeparator())));
     }
@@ -196,7 +196,7 @@ class ProducerSchemaTest {
         final String result = schema.asJsonText();
 
         // Then:
-        assertThat(result, is(CLOSED_JSON));
+        assertThat(result, is(CLOSED_JSON.replaceAll("\n", lineSeparator())));
     }
 
     @Test
