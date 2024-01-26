@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 
 /**
  * Loads SchemaRegistry endpoint info from environment variables.
@@ -52,7 +52,7 @@ import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistr
  * Confluent website for more info on other supported authentication mechanisms and their required
  * configs.
  */
-public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaRegistryEndpoint.Loader {
+public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreEndpoints.Loader {
 
     private static final String SR_PREFIX = "SCHEMA_REGISTRY_";
     /**
@@ -79,10 +79,10 @@ public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaRegist
     }
 
     @Override
-    public SchemaRegistryEndpoint load(final String schemaRegistryInstance) {
+    public SchemaStoreEndpoints load(final String schemaRegistryInstance) {
         final List<URI> endpoints = endpoints(schemaRegistryInstance);
         final Map<String, ?> config = configs(schemaRegistryInstance);
-        return SchemaRegistryEndpoint.create(endpoints, config);
+        return SchemaStoreEndpoints.create(endpoints, config);
     }
 
     private List<URI> endpoints(final String schemaRegistryInstance) {

@@ -18,42 +18,38 @@ package org.creekservice.internal.kafka.serde.json.schema.store.client;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import io.confluent.kafka.schemaregistry.ParsedSchema;
-import io.confluent.kafka.schemaregistry.SchemaProvider;
-import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
-import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
-import org.creekservice.internal.kafka.serde.json.schema.store.endpoint.SystemEnvSchemaRegistryEndpointLoader;
 
 public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreClient {
 
-    private static final int MAX_CACHED_SCHEMAS = 1000;
-
+    private final String schemaRegistryName;
     private final SchemaRegistryClient client;
+    private final Function<ProducerSchema, JsonSchema> converter;
 
     public DefaultJsonSchemaRegistryClient(
-            final String schemaRegistryName, final Factory.FactoryParams params) {
-        this(
-                createClient(
-                        schemaRegistryName,
-                        params,
-                        SystemEnvSchemaRegistryEndpointLoader::new,
-                        CachedSchemaRegistryClient::new));
+            final String schemaRegistryName, final SchemaRegistryClient client) {
+        this(schemaRegistryName, client, s -> new JsonSchema(s.asJsonText()));
     }
 
     @VisibleForTesting
-    DefaultJsonSchemaRegistryClient(final SchemaRegistryClient client) {
+    DefaultJsonSchemaRegistryClient(
+            final String schemaRegistryName,
+            final SchemaRegistryClient client,
+            final Function<ProducerSchema, JsonSchema> converter) {
+        this.schemaRegistryName = requireNonBlank(schemaRegistryName, "schemaRegistryName");
         this.client = requireNonNull(client, "client");
+        this.converter = requireNonNull(converter, "converter");
     }
 
     @Override
@@ -62,27 +58,33 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
             client.updateCompatibility(subject, "NONE");
         } catch (final Exception e) {
             throw new SchemaRegistryClientException(
-                    "Failed to update subject's schema compatability checks to NONE", subject, e);
+                    "Failed to update subject's schema compatability checks to NONE",
+                    subject,
+                    schemaRegistryName,
+                    e);
         }
     }
 
     @Override
-    public int register(final String subject, final JsonSchema schema) {
+    public int register(final String subject, final ProducerSchema schema) {
         try {
-            return client.register(subject, schema);
+            return client.register(subject, converter.apply(schema));
         } catch (final Exception e) {
             throw new SchemaRegistryClientException(
-                    "Failed to register schema. schema: " + schema, subject, e);
+                    "Failed to register schema. schema: " + schema, subject, schemaRegistryName, e);
         }
     }
 
     @Override
-    public int registeredId(final String subject, final JsonSchema schema) {
+    public int registeredId(final String subject, final ProducerSchema schema) {
         try {
-            return client.getId(subject, schema);
+            return client.getId(subject, converter.apply(schema));
         } catch (final Exception e) {
             throw new SchemaRegistryClientException(
-                    "Failed to retrieve registered schema. schema: " + schema, subject, e);
+                    "Failed to retrieve registered schema. schema: " + schema,
+                    subject,
+                    schemaRegistryName,
+                    e);
         }
     }
 
@@ -103,7 +105,7 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
                     .collect(toList());
         } catch (final Exception e) {
             throw new SchemaRegistryClientException(
-                    "Failed to retrieve all schema versions", subject, e);
+                    "Failed to retrieve all schema versions", subject, schemaRegistryName, e);
         }
     }
 
@@ -113,37 +115,23 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
 
         if (!(parsed instanceof JsonSchema)) {
             throw new SchemaRegistryClientException(
-                    "Existing schema is not JSON. version: " + version, subject);
+                    "Existing schema is not JSON. version: "
+                            + version
+                            + ", type: "
+                            + parsed.schemaType(),
+                    subject,
+                    schemaRegistryName);
         }
 
-        return new VersionedJsonSchema(version, (JsonSchema) parsed);
-    }
-
-    @VisibleForTesting
-    static SchemaRegistryClient createClient(
-            final String schemaRegistryName,
-            final Factory.FactoryParams params,
-            final Supplier<SchemaRegistryEndpoint.Loader> defaultEndpointLoader,
-            final ClientFactory clientFactory) {
-        final SchemaRegistryEndpoint endpoint =
-                params.typeOverride(SchemaRegistryEndpoint.Loader.class)
-                        .orElseGet(defaultEndpointLoader)
-                        .load(schemaRegistryName);
-
-        return clientFactory.create(
-                endpoint.endpoints().stream().map(URI::toString).collect(toList()),
-                MAX_CACHED_SCHEMAS,
-                List.of(new JsonSchemaProvider()),
-                endpoint.configs(),
-                Map.of());
+        return new VersionedJsonSchema(version, ProducerSchema.fromJson(parsed.canonicalString()));
     }
 
     private static final class VersionedJsonSchema implements VersionedSchema {
 
         private final int version;
-        private final JsonSchema schema;
+        private final ProducerSchema schema;
 
-        private VersionedJsonSchema(final int version, final JsonSchema schema) {
+        private VersionedJsonSchema(final int version, final ProducerSchema schema) {
             this.version = version;
             this.schema = requireNonNull(schema, "schema");
         }
@@ -154,30 +142,26 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
         }
 
         @Override
-        public JsonSchema schema() {
+        public ProducerSchema schema() {
             return schema;
         }
     }
 
     private static final class SchemaRegistryClientException extends SchemaException {
 
-        SchemaRegistryClientException(final String msg, final String subject) {
-            super(msg + ", subject: " + subject);
+        SchemaRegistryClientException(
+                final String msg, final String subject, final String schemaRegistryName) {
+            super(msg + ", subject: " + subject + ", schemaRegistryName: " + schemaRegistryName);
         }
 
         SchemaRegistryClientException(
-                final String msg, final String subject, final Throwable cause) {
-            super(msg + ", subject: " + subject, cause);
+                final String msg,
+                final String subject,
+                final String schemaRegistryName,
+                final Throwable cause) {
+            super(
+                    msg + ", subject: " + subject + ", schemaRegistryName: " + schemaRegistryName,
+                    cause);
         }
-    }
-
-    @VisibleForTesting
-    interface ClientFactory {
-        SchemaRegistryClient create(
-                List<String> baseUrls,
-                int cacheCapacity,
-                List<SchemaProvider> providers,
-                Map<String, ?> originals,
-                Map<String, String> httpHeaders);
     }
 }

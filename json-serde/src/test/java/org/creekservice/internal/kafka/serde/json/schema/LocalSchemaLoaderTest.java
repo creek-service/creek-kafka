@@ -17,16 +17,15 @@
 package org.creekservice.internal.kafka.serde.json.schema;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.dataformat.yaml.JacksonYAMLParseException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 
@@ -35,19 +34,20 @@ class LocalSchemaLoaderTest {
     @Test
     public void shouldLoadTypeSchemaFromClasspath() {
         // When:
-        final JsonSchema schema = LocalSchemaLoader.loadFromClasspath(TestModel.class);
+        final ProducerSchema schema = LocalSchemaLoader.loadFromClasspath(TestModel.class);
 
         // Then:
-        assertThat(schema.getString("$id"), is("test_model.yml"));
+        assertThat(schema.toString(), containsString("$id: test_model.yml"));
     }
 
     @Test
     public void shouldLoadPathSchemaFromClasspath() {
         // When:
-        final JsonSchema schema = LocalSchemaLoader.loadFromClasspath(Paths.get("test-schema.yml"));
+        final ProducerSchema schema =
+                LocalSchemaLoader.loadFromClasspath(Paths.get("test-schema.yml"));
 
         // Then:
-        assertThat(schema.getString("$id"), is("test-schema.yml"));
+        assertThat(schema.toString(), containsString("$id: test-schema.yml"));
     }
 
     @SuppressFBWarnings("PATH_TRAVERSAL_IN")
@@ -68,61 +68,6 @@ class LocalSchemaLoaderTest {
     }
 
     @Test
-    public void shouldThrowIfSchemaNotValidYaml() throws Exception {
-        // When:
-        final Exception e =
-                assertThrows(
-                        LocalSchemaLoader.InvalidSchemaException.class,
-                        () ->
-                                LocalSchemaLoader.loadFromClasspath(
-                                        Paths.get("invalid-yaml-schema.yml")));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "Failed to convert schema to JSON: "
-                                + Paths.get(
-                                                "build",
-                                                "resources",
-                                                "test",
-                                                "schema",
-                                                "json",
-                                                "invalid-yaml-schema.yml")
-                                        .toAbsolutePath()
-                                        .toUri()
-                                        .toURL()
-                                + "."));
-        assertThat(e.getCause(), is(instanceOf(JacksonYAMLParseException.class)));
-    }
-
-    @Test
-    public void shouldThrowIfSchemaInvalid() throws Exception {
-        // When:
-        final Exception e =
-                assertThrows(
-                        LocalSchemaLoader.InvalidSchemaException.class,
-                        () -> LocalSchemaLoader.loadFromClasspath(Paths.get("invalid-schema.yml")));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "Schema was invalid: "
-                                + Paths.get(
-                                                "build",
-                                                "resources",
-                                                "test",
-                                                "schema",
-                                                "json",
-                                                "invalid-schema.yml")
-                                        .toAbsolutePath()
-                                        .toUri()
-                                        .toURL()
-                                + "."));
-    }
-
-    @Test
     public void shouldLoadSchemaFromWithJar() throws Exception {
         // Given:
         final Path jarPath =
@@ -131,11 +76,11 @@ class LocalSchemaLoaderTest {
         final String schemaPath = "/schema/test-schema.yml";
 
         // When:
-        final JsonSchema schema =
+        final ProducerSchema schema =
                 LocalSchemaLoader.load(new URL("jar:file:" + jarPath + "!" + schemaPath));
 
         // Then:
-        assertThat(schema.getString("$id"), is("test-schema.yml"));
+        assertThat(schema.toString(), containsString("$id: test-schema.yml"));
     }
 
     private static final class TestModel {}

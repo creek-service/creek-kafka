@@ -16,13 +16,9 @@
 
 package org.creekservice.api.kafka.streams.test;
 
-import java.util.List;
-import java.util.Map;
 import org.apache.kafka.streams.StreamsConfig;
-import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.test.util.Temp;
-import org.creekservice.internal.kafka.extension.client.TopicClient;
 
 /**
  * Kafka streams extension options builder for test code.
@@ -52,11 +48,10 @@ public final class TestKafkaStreamsExtensionOptions {
      * @return options builder with base set of test config, allowing for additional customisation.
      */
     public static KafkaStreamsExtensionOptions.Builder builder() {
-        return KafkaStreamsExtensionOptions.builder()
+        return KafkaStreamsExtensionOptions.testBuilder()
                 .withKafkaProperty(
                         StreamsConfig.STATE_DIR_CONFIG,
-                        Temp.tempDir("ks-state").toAbsolutePath().toString())
-                .withTypeOverride(TopicClient.Factory.class, MockTopicClient::new);
+                        Temp.tempDir("ks-state").toAbsolutePath().toString());
     }
 
     /**
@@ -64,15 +59,5 @@ public final class TestKafkaStreamsExtensionOptions {
      */
     public static KafkaStreamsExtensionOptions defaults() {
         return builder().build();
-    }
-
-    private static final class MockTopicClient implements TopicClient {
-
-        private MockTopicClient(final String clusterName, final Map<String, ?> kafkaProperties) {}
-
-        @Override
-        public void ensureTopicsExist(final List<? extends CreatableKafkaTopic<?, ?>> topics) {
-            // No-op.
-        }
     }
 }

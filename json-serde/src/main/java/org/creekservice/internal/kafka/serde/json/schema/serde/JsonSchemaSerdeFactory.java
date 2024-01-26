@@ -23,7 +23,6 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.creekservice.internal.kafka.serde.json.mapper.BaseJsonMapper;
 import org.creekservice.internal.kafka.serde.json.mapper.GenericMapper;
-import org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor;
 import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
@@ -46,7 +45,7 @@ public final class JsonSchemaSerdeFactory {
     public <T> Serde<T> create(final RegisteredSchema<T> schema) {
         final SchemaValidator producerValidator = new SchemaFriendValidator(schema.schema());
         final SchemaValidator consumerValidator =
-                new SchemaFriendValidator(SchemaConvertor.toConsumerSchema(schema.schema()));
+                new SchemaFriendValidator(schema.schema().toConsumerSchema());
         final GenericMapper<T> mapper = new GenericMapper<>(schema.type(), jsonMapper);
         return Serdes.serdeFrom(
                 new JsonSchemaSerializer<>(producerValidator, mapper),

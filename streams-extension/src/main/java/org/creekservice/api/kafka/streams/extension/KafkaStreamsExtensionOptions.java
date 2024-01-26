@@ -25,6 +25,8 @@ import java.util.Optional;
 import org.apache.kafka.streams.StreamsConfig;
 import org.creekservice.api.kafka.extension.ClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
+import org.creekservice.api.kafka.extension.client.MockTopicClient;
+import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
@@ -71,6 +73,26 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Options builder for use in testing.
+     *
+     * <p>This options builder can be used in testing, without the need for a Kafka cluster, e.g.
+     * unit testing:
+     *
+     * <pre>
+     * CreekServices.builder(new MyServiceDescriptor())
+     *    .with(KafkaStreamsExtensionOptions.testBuilder().build()));
+     *    .build();
+     * </pre>
+     *
+     * @return an options builder pre-configured to allow disconnected unit testing.
+     */
+    public static Builder testBuilder() {
+        return builder()
+                .withTypeOverride(
+                        TopicClient.Factory.class, (cluster, props) -> new MockTopicClient() {});
     }
 
     private KafkaStreamsExtensionOptions(

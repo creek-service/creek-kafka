@@ -134,6 +134,63 @@ See [`SystemEnvPropertyOverrides`][envPropOverrides] for more info, including mu
 
 This behaviour is customizable. See [`KafkaClientsExtensionOptions.Builder.withKafkaPropertiesOverrides`][clientPropOverrides] for more info.
 
+#### Unit testing
+
+**ProTip:** Creek recommends focusing on [system-tests][systemTest] for testing the combined business functionality
+of a service, or services. Of course, unit testing still has its place.
+{: .notice--info}
+
+Creek-kafka can be configured to not require an actual Kafka cluster during unit testing.
+This is most commonly achieved by configuring creek with the options built from `KafkaClientsExtensionOptions.testBuilder()`:
+
+```java
+class ClientTest {
+
+  private static KafkaClientsExtension ext;
+
+  @BeforeAll
+  public static void classSetup() {
+    CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
+            // Configure Creek to work without an actual cluster:
+            .with(KafkaClientsExtensionOptions.testBuilder().build())
+            .build();
+
+    ext = ctx.extension(KafkaClientsExtension.class);
+  }
+  
+  // Tests are free to get serde from ext...
+}
+```
+[todo]: http://Convert to snippet once released.
+...alternatively, a custom client can be installed. The `CustomTopicClient` type used below can implement
+`MockTopicClient` or `TopicClient`:
+
+```java
+class ClientTest {
+
+  private static KafkaClientsExtension ext;
+
+  @BeforeAll
+  public static void classSetup() {
+    CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
+            // Configure Creek to work without an actual cluster:
+            .with(KafkaClientsExtensionOptions.builder()
+                    .withTypeOverride(TopicClient.Factory.class, CustomTopicClient::new)
+                    .build())
+            .build();
+
+    ext = ctx.extension(KafkaClientsExtension.class);
+  }
+  
+  // Tests are free to get serde from ext...
+}
+```
+[todo]: http://Convert to snippet once released.
+
+**ProTip:** The serde being used may also need configuring in unit tests to work without external services, e.g. a Schema Registry.
+Consult the documentation for the serde in use.
+{: .notice--info}
+
 ### Kafka Streams extension
 
 Provides an extension to Creek to allow it to work with Kafka Streams and Kafka resources.
@@ -455,6 +512,33 @@ See [this article series](https://www.creekservice.org/articles/2024/01/08/json-
 and how Creek implements schema compatibility checks for JSON.
 {: .notice--warning}
 
+#### Dependencies
+
+The `creek-kafka-json-serde.jar` module has dependencies not stored in maven central.
+To use the module add Confluent's and JitPack's repositories to your build scripts.
+
+For example, in Gradle `build.gradle.kts`:
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://jitpack.io")
+        // Optionally limit the scope artefacts:
+        mavenContent {
+            includeGroup("net.jimblackler.jsonschemafriend")
+        }
+    }
+
+    maven {
+        url = uri("https://packages.confluent.io/maven/")
+        // Optionally limit the scope artefacts:
+        mavenContent {
+            includeGroup("io.confluent")
+        }
+    }
+}
+```
+
 #### Options
 
 The format supports customisation via the `JsonSerdeExtensionOptions` type.
@@ -480,11 +564,75 @@ public final class ServiceMain {
 
         new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
     }
+    
+    private ServiceMain(KafkaClientsExtension ext) {
+      //...
+    }
+    
+    private void run() {
+      //...
+    }
 }
 ```
 
 Manually registering subtypes is only necessary when this information is not available to Jackson already,
 i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubTypes`.
+
+#### Writing tests
+
+If you are writing unit or functional tests that require JSON serde, 
+you can configure the serde provider to use a mock Schema Registry client.
+
+This is most commonly achieved using the `testBuilder` method on the options class:
+
+```java
+class UnitTest {
+    
+  private static CreekContext ctx;
+ 
+  @BeforeAll
+  public static void classSetup() {
+    ctx = CreekServices.builder(new TestServiceDescriptor())
+            // Configure JSON Serde for testing:
+            .with(JsonSerdeExtensionOptions.testBuilder().build())
+            // Configure Kafka clients for testing:
+            .with(KafkaClientsExtensionOptions.testBuilder().build())
+            .build();
+   }
+
+   // Tests are free to get serde from ext...
+}
+```
+[todo]: http://Convert to snippet once released.
+
+...alternatively, a custom schema client can be installed. The `CustomSchemaClient` type used below can implement
+`MockJsonSchemaStoreClient` or `JsonSchemaStoreClient`:
+
+```java
+class TopologyTest {
+    
+  private static CreekContext ctx;
+ 
+  @BeforeAll
+  public static void classSetup() {
+    ctx = CreekServices.builder(new TestServiceDescriptor())
+            .with(TestKafkaStreamsExtensionOptions.defaults())
+            .with(JsonSerdeExtensionOptions.builder()
+                    // Install custom client:
+                    .withTypeOverride(
+                            JsonSchemaStoreClient.Factory.class,
+                            (schemaRegistryName, endpoints) ->
+                                    new CustomSchemaClient(
+                                            schemaRegistryName,
+                                            new MockSchemaRegistryClient(
+                                                    List.of(new JsonSchemaProvider()))))
+                    // Install custom endpoint loader:
+                    .withTypeOverride(SchemaStoreEndpoints.Loader.class, new MockEndpointsLoader() {}))
+            .build();
+   }
+}
+```
+[todo]: http://Convert to snippet once released.
 
 ### Custom formats
 

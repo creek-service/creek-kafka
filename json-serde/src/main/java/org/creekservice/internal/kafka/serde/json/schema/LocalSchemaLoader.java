@@ -16,34 +16,27 @@
 
 package org.creekservice.internal.kafka.serde.json.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.schema.GeneratedSchemas;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 
 public final class LocalSchemaLoader {
 
     private static final String SCHEMA_DIRECTORY = "/schema/json/";
 
-    private static final ObjectMapper yamlMapper =
-            new ObjectMapper(new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES));
-    private static final ObjectMapper jsonWriter = new ObjectMapper();
-
     private LocalSchemaLoader() {}
 
-    public static JsonSchema loadFromClasspath(final Class<?> type) {
+    public static ProducerSchema loadFromClasspath(final Class<?> type) {
         final Path schemaFile =
                 GeneratedSchemas.schemaFileName(type, GeneratedSchemas.yamlExtension());
         return loadFromClasspath(schemaFile);
     }
 
-    public static JsonSchema loadFromClasspath(final Path schemaFile) {
+    public static ProducerSchema loadFromClasspath(final Path schemaFile) {
         final URL resource = findResource(schemaFile);
         return load(resource);
     }
@@ -60,17 +53,9 @@ public final class LocalSchemaLoader {
     }
 
     @VisibleForTesting
-    static JsonSchema load(final URL resource) {
+    static ProducerSchema load(final URL resource) {
         final String yaml = loadYaml(resource);
-        final String json = yamlToJson(yaml, resource);
-
-        try {
-            final JsonSchema schema = new JsonSchema(json);
-            schema.validate();
-            return schema;
-        } catch (final Exception e) {
-            throw new InvalidSchemaException("Schema was invalid: " + resource + ".", e);
-        }
+        return ProducerSchema.fromYaml(yaml);
     }
 
     private static String loadYaml(final URL resource) {
@@ -82,17 +67,8 @@ public final class LocalSchemaLoader {
         }
     }
 
-    private static String yamlToJson(final String yaml, final URL resource) {
-        try {
-            final Object obj = yamlMapper.readValue(yaml, Object.class);
-            return jsonWriter.writeValueAsString(obj);
-        } catch (final Exception e) {
-            throw new InvalidSchemaException(
-                    "Failed to convert schema to JSON: " + resource + ".", e);
-        }
-    }
-
-    public static final class SchemaResourceNotFoundException extends SchemaException {
+    @VisibleForTesting
+    static final class SchemaResourceNotFoundException extends SchemaException {
 
         SchemaResourceNotFoundException(final String message, final Throwable cause) {
             super(message, cause);
@@ -100,12 +76,6 @@ public final class LocalSchemaLoader {
 
         SchemaResourceNotFoundException(final String message) {
             super(message);
-        }
-    }
-
-    public static final class InvalidSchemaException extends SchemaException {
-        InvalidSchemaException(final String message, final Exception e) {
-            super(message, e);
         }
     }
 }

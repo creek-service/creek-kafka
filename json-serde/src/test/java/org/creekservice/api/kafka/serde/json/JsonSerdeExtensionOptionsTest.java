@@ -17,12 +17,17 @@
 package org.creekservice.api.kafka.serde.json;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.util.Map;
 import java.util.Optional;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.MockEndpointsLoader;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,5 +98,30 @@ class JsonSerdeExtensionOptionsTest {
 
         // Then:
         assertThat(builder.build().subTypes(), is(Map.of(String.class, "", Integer.class, "")));
+    }
+
+    @Test
+    void shouldSetMockStoreClient() {
+        // When:
+        final JsonSerdeExtensionOptions options = JsonSerdeExtensionOptions.testBuilder().build();
+
+        // Then: the following doesn't throw due to no actual Schema Registry instance:
+        final Optional<JsonSchemaStoreClient.Factory> factory =
+                options.typeOverride(JsonSchemaStoreClient.Factory.class);
+        assertThat(factory, is(not(Optional.empty())));
+        final JsonSchemaStoreClient client = factory.orElseThrow().create("bob", null);
+        client.disableCompatability("test");
+    }
+
+    @Test
+    void shouldSetMockEndpointsLoader() {
+        // When:
+        final JsonSerdeExtensionOptions options = JsonSerdeExtensionOptions.testBuilder().build();
+
+        // Then:
+        final Optional<SchemaStoreEndpoints.Loader> loader =
+                options.typeOverride(SchemaStoreEndpoints.Loader.class);
+        assertThat(loader, is(not(Optional.empty())));
+        assertThat(loader.orElseThrow(), is(instanceOf(MockEndpointsLoader.class)));
     }
 }

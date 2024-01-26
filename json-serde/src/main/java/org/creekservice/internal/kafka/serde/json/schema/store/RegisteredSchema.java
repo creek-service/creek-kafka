@@ -18,18 +18,18 @@ package org.creekservice.internal.kafka.serde.json.schema.store;
 
 import static java.util.Objects.requireNonNull;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.Objects;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 
 public final class RegisteredSchema<T> {
 
-    private final JsonSchema schema;
+    private final ProducerSchema schema;
     private final int schemaId;
     private final String subject;
     private final Class<T> type;
 
     public RegisteredSchema(
-            final JsonSchema schema,
+            final ProducerSchema schema,
             final int schemaId,
             final String subject,
             final Class<T> type) {
@@ -58,7 +58,7 @@ public final class RegisteredSchema<T> {
         return schemaId;
     }
 
-    public JsonSchema schema() {
+    public ProducerSchema schema() {
         return schema;
     }
 

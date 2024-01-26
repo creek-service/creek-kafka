@@ -16,5 +16,8 @@
 --add-opens
   creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.model=com.fasterxml.jackson.databind
 
-  --add-opens
-    creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.mapper=com.fasterxml.jackson.databind
+--add-opens
+  creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.mapper=com.fasterxml.jackson.databind
+
+--add-opens
+ creek.kafka.serde.json.schema/org.creekservice.internal.kafka.serde.json.schema=guava.testlib

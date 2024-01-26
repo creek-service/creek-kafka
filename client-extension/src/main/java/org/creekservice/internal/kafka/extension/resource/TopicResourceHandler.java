@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
@@ -34,7 +35,6 @@ import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.service.extension.component.model.ResourceHandler;
-import org.creekservice.internal.kafka.extension.client.TopicClient;
 
 /** Resource handle for topics. */
 public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescriptor<?, ?>> {

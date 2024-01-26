@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -42,6 +41,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 import org.creekservice.internal.kafka.serde.json.model.DateTimeTypes;
 import org.creekservice.internal.kafka.serde.json.model.TemporalTypes;
 import org.creekservice.internal.kafka.serde.json.model.TypeWithExplicitPolymorphism;
@@ -296,7 +296,7 @@ class JsonSchemaSerdeFactoryTest {
     }
 
     private static <T> RegisteredSchema<T> registeredSchema(final Class<T> type) {
-        final JsonSchema jsonSchema = LocalSchemaLoader.loadFromClasspath(type);
+        final ProducerSchema jsonSchema = LocalSchemaLoader.loadFromClasspath(type);
         return new RegisteredSchema<>(jsonSchema, 1, "s", type);
     }
 

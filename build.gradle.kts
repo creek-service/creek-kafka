@@ -51,6 +51,13 @@ subprojects {
 
     repositories {
         maven {
+            url = uri("https://jitpack.io")
+            mavenContent {
+                includeGroup("net.jimblackler.jsonschemafriend")
+            }
+        }
+
+        maven {
             url = uri("https://packages.confluent.io/maven/")
             mavenContent {
                 includeGroup("io.confluent")
@@ -68,7 +75,6 @@ subprojects {
         set("junitVersion", "5.10.1")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.2.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
         set("mockitoVersion", "5.9.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-        set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.6.1")            // https://mvnrepository.com/artifact/org.apache.kafka
         set("confluentVersion", "7.5.2")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
@@ -99,7 +105,6 @@ subprojects {
     val junitVersion: String by extra
     val junitPioneerVersion: String by extra
     val mockitoVersion: String by extra
-    val hamcrestVersion : String by extra
 
     dependencies {
         implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
@@ -111,10 +116,8 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
         testImplementation("org.mockito:mockito-junit-jupiter:$mockitoVersion")
-        testImplementation("org.hamcrest:hamcrest-core:$hamcrestVersion")
         testImplementation("com.google.guava:guava-testlib:$guavaVersion")
-        testImplementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-        testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+        testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }
 }

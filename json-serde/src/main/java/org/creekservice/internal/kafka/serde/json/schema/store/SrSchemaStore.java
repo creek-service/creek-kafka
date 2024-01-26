@@ -18,14 +18,14 @@ package org.creekservice.internal.kafka.serde.json.schema.store;
 
 import static java.util.Objects.requireNonNull;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.HashMap;
 import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.schema.LocalSchemaLoader;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.schema.store.compatability.CompatabilityChecker;
 
 final class SrSchemaStore implements SchemaStore {
@@ -33,7 +33,7 @@ final class SrSchemaStore implements SchemaStore {
     private final SchemaLoader loader;
     private final JsonSchemaStoreClient client;
     private final CompatabilityChecker compatabilityChecker;
-    private final Map<Class<?>, JsonSchema> fromClasspath = new HashMap<>();
+    private final Map<Class<?>, ProducerSchema> fromClasspath = new HashMap<>();
 
     SrSchemaStore(final JsonSchemaStoreClient client) {
         this(client, LocalSchemaLoader::loadFromClasspath, new CompatabilityChecker(client));
@@ -51,7 +51,7 @@ final class SrSchemaStore implements SchemaStore {
 
     @Override
     public <T> RegisteredSchema<T> registerFromClasspath(final PartDescriptor<T> part) {
-        final JsonSchema schema = schemaFromClasspath(part);
+        final ProducerSchema schema = schemaFromClasspath(part);
         final String subject = subjectName(part);
 
         try {
@@ -71,7 +71,7 @@ final class SrSchemaStore implements SchemaStore {
 
     @Override
     public <T> RegisteredSchema<T> loadFromClasspath(final PartDescriptor<T> part) {
-        final JsonSchema schema = schemaFromClasspath(part);
+        final ProducerSchema schema = schemaFromClasspath(part);
         final String subject = subjectName(part);
 
         // Note: no compatability check is required here, as the part must be using a schema that is
@@ -85,7 +85,7 @@ final class SrSchemaStore implements SchemaStore {
         }
     }
 
-    private <T> JsonSchema schemaFromClasspath(final PartDescriptor<T> part) {
+    private <T> ProducerSchema schemaFromClasspath(final PartDescriptor<T> part) {
         return fromClasspath.computeIfAbsent(part.type(), loader::loadFromClasspath);
     }
 
@@ -95,7 +95,7 @@ final class SrSchemaStore implements SchemaStore {
 
     @VisibleForTesting
     interface SchemaLoader {
-        JsonSchema loadFromClasspath(Class<?> type);
+        ProducerSchema loadFromClasspath(Class<?> type);
     }
 
     private static final class SchemaStoreException extends SchemaException {

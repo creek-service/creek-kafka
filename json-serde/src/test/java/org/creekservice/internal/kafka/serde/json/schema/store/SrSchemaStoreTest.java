@@ -25,9 +25,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.schema.store.compatability.CompatabilityChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ class SrSchemaStoreTest {
     private PartDescriptor<?> part;
 
     @Mock private JsonSchemaStoreClient client;
-    @Mock private JsonSchema schema;
+    @Mock private ProducerSchema schema;
     @Mock private CompatabilityChecker compatabilityChecker;
     private SrSchemaStore store;
 

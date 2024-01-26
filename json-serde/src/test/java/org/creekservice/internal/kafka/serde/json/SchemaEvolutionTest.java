@@ -30,7 +30,7 @@ import org.creekservice.api.kafka.metadata.schema.SchemaDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicInput;
 import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderFunctionalFixture;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderFunctionalFixture.Tester;
 import org.creekservice.internal.kafka.serde.json.model.TestKeyAddingMandatory;
@@ -83,7 +83,7 @@ public class SchemaEvolutionTest {
                         .withExtensionOption(
                                 JsonSerdeExtensionOptions.builder()
                                         .withTypeOverride(
-                                                SchemaRegistryEndpoint.Loader.class,
+                                                SchemaStoreEndpoints.Loader.class,
                                                 clusterName -> SCHEMA_REGISTRY.clientEndpoint())
                                         .build())
                         .start();

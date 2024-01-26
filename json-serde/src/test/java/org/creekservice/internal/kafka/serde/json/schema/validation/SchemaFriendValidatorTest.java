@@ -26,13 +26,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.Map;
 import net.jimblackler.jsonschemafriend.Schema;
 import net.jimblackler.jsonschemafriend.StandardValidationException;
 import net.jimblackler.jsonschemafriend.ValidationException;
 import net.jimblackler.jsonschemafriend.Validator;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor.Part;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.YamlSchema;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SchemaFriendValidatorTest {
 
-    private static final JsonSchema SCHEMA = new JsonSchema("true");
+    private static final YamlSchema SCHEMA = ProducerSchema.fromJson("true");
     @Mock private Validator underlying;
     private SchemaFriendValidator validator;
 
