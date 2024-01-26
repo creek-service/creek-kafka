@@ -36,6 +36,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.logging.LoggingField;
 import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;

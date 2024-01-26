@@ -234,9 +234,6 @@ public final class KafkaSerdeProviderFunctionalFixture {
         }
 
         public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> descriptor) {
-            if (extension == null) {
-                throw new IllegalStateException("Not started");
-            }
             return extension.topic(descriptor);
         }
 

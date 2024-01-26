@@ -17,13 +17,13 @@
 package org.creekservice.internal.kafka.serde.json.schema.store.compatability;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.internal.kafka.serde.json.schema.SchemaConvertor.toConsumerSchema;
 
-import io.confluent.kafka.schemaregistry.ParsedSchema;
 import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.List;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient.VersionedSchema;
+import org.creekservice.api.kafka.serde.json.schema.ConsumerSchema;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient.VersionedSchema;
 
 /**
  * Client-side check for compatability between a new proposed schema and existing schemas.
@@ -54,56 +54,62 @@ public final class CompatabilityChecker {
         this.client = requireNonNull(client, "client");
     }
 
-    public void checkCompatability(final String subject, final JsonSchema newProducerSchema) {
-        final JsonSchema newConsumerSchema = toConsumerSchema(newProducerSchema);
+    public void checkCompatability(final String subject, final ProducerSchema newProducerSchema) {
+        final ConsumerSchema newConsumerSchema = newProducerSchema.toConsumerSchema();
 
-        // Check backwards compatability between
-        checkCompatability(subject, newProducerSchema, newConsumerSchema, false);
-
-        // Check forwards compatability between old consumers and data produced with new schema:
-        checkCompatability(subject, newProducerSchema, newConsumerSchema, true);
+        final List<VersionedSchema> versions = client.allVersions(subject);
+        checkBackwardsCompatability(subject, newConsumerSchema, versions);
+        checkForwardsCompatability(subject, newProducerSchema, versions);
     }
 
-    private void checkCompatability(
+    private void checkForwardsCompatability(
             final String subject,
-            final JsonSchema producerSchema,
-            final JsonSchema consumerSchema,
-            final boolean forwards) {
-        for (final VersionedSchema versioned : client.allVersions(subject)) {
+            final ProducerSchema producerSchema,
+            final List<VersionedSchema> versions) {
 
-            final JsonSchema existingProducer = versioned.schema();
+        final JsonSchema newProducer = new JsonSchema(producerSchema.asJsonText());
 
-            if (forwards) {
-                // Forward: all documents that conform to the new schema are also valid according to
-                // the old
-                final ParsedSchema existingConsumer = toConsumerSchema(existingProducer);
-                final List<String> compatibleIssues =
-                        existingConsumer.isBackwardCompatible(producerSchema);
-                if (!compatibleIssues.isEmpty()) {
-                    throw new IncompatibleSchemaException(
-                            "existing consumer schema is not compatible with proposed producer"
-                                    + " schema",
-                            subject,
-                            existingConsumer,
-                            producerSchema,
-                            versioned.version(),
-                            compatibleIssues);
-                }
-            } else {
-                // Backwards: all documents that conform to the old schema are also valid according
-                // to the new
-                final List<String> compatibleIssues =
-                        consumerSchema.isBackwardCompatible(existingProducer);
-                if (!compatibleIssues.isEmpty()) {
-                    throw new IncompatibleSchemaException(
-                            "proposed consumer schema is not compatible with existing producer"
-                                    + " schema",
-                            subject,
-                            consumerSchema,
-                            existingProducer,
-                            versioned.version(),
-                            compatibleIssues);
-                }
+        for (final VersionedSchema versioned : versions) {
+            // Forward:
+            // all documents that conform to the new schema are also valid according to the old
+            final ConsumerSchema existingConsumer = versioned.schema().toConsumerSchema();
+            final List<String> compatibleIssues =
+                    new JsonSchema(existingConsumer.asJsonText()).isBackwardCompatible(newProducer);
+            if (!compatibleIssues.isEmpty()) {
+                throw new IncompatibleSchemaException(
+                        "existing consumer schema "
+                                + "is not compatible with proposed producer schema",
+                        subject,
+                        existingConsumer,
+                        producerSchema,
+                        versioned.version(),
+                        compatibleIssues);
+            }
+        }
+    }
+
+    private void checkBackwardsCompatability(
+            final String subject,
+            final ConsumerSchema consumerSchema,
+            final List<VersionedSchema> versions) {
+
+        final JsonSchema newConsumer = new JsonSchema(consumerSchema.asJsonText());
+
+        for (final VersionedSchema versioned : versions) {
+            // Backwards:
+            // all documents that conform to the old schema are also valid according to the new
+            final ProducerSchema existingProducer = versioned.schema();
+            final List<String> compatibleIssues =
+                    newConsumer.isBackwardCompatible(new JsonSchema(existingProducer.asJsonText()));
+            if (!compatibleIssues.isEmpty()) {
+                throw new IncompatibleSchemaException(
+                        "proposed consumer schema "
+                                + "is not compatible with existing producer schema",
+                        subject,
+                        consumerSchema,
+                        existingProducer,
+                        versioned.version(),
+                        compatibleIssues);
             }
         }
     }
@@ -112,8 +118,8 @@ public final class CompatabilityChecker {
         IncompatibleSchemaException(
                 final String msg,
                 final String subject,
-                final ParsedSchema consumerSchema,
-                final ParsedSchema producerSchema,
+                final ConsumerSchema consumerSchema,
+                final ProducerSchema producerSchema,
                 final int version,
                 final List<String> compatibleIssues) {
             super(
@@ -125,9 +131,9 @@ public final class CompatabilityChecker {
                             + ", issues: "
                             + compatibleIssues
                             + ", consumerSchema: "
-                            + consumerSchema.canonicalString()
+                            + consumerSchema
                             + ", producingSchema: "
-                            + producerSchema.canonicalString());
+                            + producerSchema);
         }
     }
 }

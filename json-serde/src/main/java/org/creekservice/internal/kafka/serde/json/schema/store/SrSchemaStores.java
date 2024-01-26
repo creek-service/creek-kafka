@@ -21,21 +21,29 @@ import static java.util.Objects.requireNonNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 
 /** Tracks known schema stores */
 public final class SrSchemaStores {
 
-    private final Map<String, SrSchemaStore> cache = new ConcurrentHashMap<>();
-    private final ClientFactory clientFactory;
+    private final SchemaStoreEndpoints.Loader endpointsLoader;
+    private final JsonSchemaStoreClient.Factory clientFactory;
     private final SchemaStoreFactory schemaStoreFactory;
+    private final Map<String, SrSchemaStore> cache = new ConcurrentHashMap<>();
 
-    public SrSchemaStores(final ClientFactory clientFactory) {
-        this(clientFactory, SrSchemaStore::new);
+    public SrSchemaStores(
+            final SchemaStoreEndpoints.Loader endpointsLoader,
+            final JsonSchemaStoreClient.Factory clientFactory) {
+        this(endpointsLoader, clientFactory, SrSchemaStore::new);
     }
 
     @VisibleForTesting
-    SrSchemaStores(final ClientFactory clientFactory, final SchemaStoreFactory schemaStoreFactory) {
+    SrSchemaStores(
+            final SchemaStoreEndpoints.Loader endpointsLoader,
+            final JsonSchemaStoreClient.Factory clientFactory,
+            final SchemaStoreFactory schemaStoreFactory) {
+        this.endpointsLoader = requireNonNull(endpointsLoader, "endpointsLoader");
         this.clientFactory = requireNonNull(clientFactory, "clientFactory");
         this.schemaStoreFactory = requireNonNull(schemaStoreFactory, "schemaStoreFactory");
     }
@@ -45,13 +53,10 @@ public final class SrSchemaStores {
     }
 
     private SrSchemaStore create(final String schemaRegistryName) {
-        final JsonSchemaStoreClient storeClient = clientFactory.create(schemaRegistryName);
+        final SchemaStoreEndpoints endpoints = endpointsLoader.load(schemaRegistryName);
+        final JsonSchemaStoreClient storeClient =
+                clientFactory.create(schemaRegistryName, endpoints);
         return schemaStoreFactory.create(storeClient);
-    }
-
-    @FunctionalInterface
-    public interface ClientFactory {
-        JsonSchemaStoreClient create(String schemaRegistryName);
     }
 
     @VisibleForTesting

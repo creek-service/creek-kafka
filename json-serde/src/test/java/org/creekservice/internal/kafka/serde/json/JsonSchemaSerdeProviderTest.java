@@ -26,21 +26,22 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.kafka.serde.test.KafkaSerdeProviderTester;
 import org.creekservice.api.service.extension.CreekService;
@@ -52,15 +53,12 @@ import org.creekservice.internal.kafka.serde.json.schema.serde.JsonSchemaSerdeFa
 import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.store.SchemaStore;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
-import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores.ClientFactory;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.util.TopicDescriptors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -80,31 +78,13 @@ class JsonSchemaSerdeProviderTest {
                     TestValueV0.class,
                     withPartitions(1));
 
-    private static final String PRODUCER_SCHEMA =
-            "{\n"
-                    + "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
-                    + "  \"title\": \"Test Value V 0\",\n"
-                    + "  \"type\": \"object\",\n"
-                    + "  \"additionalProperties\": false,\n"
-                    + "  \"properties\": {\n"
-                    + "    \"age\": {\n"
-                    + "      \"type\": \"integer\",\n"
-                    + "      \"minimum\": 0\n"
-                    + "    },\n"
-                    + "    \"name\": {\n"
-                    + "      \"type\": \"string\"\n"
-                    + "    }\n"
-                    + "  },\n"
-                    + "  \"required\": [\n"
-                    + "    \"age\"\n"
-                    + "  ]\n"
-                    + "}";
-
     @Nested
     class ProviderTest {
 
         @Mock private JsonSchemaStoreClient.Factory defaultStoreClientFactory;
         @Mock private JsonSchemaSerdeProvider.SchemaStoresFactory schemaStoresFactory;
+        @Mock private SchemaStoreEndpoints.Loader defaultEndpointsLoader;
+        @Mock private SchemaStoreEndpoints endpoints;
         @Mock private SrSchemaStores schemaStores;
 
         @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -114,10 +94,13 @@ class JsonSchemaSerdeProviderTest {
 
         @BeforeEach
         void setUp() {
-            provider = new JsonSchemaSerdeProvider(defaultStoreClientFactory, schemaStoresFactory);
+            provider =
+                    new JsonSchemaSerdeProvider(
+                            defaultStoreClientFactory, defaultEndpointsLoader, schemaStoresFactory);
 
             when(api.options().get(any())).thenReturn(Optional.empty());
-            when(schemaStoresFactory.create(any())).thenReturn(schemaStores);
+            when(schemaStoresFactory.create(any(), any())).thenReturn(schemaStores);
+            when(defaultEndpointsLoader.load(any())).thenReturn(endpoints);
         }
 
         @Test
@@ -130,38 +113,16 @@ class JsonSchemaSerdeProviderTest {
         @Test
         void shouldUseDefaultSchemaStoreClient() {
             // Given:
-            final JsonSchemaStoreClient storeClient = mock();
-            when(defaultStoreClientFactory.create(any(), any())).thenReturn(storeClient);
-            final ArgumentCaptor<ClientFactory> clientFactoryCaptor =
-                    ArgumentCaptor.forClass(ClientFactory.class);
-
             final JsonSerdeExtensionOptions options = mock();
             when(api.options().get(JsonSerdeExtensionOptions.class))
                     .thenReturn(Optional.of(options));
-            when(options.typeOverride(String.class)).thenReturn(Optional.of("customised"));
 
             // When:
-            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api);
+            final KafkaSerdeProvider.SerdeFactory serdeFactory = provider.initialize(api);
 
             // Then:
-            verify(schemaStoresFactory).create(clientFactoryCaptor.capture());
-            final ClientFactory clientFactory = clientFactoryCaptor.getValue();
-
-            // When:
-            final JsonSchemaStoreClient client = clientFactory.create("bob");
-
-            // Then:
-            verify(defaultStoreClientFactory)
-                    .create(
-                            eq("bob"),
-                            assertArg(
-                                    parms ->
-                                            assertThat(
-                                                    parms.typeOverride(String.class),
-                                                    is(Optional.of("customised")))));
-
-            assertThat(client, is(storeClient));
-            assertThat(innerProvider, is(notNullValue()));
+            verify(schemaStoresFactory).create(any(), eq(defaultStoreClientFactory));
+            assertThat(serdeFactory, is(notNullValue()));
         }
 
         @Test
@@ -175,36 +136,50 @@ class JsonSchemaSerdeProviderTest {
                     .thenReturn(Optional.of(options));
             when(options.typeOverride(JsonSchemaStoreClient.Factory.class))
                     .thenReturn(Optional.of(customStoreClientFactory));
-            when(options.typeOverride(String.class)).thenReturn(Optional.of("customised"));
-
-            final JsonSchemaStoreClient storeClient = mock();
-            when(customStoreClientFactory.create(any(), any())).thenReturn(storeClient);
-
-            final ArgumentCaptor<ClientFactory> clientFactoryCaptor =
-                    ArgumentCaptor.forClass(ClientFactory.class);
 
             // When:
-            final KafkaSerdeProvider.SerdeFactory innerProvider = provider.initialize(api);
+            final KafkaSerdeProvider.SerdeFactory serdeFactory = provider.initialize(api);
 
             // Then:
-            verify(schemaStoresFactory).create(clientFactoryCaptor.capture());
-            final ClientFactory clientFactory = clientFactoryCaptor.getValue();
+            verify(schemaStoresFactory).create(any(), eq(customStoreClientFactory));
+            assertThat(serdeFactory, is(notNullValue()));
+            verify(defaultStoreClientFactory, never()).create(any(), any());
+        }
+
+        @Test
+        void shouldWorkWithDefaultEndpointLoader() {
+            // Given:
+            final JsonSerdeExtensionOptions options = mock();
+            when(api.options().get(JsonSerdeExtensionOptions.class))
+                    .thenReturn(Optional.of(options));
 
             // When:
-            final JsonSchemaStoreClient client = clientFactory.create("bob");
+            final KafkaSerdeProvider.SerdeFactory serdeFactory = provider.initialize(api);
 
             // Then:
-            verify(customStoreClientFactory)
-                    .create(
-                            eq("bob"),
-                            assertArg(
-                                    params ->
-                                            assertThat(
-                                                    params.typeOverride(String.class),
-                                                    is(Optional.of("customised")))));
+            verify(schemaStoresFactory).create(eq(defaultEndpointsLoader), any());
+            assertThat(serdeFactory, is(notNullValue()));
+        }
 
-            assertThat(innerProvider, is(notNullValue()));
-            assertThat(client, is(storeClient));
+        @Test
+        void shouldWorkWithCustomEndpointLoader() {
+            // Given:
+            final SchemaStoreEndpoints.Loader customLoader =
+                    mock(SchemaStoreEndpoints.Loader.class);
+
+            final JsonSerdeExtensionOptions options = mock();
+            when(api.options().get(JsonSerdeExtensionOptions.class))
+                    .thenReturn(Optional.of(options));
+            when(options.typeOverride(SchemaStoreEndpoints.Loader.class))
+                    .thenReturn(Optional.of(customLoader));
+
+            // When:
+            final KafkaSerdeProvider.SerdeFactory serdeFactory = provider.initialize(api);
+
+            // Then:
+            verify(schemaStoresFactory).create(eq(customLoader), any());
+            assertThat(serdeFactory, is(notNullValue()));
+            verify(defaultEndpointsLoader, never()).load(any());
         }
 
         @Test
@@ -239,7 +214,6 @@ class JsonSchemaSerdeProviderTest {
         private final TestStructuredLogger logger = TestStructuredLogger.create();
         private JsonSchemaSerdeProvider.JsonSerdeFactory factory;
         private KafkaTopicDescriptor.PartDescriptor<TestValueV0> part;
-        private JsonSchema producerSchema;
 
         @BeforeEach
         void setUp() {
@@ -247,13 +221,10 @@ class JsonSchemaSerdeProviderTest {
                     new JsonSchemaSerdeProvider.JsonSerdeFactory(
                             schemaStores, jsonSchemaSerdeFactory, logger);
 
-            producerSchema = new JsonSchema(PRODUCER_SCHEMA);
-
             part = spy(DESCRIPTOR.value());
 
             when(schemaStores.get(any())).thenReturn(schemaStore);
             when(schemaStore.loadFromClasspath(part)).thenReturn(registeredSchema);
-            when(registeredSchema.schema()).thenReturn(producerSchema);
             when(jsonSchemaSerdeFactory.create(any())).thenReturn(serde);
         }
 

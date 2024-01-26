@@ -17,8 +17,14 @@
 package org.creekservice.internal.kafka.serde.json;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import org.apache.kafka.common.serialization.Serde;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
@@ -26,6 +32,8 @@ import org.creekservice.api.kafka.metadata.schema.JsonSchemaDescriptor;
 import org.creekservice.api.kafka.metadata.serde.JsonSchemaKafkaSerde;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
 import org.creekservice.api.observability.logging.structured.StructuredLogger;
 import org.creekservice.api.observability.logging.structured.StructuredLoggerFactory;
@@ -38,23 +46,33 @@ import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.store.SchemaStore;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.internal.kafka.serde.json.schema.store.endpoint.SystemEnvSchemaRegistryEndpointLoader;
 
 public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
+    private static final int MAX_CACHED_SCHEMAS = 1000;
+
     private final JsonSchemaStoreClient.Factory defaultStoreClientFactory;
+    private final SchemaStoreEndpoints.Loader defaultSchemaStoreEndpointLoader;
     private final SchemaStoresFactory schemaStoresFactory;
 
     public JsonSchemaSerdeProvider() {
-        this(DefaultJsonSchemaRegistryClient::new, SrSchemaStores::new);
+        this(
+                JsonSchemaSerdeProvider::createClient,
+                new SystemEnvSchemaRegistryEndpointLoader(),
+                SrSchemaStores::new);
     }
 
     @VisibleForTesting
     JsonSchemaSerdeProvider(
             final JsonSchemaStoreClient.Factory defaultStoreClientFactory,
+            final SchemaStoreEndpoints.Loader defaultSchemaStoreEndpointLoader,
             final SchemaStoresFactory schemaStoresFactory) {
         this.defaultStoreClientFactory =
                 requireNonNull(defaultStoreClientFactory, "defaultStoreClientFactory");
+        this.defaultSchemaStoreEndpointLoader =
+                requireNonNull(
+                        defaultSchemaStoreEndpointLoader, "defaultSchemaStoreEndpointLoader");
         this.schemaStoresFactory = requireNonNull(schemaStoresFactory, "schemaStoreFactory");
     }
 
@@ -74,10 +92,12 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
                 options.typeOverride(JsonSchemaStoreClient.Factory.class)
                         .orElse(defaultStoreClientFactory);
 
+        final SchemaStoreEndpoints.Loader endpointLoader =
+                options.typeOverride(SchemaStoreEndpoints.Loader.class)
+                        .orElse(defaultSchemaStoreEndpointLoader);
+
         final SrSchemaStores schemaStores =
-                schemaStoresFactory.create(
-                        schemaRegistryName ->
-                                clientFactory.create(schemaRegistryName, options::typeOverride));
+                schemaStoresFactory.create(endpointLoader, clientFactory);
 
         api.components()
                 .model()
@@ -88,6 +108,18 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
                 schemaStores,
                 new JsonSchemaSerdeFactory(options.subTypes()),
                 StructuredLoggerFactory.internalLogger(JsonSchemaSerdeProvider.class));
+    }
+
+    private static DefaultJsonSchemaRegistryClient createClient(
+            final String schemaRegistryName, final SchemaStoreEndpoints endpoints) {
+        return new DefaultJsonSchemaRegistryClient(
+                schemaRegistryName,
+                new CachedSchemaRegistryClient(
+                        endpoints.endpoints().stream().map(URI::toString).collect(toList()),
+                        MAX_CACHED_SCHEMAS,
+                        List.of(new JsonSchemaProvider()),
+                        endpoints.configs(),
+                        Map.of()));
     }
 
     @VisibleForTesting
@@ -142,6 +174,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
     @VisibleForTesting
     interface SchemaStoresFactory {
-        SrSchemaStores create(SrSchemaStores.ClientFactory clientFactory);
+        SrSchemaStores create(
+                SchemaStoreEndpoints.Loader loader, JsonSchemaStoreClient.Factory clientFactory);
     }
 }

@@ -18,12 +18,19 @@ package org.creekservice.api.kafka.serde.json;
 
 import static java.util.Objects.requireNonNull;
 
+import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.MockEndpointsLoader;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
+import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
 
 /**
  * Options class to customise how the JSON serde operate.
@@ -40,6 +47,35 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Options builder for use in testing.
+     *
+     * <p>This options builder can be used in testing, without the need for a Schema Registry
+     * service, e.g. unit testing:
+     *
+     * <pre>
+     * CreekServices.builder(new MyServiceDescriptor())
+     *    .with(JsonSerdeExtensionOptions.testBuilder().build()));
+     *    .build();
+     * </pre>
+     *
+     * <p>The options come preconfigured with a mock Schema Registry client, hence the serde do not
+     * need an actual Schema Registry instance to connect to.
+     *
+     * @return an options builder pre-configured to allow disconnected unit testing.
+     */
+    public static Builder testBuilder() {
+        return builder()
+                .withTypeOverride(
+                        JsonSchemaStoreClient.Factory.class,
+                        (schemaRegistryName, endpoints) ->
+                                new DefaultJsonSchemaRegistryClient(
+                                        schemaRegistryName,
+                                        new MockSchemaRegistryClient(
+                                                List.of(new JsonSchemaProvider()))))
+                .withTypeOverride(SchemaStoreEndpoints.Loader.class, new MockEndpointsLoader() {});
     }
 
     private JsonSerdeExtensionOptions(

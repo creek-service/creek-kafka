@@ -21,8 +21,12 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.extension.client.MockTopicClient;
+import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.junit.jupiter.api.Test;
 
 class TestKafkaClientsExtensionOptionsTest {
@@ -41,5 +45,17 @@ class TestKafkaClientsExtensionOptionsTest {
         assertThat(stateDir, is(instanceOf(String.class)));
         assertThat(((String) stateDir).trim(), is(stateDir));
         assertThat(((String) stateDir).trim(), is(not("")));
+    }
+
+    @Test
+    void shouldSetMockTopicClient() {
+        // When:
+        final Optional<TopicClient.Factory> result =
+                TestKafkaStreamsExtensionOptions.defaults().typeOverride(TopicClient.Factory.class);
+
+        // Then:
+        assertThat(result, is(not(Optional.empty())));
+        final TopicClient client = result.orElseThrow().create("cluster", Map.of());
+        assertThat(client, is(instanceOf(MockTopicClient.class)));
     }
 }

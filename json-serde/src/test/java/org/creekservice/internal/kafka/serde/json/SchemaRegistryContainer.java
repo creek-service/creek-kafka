@@ -19,7 +19,7 @@ package org.creekservice.internal.kafka.serde.json;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
@@ -51,9 +51,9 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
         super.start();
     }
 
-    public SchemaRegistryEndpoint clientEndpoint() {
+    public SchemaStoreEndpoints clientEndpoint() {
         try {
-            return SchemaRegistryEndpoint.create(
+            return SchemaStoreEndpoints.create(
                     List.of(URI.create("http://localhost:" + getMappedPort(PORT))), Map.of());
         } catch (Exception e) {
             throw new RuntimeException("failed to create endpoint", e);

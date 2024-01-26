@@ -19,6 +19,7 @@ package org.creekservice.api.kafka.streams.extension;
 import static org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions.DEFAULT_STREAMS_CLOSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
@@ -28,8 +29,11 @@ import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.kafka.streams.StreamsConfig;
+import org.creekservice.api.kafka.extension.client.MockTopicClient;
+import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
 import org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides;
 import org.creekservice.api.kafka.streams.extension.exception.StreamsExceptionHandlers;
@@ -261,5 +265,19 @@ class KafkaStreamsExtensionOptionsTest {
 
         // Then:
         assertThat(options.metricsPublishing(), is(metrics));
+    }
+
+    @Test
+    void shouldCreateTestOptionsWithMockTopicClient() {
+        // When:
+        final KafkaStreamsExtensionOptions testOptions =
+                KafkaStreamsExtensionOptions.testBuilder().build();
+
+        // Then:
+        final Optional<TopicClient.Factory> result =
+                testOptions.typeOverride(TopicClient.Factory.class);
+        assertThat(result, is(not(Optional.empty())));
+        final TopicClient client = result.orElseThrow().create("cluster", Map.of());
+        assertThat(client, is(instanceOf(MockTopicClient.class)));
     }
 }

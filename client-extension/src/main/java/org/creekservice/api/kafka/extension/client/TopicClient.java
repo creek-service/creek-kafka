@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.extension.client;
+package org.creekservice.api.kafka.extension.client;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +36,7 @@ public interface TopicClient {
      * <p>Can be overridden via {@link
      * org.creekservice.api.kafka.extension.ClientsExtensionOptions.Builder#withTypeOverride}.
      */
+    @FunctionalInterface
     interface Factory {
 
         /**

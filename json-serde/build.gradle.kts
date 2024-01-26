@@ -19,11 +19,6 @@ plugins {
     id("org.creekservice.schema.json")
 }
 
-repositories {
-    // For net.jimblackler.jsonschemafriend:core:
-    maven { url = uri("https://jitpack.io")  }
-}
-
 val creekVersion : String by extra
 val kafkaVersion : String by extra
 val confluentVersion : String by extra
@@ -37,7 +32,7 @@ dependencies {
     implementation("org.creekservice:creek-observability-logging:$creekVersion")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation( "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 

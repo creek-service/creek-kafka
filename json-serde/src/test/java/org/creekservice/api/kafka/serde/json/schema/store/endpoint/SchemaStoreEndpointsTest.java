@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class SchemaRegistryEndpointTest {
+class SchemaStoreEndpointsTest {
 
     private static final URI ENDPOINT_1 = URI.create("sr://1");
     private static final URI ENDPOINT_2 = URI.create("sr://2");
@@ -38,7 +38,7 @@ class SchemaRegistryEndpointTest {
         new NullPointerTester()
                 .setDefault(String.class, "not blank")
                 .setDefault(Collection.class, List.of(URI.create("endpoint")))
-                .testAllPublicStaticMethods(SchemaRegistryEndpoint.class);
+                .testAllPublicStaticMethods(SchemaStoreEndpoints.class);
     }
 
     @Test
@@ -47,7 +47,7 @@ class SchemaRegistryEndpointTest {
         final Exception e =
                 assertThrows(
                         IllegalArgumentException.class,
-                        () -> SchemaRegistryEndpoint.create(List.of(), Map.of()));
+                        () -> SchemaStoreEndpoints.create(List.of(), Map.of()));
 
         // Then:
         assertThat(e.getMessage(), is("No schema registry urls supplied"));
@@ -56,8 +56,8 @@ class SchemaRegistryEndpointTest {
     @Test
     void shouldCreateEndpoint() {
         // When:
-        final SchemaRegistryEndpoint endpoint =
-                SchemaRegistryEndpoint.create(
+        final SchemaStoreEndpoints endpoint =
+                SchemaStoreEndpoints.create(
                         List.of(ENDPOINT_1, ENDPOINT_2), Map.of("some", "config"));
 
         // Then:

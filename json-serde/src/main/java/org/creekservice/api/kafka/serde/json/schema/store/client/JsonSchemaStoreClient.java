@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.serde.json.schema.store.client;
+package org.creekservice.api.kafka.serde.json.schema.store.client;
 
-import io.confluent.kafka.schemaregistry.json.JsonSchema;
 import java.util.List;
-import java.util.Optional;
+import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 
 /** Client for interacting with a JSON Schema store. */
 public interface JsonSchemaStoreClient {
@@ -38,7 +38,7 @@ public interface JsonSchemaStoreClient {
      * @return the id of the registered schema.
      * @throws RuntimeException on error.
      */
-    int register(String subject, JsonSchema schema);
+    int register(String subject, ProducerSchema schema);
 
     /**
      * Retrieve the id the supplied {@code schema} under the supplied {@code subject}.
@@ -50,7 +50,7 @@ public interface JsonSchemaStoreClient {
      * @return the id of the registered schema.
      * @throws RuntimeException on error.
      */
-    int registeredId(String subject, JsonSchema schema);
+    int registeredId(String subject, ProducerSchema schema);
 
     /**
      * Retrieve all schemas registered under the supplied {@code subject}.
@@ -61,21 +61,31 @@ public interface JsonSchemaStoreClient {
      */
     List<VersionedSchema> allVersions(String subject);
 
+    /** Versioned schema data */
     interface VersionedSchema {
 
+        /**
+         * @return version of the schema for a specific subject
+         */
         int version();
 
-        JsonSchema schema();
+        /**
+         * @return schema
+         */
+        ProducerSchema schema();
     }
 
     /**
      * Factory for creating client instances.
      *
-     * <p>This type can be customised via the ClientsExtensionOptions.Builder#withTypeOverride
+     * <p>This type can be customised via the {@link
+     * org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions.Builder#withTypeOverride}
      * method. Pass {@code JsonSchemaStoreClient.Factory.class} as the first param and a custom
      * implementation as the second.
      *
-     * <p>If not customised, the default {@link DefaultJsonSchemaRegistryClient} will be used.
+     * <p>If not customised, the default {@link
+     * org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient}
+     * will be used.
      */
     interface Factory {
 
@@ -84,22 +94,9 @@ public interface JsonSchemaStoreClient {
          *
          * @param schemaRegistryName the logical name of the scheme registry, as used in topic
          *     descriptors.
-         * @param params additional parameters
+         * @param endpoint the endpoint information for the remote store.
          * @return a new store client
          */
-        JsonSchemaStoreClient create(String schemaRegistryName, FactoryParams params);
-
-        /** Extendable way of providing information to the factory method. */
-        interface FactoryParams {
-
-            /**
-             * Retrieve the override instance for the supplied {@code type}, if one is set.
-             *
-             * @param type the type to look up.
-             * @return the instance to use, if set, otherwise {@link Optional#empty()}.
-             * @param <T> the type to look up.
-             */
-            <T> Optional<T> typeOverride(Class<T> type);
-        }
+        JsonSchemaStoreClient create(String schemaRegistryName, SchemaStoreEndpoints endpoint);
     }
 }

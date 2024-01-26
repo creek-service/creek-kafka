@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** Type that stores the details of the schema registry endpoint. */
-public final class SchemaRegistryEndpoint {
+/** Type that stores the details of a schema store's endpoints */
+public final class SchemaStoreEndpoints {
 
     private final Set<URI> endpoints;
     private final Map<String, ?> configs;
@@ -38,12 +38,12 @@ public final class SchemaRegistryEndpoint {
      *     io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig} for more info.
      * @return endpoint instance.
      */
-    public static SchemaRegistryEndpoint create(
+    public static SchemaStoreEndpoints create(
             final Collection<URI> endpoints, final Map<String, ?> configs) {
-        return new SchemaRegistryEndpoint(endpoints, configs);
+        return new SchemaStoreEndpoints(endpoints, configs);
     }
 
-    private SchemaRegistryEndpoint(final Collection<URI> endpoints, final Map<String, ?> configs) {
+    private SchemaStoreEndpoints(final Collection<URI> endpoints, final Map<String, ?> configs) {
         this.endpoints = Set.copyOf(requireNonNull(endpoints, "endpoints"));
         this.configs = Map.copyOf(requireNonNull(configs, "configs"));
 
@@ -68,7 +68,7 @@ public final class SchemaRegistryEndpoint {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final SchemaRegistryEndpoint that = (SchemaRegistryEndpoint) o;
+        final SchemaStoreEndpoints that = (SchemaStoreEndpoints) o;
         return Objects.equals(endpoints, that.endpoints) && Objects.equals(configs, that.configs);
     }
 
@@ -91,8 +91,9 @@ public final class SchemaRegistryEndpoint {
     /**
      * Type that can be used to control where the details of the schema registry are loaded from.
      *
-     * <p>This type can be customised via the ClientsExtensionOptions.Builder#withTypeOverride
-     * method. Pass {@code SchemaRegistryEndpointLoader.class} as the first param and a custom
+     * <p>This type can be customised via the {@link
+     * org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions.Builder#withTypeOverride}
+     * method. Pass {@code SchemaRegistryEndpoint.Loader.class} as the first param and a custom
      * implementation as the second.
      *
      * <p>If not customised, the default {@link
@@ -109,6 +110,6 @@ public final class SchemaRegistryEndpoint {
          *     in the topic descriptors, to load.
          * @return the endpoint information.
          */
-        SchemaRegistryEndpoint load(String schemaRegistryInstance);
+        SchemaStoreEndpoints load(String schemaRegistryInstance);
     }
 }

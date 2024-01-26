@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.util.Map;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaRegistryEndpoint;
+import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.junit.jupiter.api.Test;
 
 class SystemEnvSchemaRegistryEndpointLoaderTest {
@@ -79,7 +79,7 @@ class SystemEnvSchemaRegistryEndpointLoaderTest {
                                 "SCHEMA_REGISTRY_BOB_ENDPOINTS", "https://something"));
 
         // When:
-        final SchemaRegistryEndpoint endpoint = loader.load(INSTANCE_NAME);
+        final SchemaStoreEndpoints endpoint = loader.load(INSTANCE_NAME);
 
         // Then:
         assertThat(endpoint.endpoints(), contains(URI.create("https://something")));
@@ -93,7 +93,7 @@ class SystemEnvSchemaRegistryEndpointLoaderTest {
                         Map.of("SCHEMA_REGISTRY_BOB_ENDPOINTS", "a, b,c\t,\td"));
 
         // When:
-        final SchemaRegistryEndpoint endpoint = loader.load(INSTANCE_NAME);
+        final SchemaStoreEndpoints endpoint = loader.load(INSTANCE_NAME);
 
         // Then:
         assertThat(
@@ -113,7 +113,7 @@ class SystemEnvSchemaRegistryEndpointLoaderTest {
                                 "SCHEMA_REGISTRY_BOB_BEARER_AUTH_CREDENTIALS_SOURCE", "foo"));
 
         // When:
-        final SchemaRegistryEndpoint endpoint = loader.load(INSTANCE_NAME);
+        final SchemaStoreEndpoints endpoint = loader.load(INSTANCE_NAME);
 
         // Then:
         assertThat(

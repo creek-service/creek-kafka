@@ -18,6 +18,7 @@ import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 
 /** A service extension that provides functionality to work with Java Kafka client. */
+@SuppressWarnings("requires-transitive-automatic")
 module creek.kafka.clients.extension {
     requires transitive creek.base.annotation;
     requires transitive creek.service.extension;
@@ -28,17 +29,15 @@ module creek.kafka.clients.extension {
     requires creek.observability.logging;
 
     exports org.creekservice.api.kafka.extension;
+    exports org.creekservice.api.kafka.extension.client;
     exports org.creekservice.api.kafka.extension.config;
     exports org.creekservice.api.kafka.extension.logging;
     exports org.creekservice.api.kafka.extension.resource;
     exports org.creekservice.internal.kafka.extension to
             creek.kafka.streams.extension,
             creek.kafka.test.extension;
-    exports org.creekservice.internal.kafka.extension.client to
-            creek.kafka.streams.test;
     exports org.creekservice.internal.kafka.extension.config to
-            creek.kafka.streams.extension,
-            creek.kafka.test.extension;
+            creek.kafka.streams.extension;
     exports org.creekservice.internal.kafka.extension.resource to
             creek.kafka.test.extension;
 
