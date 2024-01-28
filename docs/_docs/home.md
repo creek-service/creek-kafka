@@ -501,6 +501,8 @@ for more information on _why_ only producers register schemas in the Schema Regi
 It is recommended that schemas are generated from Java classes using the [Creek JSON Schema Gradle plugin](https://github.com/creek-service/creek-json-schema-gradle-plugin).
 This plugin will, by default, create the closed content model JSON schemas that this serde requires.
 
+#### Confluent compatability
+
 Note, the JSON serde is not currently compatible with Confluent's own JSON serde, as Confluent's serde prefixes
 the serialized JSON with the schema-id.  This is not necessary with Creek's JSON format.
 However, there is a task to track [optionally enabling Confluent JSON serde compatability](https://github.com/creek-service/creek-kafka/issues/455)
@@ -511,6 +513,56 @@ We think [Confluent's checks are not fit for purpose](https://github.com/conflue
 See [this article series](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) to understand why,
 and how Creek implements schema compatibility checks for JSON.
 {: .notice--warning}
+
+In its current form, the JSON serde does not persist the schema id used to serialize the key or value in the Kafka record.
+This is because the schema id is not needed, as there are checks to ensure all consuming schemas are backwards compatible
+with producing schemas, i.e. all consumers can consume all date produced by producers.
+
+Why did we choose to not use the Confluent JSON schema serde? 
+In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) the current Confluent's
+current JSON schema serde is not fit for purpose. Hence, coming up with our own.
+
+Let's look at the pros and cons between the two:
+
+|     | Confluent Serde                          | Creek Serde                       |
+|-----|------------------------------------------|-----------------------------------|
+| 1.  | Broken schema evolution                  | Usable schema evolution.          |
+| 2.  | Generates schema at runtime.             | Generates schema at compile-time. |
+| 3.  | Schemas published on first use.          | Schemas published on startup.     |
+| 4.  | Supports per-record & per-topic schemas. | Supports only per-topic schemas.  |
+| 5.  | Compatible with Confluent UI             | Unsure if compatible with UI      |
+| 6.  | Hard to evolve a key schema              | Key schemas can be evolved.       |
+
+Let's look at each of these in more detail:
+
+1. Probably the biggest difference is how the two serde handle schema compatability.
+   In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) Confluent's
+   currently model just doesn't work, and we think ours is better.
+2. Generating schemas at compile-time reduces service startup times,
+   and allows engineers the freedom to inspect schemas, and even test they are as expected or don't change unexpectedly, if they wish
+3. Publishing schemas on first use has a few downsides, especially on a topic that doesn't see much traffic.
+   1. Schema changes that break evolvability rules are not detected on startup.
+      In contrast, publishing & validating schemas on service startup ensures services fail eagerly if there are issues.
+   2. The set of schema versions for a topic become less deterministic across environments, 
+      as service needs to have started _and_ produced messages.
+      In contrast, publishing on start-up allows the schema versions in an environment to be derived from the versions of the services deployed. 
+4. Per-record schemas is, in our opinion, hard to manage in organisations and doesn't lend itself to have self-service data-products in Kafka.
+   Publishing a new record schema to a topic isn't a compatible change and can break downstream consumers if things aren't managed correctly.
+   Yet, with per-record schemas its very easy to publish a message with a new schema.
+   For these reasons, we see per-record schemas as an anti-pattern, and therefore only support per-topic schemas.
+   Defining the explicit type or types that can be found in a topic defines a clear _contract_ with users.
+   Multiple types can be better supported and polymorphism can be achieved via subtyping and JSON schema's [`anyOf`][anyOf].
+5. Obviously, the Confluent JSON serde is compatible with Confluent's own UIs and therefore likely other UIs built by others
+   around the schema store. We've not actually checked, but it's certainly possible the UI _expects_ JSON key and values to be
+   prefixed with the schema id, and balks if that's not the case.
+   Personally, we prefer the payload being actual JSON, though we've a [planned enhancement](https://github.com/creek-service/creek-kafka/issues/455)
+   to support Confluent's format to allow interoperability.
+6. One of the implications of prefixing the payload with the schema id, as Confluent's serde do, is that its 
+   impossible to evolve the schema of a topic's key, unless using a custom partitioning strategy. 
+   This is because the schema id forms part of the binary key. Evolving the schema means a new schema id,
+   which changes the serialised form of a specific key, meaning it may be produced to a different partition.
+   By not prefixing with the schema id, the Creek serde allows the key schema to be evolved. For example,
+   there's no reason why a new optional property can't be added.
 
 #### Dependencies
 
@@ -574,6 +626,7 @@ public final class ServiceMain {
     }
 }
 ```
+[todo]: http://Convert to snippet once released.
 
 Manually registering subtypes is only necessary when this information is not available to Jackson already,
 i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubTypes`.
@@ -704,5 +757,6 @@ The `creek-kafka-serde-test` jar contains a test utility that will test a serial
 [ksTest]: https://kafka.apache.org/documentation/streams/developer-guide/testing.html
 [systemTest]: https://github.com/creek-service/creek-system-test
 [gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
+[anyOf]:https://json-schema.org/understanding-json-schema/reference/combining.html#anyof
 [serviceLoader]: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ServiceLoader.html
 [todo]: http://update links above once doccs migrated to creekservice.org

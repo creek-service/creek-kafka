@@ -50,6 +50,7 @@ dependencies {
 
     testImplementation(project(":client-extension"))
     testImplementation(project(":serde-test"))
+    testImplementation(project(":test-service-json"))
     testImplementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:kafka:$testContainersVersion")
@@ -58,3 +59,8 @@ dependencies {
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
 modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")
+
+creek.schema.json {
+    typeScanning.packageWhiteList("org.creekservice.api.kafka.serde.json", "org.creekservice.internal.kafka.serde.json")
+    subTypeScanning.packageWhiteList("org.creekservice.api.kafka.serde.json", "org.creekservice.internal.kafka.serde.json")
+}

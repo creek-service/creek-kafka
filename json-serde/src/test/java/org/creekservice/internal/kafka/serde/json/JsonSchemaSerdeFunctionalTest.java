@@ -347,7 +347,7 @@ class JsonSchemaSerdeFunctionalTest {
                 e.getMessage(),
                 containsString(
                         "Failed to load schema resource:"
-                            + " /schema/json/org.creekservice.internal.kafka.serde.json.json_schema_serde_functional_test.yml."
+                            + " org/creekservice/internal/kafka/serde/json/JsonSchemaSerdeFunctionalTest.yml."
                             + " Resource not found."));
     }
 

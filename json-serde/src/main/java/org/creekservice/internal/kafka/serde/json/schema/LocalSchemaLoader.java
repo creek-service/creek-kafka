@@ -26,27 +26,26 @@ import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 
 public final class LocalSchemaLoader {
 
-    private static final String SCHEMA_DIRECTORY = "/schema/json/";
-
     private LocalSchemaLoader() {}
 
     public static ProducerSchema loadFromClasspath(final Class<?> type) {
-        final Path schemaFile =
-                GeneratedSchemas.schemaFileName(type, GeneratedSchemas.yamlExtension());
-        return loadFromClasspath(schemaFile);
-    }
-
-    public static ProducerSchema loadFromClasspath(final Path schemaFile) {
-        final URL resource = findResource(schemaFile);
+        final URL resource = findResource(type);
         return load(resource);
     }
 
-    private static URL findResource(final Path schemaFile) {
-        final String path = SCHEMA_DIRECTORY + schemaFile;
-        final URL resource = LocalSchemaLoader.class.getResource(path);
+    private static URL findResource(final Class<?> type) {
+        final Path schemaFile =
+                GeneratedSchemas.schemaFileName(type, GeneratedSchemas.yamlExtension());
+
+        // Load from current module file:
+        URL resource = type.getResource("/" + schemaFile);
         if (resource == null) {
-            throw new SchemaResourceNotFoundException(
-                    "Failed to load schema resource: " + path + ". Resource not found.");
+            // Then try loading from other modules:
+            resource = type.getClassLoader().getResource(schemaFile.toString());
+            if (resource == null) {
+                throw new SchemaResourceNotFoundException(
+                        "Failed to load schema resource: " + schemaFile + ". Resource not found.");
+            }
         }
 
         return resource;

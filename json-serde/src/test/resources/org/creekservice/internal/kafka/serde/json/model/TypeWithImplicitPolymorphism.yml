@@ -7,8 +7,8 @@ additionalProperties: false
 properties:
   inner:
     oneOf:
-      - $ref: '#/definitions/ImplicitlyNamed'
-      - $ref: '#/definitions/the-explicit-name'
+    - $ref: '#/definitions/ImplicitlyNamed'
+    - $ref: '#/definitions/the-explicit-name'
 definitions:
   ImplicitlyNamed:
     type: object
@@ -17,14 +17,14 @@ definitions:
       '@type':
         type: string
         enum:
-          - TypeWithImplicitPolymorphism$ImplicitlyNamed
+        - TypeWithImplicitPolymorphism$ImplicitlyNamed
         default: TypeWithImplicitPolymorphism$ImplicitlyNamed
       age:
         type: integer
     title: TypeWithImplicitPolymorphism$ImplicitlyNamed
     required:
-      - '@type'
-      - age
+    - '@type'
+    - age
   the-explicit-name:
     type: object
     additionalProperties: false
@@ -32,10 +32,10 @@ definitions:
       '@type':
         type: string
         enum:
-          - the-explicit-name
+        - the-explicit-name
         default: the-explicit-name
       text:
         type: string
     title: the-explicit-name
     required:
-      - '@type'
+    - '@type'

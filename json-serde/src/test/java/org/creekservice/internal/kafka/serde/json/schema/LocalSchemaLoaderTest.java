@@ -21,11 +21,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
+import org.creekservice.api.kafka.test.service.json.model.OutputValue;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 
@@ -41,30 +40,20 @@ class LocalSchemaLoaderTest {
     }
 
     @Test
-    public void shouldLoadPathSchemaFromClasspath() {
-        // When:
-        final ProducerSchema schema =
-                LocalSchemaLoader.loadFromClasspath(Paths.get("test-schema.yml"));
-
-        // Then:
-        assertThat(schema.toString(), containsString("$id: test-schema.yml"));
-    }
-
-    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
-    @Test
     public void shouldThrowIfSchemaNoFound() {
         // When:
         final Exception e =
                 assertThrows(
                         LocalSchemaLoader.SchemaResourceNotFoundException.class,
-                        () -> LocalSchemaLoader.loadFromClasspath(Paths.get("u_wont_find_me.yml")));
+                        () -> LocalSchemaLoader.loadFromClasspath(LocalSchemaLoaderTest.class));
 
         // Then:
         assertThat(
                 e.getMessage(),
                 is(
-                        "Failed to load schema resource: /schema/json/u_wont_find_me.yml."
-                                + " Resource not found."));
+                        "Failed to load schema resource:"
+                            + " org/creekservice/internal/kafka/serde/json/schema/LocalSchemaLoaderTest.yml."
+                            + " Resource not found."));
     }
 
     @Test
@@ -81,6 +70,15 @@ class LocalSchemaLoaderTest {
 
         // Then:
         assertThat(schema.toString(), containsString("$id: test-schema.yml"));
+    }
+
+    @Test
+    void shouldBeAbleToLoadSchemaForAnotherModule() {
+        // Given:
+        final ProducerSchema schema = LocalSchemaLoader.loadFromClasspath(OutputValue.class);
+
+        // Then:
+        assertThat(schema.toString(), containsString("title: Output Value"));
     }
 
     private static final class TestModel {}

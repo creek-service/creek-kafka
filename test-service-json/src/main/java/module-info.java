@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2023-2024 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.serde.json.model;
+module creek.kafka.test.service.json {
+    requires transitive com.fasterxml.jackson.annotation;
+    requires transitive creek.base.annotation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.creekservice.api.base.annotation.schema.GeneratesSchema;
+    exports org.creekservice.api.kafka.test.service.json.model;
 
-@GeneratesSchema
-public final class WithAmbiguousFloat {
-
-    private final Number number;
-
-    public WithAmbiguousFloat(@JsonProperty("number") final Number number) {
-        this.number = number;
-    }
-
-    public Number getNumber() {
-        return number;
-    }
+    opens org.creekservice.api.kafka.test.service.json.model;
 }

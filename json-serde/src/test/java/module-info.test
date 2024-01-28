@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension
+  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension,creek.kafka.test.service.json
 
 --add-reads
-  creek.kafka.serde.json.schema=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension
+  creek.kafka.serde.json.schema=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.kafka.serde.test,com.fasterxml.jackson.annotation,creek.kafka.clients.extension,creek.kafka.test.service.json
 
 --add-reads
   creek.kafka.serde.json.schema=creek.observability.logging.fixtures

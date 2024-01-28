@@ -35,6 +35,7 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
 * **[test-serde-java-eight](test-serde-java-eight)**: test-only serde extension implementation that only registers itself
   using the Java 8 `META-INF/services` method.
 * **[test-service-native](test-service-native)**: test-only microservice implementation using inbuilt/native Kafka serde.
+* **[test-service-json](test-service-json)**: test-only microservice implementation using [json-serde](json-serde).
 
 ### Docs:
 * **[docs](docs)**: doc site accessible on https://www.creekservice.org/creek-kafka.
