@@ -1,5 +1,5 @@
 ---
-# timestamp=1706025251767
+# timestamp=1706479369935
 $schema: http://json-schema.org/draft-07/schema#
 title: With Ambiguous Float
 type: object
