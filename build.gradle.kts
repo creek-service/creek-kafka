@@ -78,7 +78,7 @@ subprojects {
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.6.1")            // https://mvnrepository.com/artifact/org.apache.kafka
         set("confluentVersion", "7.5.2")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
-        set("testContainersVersion", "1.19.3")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "1.19.4")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
