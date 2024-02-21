@@ -117,7 +117,7 @@ class YamlSchemasTest {
 
         // Then:
         assertThat(e.getMessage(), is("Invalid YAML schema: " + notYaml));
-        assertThat(e.getCause().getMessage(), containsString("URISyntaxException"));
+        assertThat(e.getCause().getCause().getMessage(), containsString("URISyntaxException"));
     }
 
     @Test
