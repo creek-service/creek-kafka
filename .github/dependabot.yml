@@ -46,6 +46,10 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: docker
-    directory: /test-service
+    directory: /test-service-native
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker
+    directory: /test-service-json
     schedule:
       interval: monthly
