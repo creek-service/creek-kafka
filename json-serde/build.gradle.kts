@@ -41,7 +41,7 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
     implementation("io.confluent:kafka-json-schema-provider:$confluentVersion")
     constraints {
-        implementation("org.scala-lang:scala-library:2.13.12") {
+        implementation("org.scala-lang:scala-library:2.13.13") {
             because("lower versions have security vulnerabilities")
         }
     }
