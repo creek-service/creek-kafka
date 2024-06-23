@@ -108,7 +108,7 @@ subprojects {
 
     dependencies {
         constraints {
-            implementation("org.apache.commons:commons-compress:1.26.0") {
+            implementation("org.apache.commons:commons-compress:1.26.2") {
                 because("earlier versions have a security vulnerabilities")
             }
         }
