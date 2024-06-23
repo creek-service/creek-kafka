@@ -55,6 +55,27 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           CREEK_KAFKA_VERSION: ${{ matrix.kafka_version }}
         run: ./gradlew build coveralls
+      - name: Upload Checkstyle reports
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: checkstyle-reports-linux-${{ matrix.kafka_version }}
+          path: '**/build/reports/checkstyle/*.xml'
+          retention-days: 5
+      - name: Upload Spotbugs reports
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: spotbugs-reports-linux-${{ matrix.kafka_version }}
+          path: '**/build/reports/spotbugs/*.xml'
+          retention-days: 5
+      - name: Upload Test Results
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: test-results-linux-${{ matrix.kafka_version }}
+          path: '**/build/test-results/**/*.xml'
+          retention-days: 5
       - name: Publish
         if: matrix.publish && (github.event_name == 'push' || github.event.inputs.publish_artifacts == 'true')
         env:
@@ -106,3 +127,24 @@ jobs:
         uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v0.1.15
         with:
           generate_release_notes: true
+      - name: Upload Checkstyle reports
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: checkstyle-reports-win
+          path: '**/build/reports/checkstyle/*.xml'
+          retention-days: 5
+      - name: Upload Spotbugs reports
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: spotbugs-reports-win
+          path: '**/build/reports/spotbugs/*.xml'
+          retention-days: 5
+      - name: Upload Test Results
+        if: failure()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: test-results-win
+          path: '**/build/test-results/**/*.xml'
+          retention-days: 5
