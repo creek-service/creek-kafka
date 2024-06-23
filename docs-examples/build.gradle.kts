@@ -19,7 +19,7 @@ plugins {
     id("org.creekservice.system.test") version "0.4.1"
 
 // begin-snippet: module-plugin
-    id("org.javamodularity.moduleplugin") version "1.8.13"
+    id("org.javamodularity.moduleplugin") version "1.8.15"
 // end-snippet
 }
 
