@@ -107,6 +107,12 @@ subprojects {
     val mockitoVersion: String by extra
 
     dependencies {
+        constraints {
+            implementation("org.apache.commons:commons-compress:1.26.2") {
+                because("earlier versions have a security vulnerabilities")
+            }
+        }
+
         implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
 
         testImplementation("org.creekservice:creek-test-util:$creekVersion")

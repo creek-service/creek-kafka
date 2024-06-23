@@ -55,7 +55,6 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:kafka:$testContainersVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
-    testImplementation("commons-codec:commons-codec:1.17.0")
 }
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
