@@ -40,7 +40,7 @@ class YamlSchemasTest {
                     + "    type: string\n"
                     + "    format: date\n"
                     + "  zar:\n"
-                    + "    $ref: '#/definitions/Zar'\n"
+                    + "    $ref: \"#/definitions/Zar\"\n"
                     + "  additionalProperties: false\n"
                     + "definitions:\n"
                     + "  Zar:\n"
@@ -117,7 +117,7 @@ class YamlSchemasTest {
 
         // Then:
         assertThat(e.getMessage(), is("Invalid YAML schema: " + notYaml));
-        assertThat(e.getCause().getMessage(), containsString("URISyntaxException"));
+        assertThat(e.getCause().getCause().getMessage(), containsString("URISyntaxException"));
     }
 
     @Test
@@ -135,7 +135,7 @@ class YamlSchemasTest {
                         + "    type: string\n"
                         + "    format: date\n"
                         + "  zar:\n"
-                        + "    $ref: '#/definitions/Zar'\n"
+                        + "    $ref: \"#/definitions/Zar\"\n"
                         + "  additionalProperties: false\n"
                         + "definitions:\n"
                         + "  Zar:\n"
@@ -226,7 +226,7 @@ class YamlSchemasTest {
                         + "additionalProperties: false\n"
                         + "properties:\n"
                         + "  zar:\n"
-                        + "    $ref: '#/definitions/Zar'\n"
+                        + "    $ref: \"#/definitions/Zar\"\n"
                         + "definitions:\n"
                         + "  Zar:\n"
                         + "    type: object\n"
