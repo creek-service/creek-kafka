@@ -55,6 +55,27 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           CREEK_KAFKA_VERSION: ${{ matrix.kafka_version }}
         run: ./gradlew build coveralls
+      - name: Upload Checkstyle reports
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: spotbugs-reports
+          path: '**/build/reports/checkstyle/*.xml'
+          retention-days: 5
+      - name: Upload Spotbugs reports
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: spotbugs-reports
+          path: '**/build/reports/spotbugs/*.xml'
+          retention-days: 5
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: spotbugs-reports
+          path: '**/build/test-results/**/*.xml'
+          retention-days: 5
       - name: Publish
         if: matrix.publish && (github.event_name == 'push' || github.event.inputs.publish_artifacts == 'true')
         env:
