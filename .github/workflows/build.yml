@@ -56,21 +56,21 @@ jobs:
           CREEK_KAFKA_VERSION: ${{ matrix.kafka_version }}
         run: ./gradlew build coveralls
       - name: Upload Checkstyle reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: checkstyle-reports-linux-${{ matrix.kafka_version }}
           path: '**/build/reports/checkstyle/*.xml'
           retention-days: 5
       - name: Upload Spotbugs reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: spotbugs-reports-linux-${{ matrix.kafka_version }}
           path: '**/build/reports/spotbugs/*.xml'
           retention-days: 5
       - name: Upload Test Results
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: test-results-linux-${{ matrix.kafka_version }}
@@ -128,21 +128,21 @@ jobs:
         with:
           generate_release_notes: true
       - name: Upload Checkstyle reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: checkstyle-reports-win
           path: '**/build/reports/checkstyle/*.xml'
           retention-days: 5
       - name: Upload Spotbugs reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: spotbugs-reports-win
           path: '**/build/reports/spotbugs/*.xml'
           retention-days: 5
       - name: Upload Test Results
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: test-results-win
