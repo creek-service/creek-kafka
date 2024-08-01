@@ -76,7 +76,7 @@ subprojects {
         set("junitPioneerVersion", "2.2.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
         set("mockitoVersion", "5.12.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
-        set("kafkaVersion", "3.7.0")            // https://mvnrepository.com/artifact/org.apache.kafka
+        set("kafkaVersion", "3.8.0")            // https://mvnrepository.com/artifact/org.apache.kafka
         set("confluentVersion", "7.6.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
         set("testContainersVersion", "1.19.8")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
