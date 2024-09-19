@@ -48,8 +48,8 @@ dependencies {
     testImplementation("org.creekservice:creek-kafka-streams-test:0.4.1")
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:2.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
 }
 
 // begin-snippet: resolution-strategy
