@@ -49,7 +49,7 @@ dependencies {
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:3.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
 }
 
 // begin-snippet: resolution-strategy
