@@ -73,7 +73,7 @@ subprojects {
         set("log4jVersion", "2.24.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("guavaVersion", "33.3.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.11.1")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-        set("junitPioneerVersion", "2.2.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
+        set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
         set("mockitoVersion", "5.14.1")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.7.0")            // https://mvnrepository.com/artifact/org.apache.kafka
