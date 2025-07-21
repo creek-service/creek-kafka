@@ -179,7 +179,7 @@ class TopicConsumerTest {
         assertThat(result, hasSize(2));
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    @SuppressFBWarnings()
     @Test
     void shouldThrowIfPollThrows() {
         // Given:
