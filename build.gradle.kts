@@ -66,7 +66,7 @@ subprojects {
     }
 
     extra.apply {
-        set("creekVersion", "0.4.2-SNAPSHOT")
+        set("creekVersion", "0.4.3-SNAPSHOT")
         set("spotBugsVersion", "4.9.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.18.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("slf4jVersion", "2.0.17")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
