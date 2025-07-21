@@ -22,7 +22,7 @@ plugins {
     `creek-coverage-convention`
     `creek-publishing-convention` apply false
     `creek-sonatype-publishing-convention`
-    id("pl.allegro.tech.build.axion-release") version "1.18.18" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
+    id("pl.allegro.tech.build.axion-release") version "1.19.0" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.bmuschko.docker-remote-api") version "9.4.0" apply false
     id("org.creekservice.schema.json") version "0.4.2-SNAPSHOT" apply false
 }
@@ -77,7 +77,7 @@ subprojects {
         set("mockitoVersion", "5.14.2")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("confluentVersion", "7.9.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
+        set("confluentVersion", "8.0.0")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
         set("testContainersVersion", "1.19.8")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
