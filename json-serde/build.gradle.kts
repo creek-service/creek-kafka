@@ -36,12 +36,12 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    implementation("net.jimblackler.jsonschemafriend:core:0.12.4")
+    implementation("net.jimblackler.jsonschemafriend:core:0.12.5")
 
     implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
     implementation("io.confluent:kafka-json-schema-provider:$confluentVersion")
     constraints {
-        implementation("org.scala-lang:scala-library:2.13.14") {
+        implementation("org.scala-lang:scala-library:2.13.16") {
             because("lower versions have security vulnerabilities")
         }
     }
