@@ -17,7 +17,8 @@
 /**
  * Configuration for Creek Gradle plugin publishing.
  *
-  * <p>Version: 1.5
+ * <p>Versions:
+ *  - 1.6: Correct automatic module name
  *  - 1.5: Switch to using `gradlePlugin`, as required by Gradle 8.0
  *  - 1.4: Fix website URL to avoid redirect 
  *  - 1.3: Switch to setting 'system' from issue-management
@@ -43,9 +44,7 @@ java {
 val prependRootName = rootProject.name != project.name
 
 gradlePlugin {
-    @Suppress("UnstableApiUsage")
     website.set("https://www.creekservice.org/${rootProject.name}/")
-    @Suppress("UnstableApiUsage")
     vcsUrl.set("https://github.com/creek-service/${rootProject.name}")
 }
 
@@ -68,9 +67,9 @@ tasks.javadoc {
 tasks.jar {
     manifest {
         if (prependRootName) {
-            attributes("Automatic-Module-Name" to "${rootProject.name}-${project.name}")
+            attributes("Automatic-Module-Name" to "${rootProject.name}-${project.name}".replace("-", "."))
         } else {
-            attributes("Automatic-Module-Name" to project.name)
+            attributes("Automatic-Module-Name" to project.name.replace("-", "."))
         }
     }
 }
