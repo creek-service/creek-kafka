@@ -20,8 +20,6 @@
  * <p>Versions:
  *  - 1.3: remove deprecated use of $buildDir
  *  - 1.2: Apply to root project only
- *
- * <p>Apply to root project only
  */
 
 plugins {
