@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -69,7 +68,6 @@ class StreamsExtensionTest {
         assertThat(extension.name(), is("org.creekservice.kafka.streams"));
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @Test
     void shouldReturnProperties() {
         // When:
