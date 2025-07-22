@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,creek.observability.logging.fixtures,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
+  org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter,creek.observability.logging.fixtures,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
 
 --add-reads
-  creek.kafka.streams.extension=org.junitpioneer,org.hamcrest,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
+  creek.kafka.streams.extension=org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
 
 --add-reads
   creek.kafka.streams.extension=creek.observability.logging.fixtures
