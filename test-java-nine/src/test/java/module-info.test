@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest
+  org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter
 
 --add-reads
-  creek.kafka.test.java.nine=org.junitpioneer,org.hamcrest
+  creek.kafka.test.java.nine=org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
