@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
     implementation("io.confluent:kafka-json-schema-provider:$confluentVersion")
     constraints {
-        implementation("org.scala-lang:scala-library:2.13.15") {
+        implementation("org.scala-lang:scala-library:2.13.16") {
             because("lower versions have security vulnerabilities")
         }
     }
