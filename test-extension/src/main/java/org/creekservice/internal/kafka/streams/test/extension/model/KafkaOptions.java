@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 
 /** Test model extension to allow users to customise the Kafka test extension functionality. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressFBWarnings("SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR")
 public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
 
     /** Versioned name, as used in the system test YAML files. */
