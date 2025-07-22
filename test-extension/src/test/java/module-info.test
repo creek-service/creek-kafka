@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,creek.system.test.executor,creek.kafka.test.service.inbuilt
+  org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,creek.system.test.executor,creek.kafka.test.service.inbuilt
 
 --add-reads
-  creek.kafka.test.extension=org.junitpioneer,org.hamcrest,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,creek.system.test.executor,creek.kafka.test.service.inbuilt
+  creek.kafka.test.extension=org.junitpioneer,org.hamcrest,org.mockito.junit.jupiter,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,testcontainers,creek.system.test.executor,kafka.clients,creek.system.test.test.util,creek.system.test.executor,creek.kafka.test.service.inbuilt
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons

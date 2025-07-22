@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -81,7 +82,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
 import org.testcontainers.DockerClientFactory;
 
 @Tag("ContainerisedTest")
@@ -107,7 +107,7 @@ class StartKafkaTestListenerFunctionalTest {
         final ServiceInstanceContainer services = EXT_TESTER.dockerServicesContainer();
 
         final CreekSystemTest api =
-                mock(CreekSystemTest.class, withSettings().defaultAnswer(new ReturnsDeepStubs()));
+                mock(CreekSystemTest.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
 
         when(api.tests().env().currentSuite().services().add(any()))
                 .thenAnswer(inv -> services.add(inv.getArgument(0)));
