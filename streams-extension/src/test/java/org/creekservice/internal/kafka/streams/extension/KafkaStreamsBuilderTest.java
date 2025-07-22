@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Properties;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
@@ -54,7 +53,6 @@ class KafkaStreamsBuilderTest {
         when(clientsExtension.properties(any())).thenReturn(properties);
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @Test
     void shouldGetPropertiesForCorrectCluster() {
         // When:
