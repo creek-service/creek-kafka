@@ -37,11 +37,17 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
       - name: Ensure build is green
-        run: ./gradlew build
+        run: |
+          # Locally, set the release version
+          ./gradlew createRelease -Prelease.disableSnapshotsCheck
+          # Fail on snapshots:
+          ./gradlew verifyRelease 
+          # Then run the build, with proposed creekVersion
+          ./gradlew build
       - name: Release
         run: |
           # The following command will trigger the build.yml workflow as it pushes a release tag
-          ./gradlew release
+          ./gradlew pushRelease
       - name: Capture version info
         run: |
           echo "Release version: $(./gradlew cV -q -Prelease.quiet)" >> $GITHUB_STEP_SUMMARY 

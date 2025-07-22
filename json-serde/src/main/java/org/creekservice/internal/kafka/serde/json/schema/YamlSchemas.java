@@ -137,7 +137,7 @@ public final class YamlSchemas {
                                         ((ObjectNode) node)
                                                 .replace(ADDITIONAL_PROPERTIES, replacement));
             }
-            node.fields().forEachRemaining(field -> processTree(field.getValue(), function));
+            node.properties().forEach(field -> processTree(field.getValue(), function));
         } else if (node.isArray()) {
             for (JsonNode element : node) {
                 processTree(element, function);
