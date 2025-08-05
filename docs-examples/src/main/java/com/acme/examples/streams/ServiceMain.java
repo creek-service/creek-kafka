@@ -18,11 +18,7 @@ package com.acme.examples.streams;
 
 import com.acme.examples.service.MyServiceDescriptor;
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.Produced;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.kafka.streams.extension.observation.KafkaMetricsPublisherOptions;
@@ -31,8 +27,6 @@ import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
 
 import java.time.Duration;
-
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 
 // begin-snippet: service-main
 @SuppressWarnings("unused")
