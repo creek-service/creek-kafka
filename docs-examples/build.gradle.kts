@@ -16,7 +16,7 @@
 
 plugins {
     java
-    id("org.creekservice.system.test") version "0.4.1"
+    id("org.creekservice.system.test") version "0.4.3"
 
 // begin-snippet: module-plugin
     id("org.javamodularity.moduleplugin") version "1.8.15"
@@ -32,20 +32,20 @@ dependencies {
 // end-snippet
     implementation("log4j:log4j:1.2.17")
 // begin-snippet: meta
-    implementation("org.creekservice:creek-kafka-metadata:0.4.1")
+    implementation("org.creekservice:creek-kafka-metadata:0.4.3")
 // end-snippet
-    implementation("org.creekservice:creek-service-context:0.4.1")
+    implementation("org.creekservice:creek-service-context:0.4.3")
 // begin-snippet: client-ext
-    implementation("org.creekservice:creek-kafka-client-extension:0.4.1")
+    implementation("org.creekservice:creek-kafka-client-extension:0.4.3")
 // end-snippet
 // begin-snippet: streams-ext
-    implementation("org.creekservice:creek-kafka-streams-extension:0.4.1")
+    implementation("org.creekservice:creek-kafka-streams-extension:0.4.3")
 // end-snippet
 // begin-snippet: test-ext
-    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.1")
+    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.3")
 // end-snippet
 // begin-snippet: streams-test
-    testImplementation("org.creekservice:creek-kafka-streams-test:0.4.1")
+    testImplementation("org.creekservice:creek-kafka-streams-test:0.4.3")
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:3.0")
     testImplementation(platform("org.junit:junit-bom:5.13.4"))

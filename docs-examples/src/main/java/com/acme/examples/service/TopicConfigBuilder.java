@@ -16,7 +16,7 @@
 
 package com.acme.examples.service;
 
-import org.creekservice.api.kafka.metadata.KafkaTopicConfig;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicConfig;
 
 import java.text.NumberFormat;
 import java.time.Duration;
