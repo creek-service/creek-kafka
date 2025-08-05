@@ -17,9 +17,10 @@
 package com.acme.examples.serde;
 
 import org.apache.kafka.common.serialization.Serde;
-import org.creekservice.api.kafka.metadata.KafkaTopicDescriptor;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.service.extension.CreekService;
 
 import static org.creekservice.api.kafka.metadata.SerializationFormat.serializationFormat;
 
@@ -30,7 +31,14 @@ public class CustomSerdeFormatProvider implements KafkaSerdeProvider {
     }
 
     @Override
-    public <T> Serde<T> create(final KafkaTopicDescriptor.PartDescriptor<T> part) {
-        return null;
+    public SerdeFactory initialize(final CreekService api) {
+        return new CustomSerdeFactory();
+    }
+
+    private static final class CustomSerdeFactory implements SerdeFactory {
+        @Override
+        public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
+            return null;
+        }
     }
 }
