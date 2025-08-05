@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import static com.acme.examples.service.MyServiceDescriptor.InputTopic;
 import static com.acme.examples.service.MyServiceDescriptor.OutputTopic;
 import static org.apache.kafka.streams.KeyValue.pair;
-import static org.creekservice.api.kafka.metadata.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
