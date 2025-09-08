@@ -19,11 +19,11 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonVersion : String by extra
+val jacksonAnnotationsVersion : String by extra
 val log4jVersion : String by extra
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
     implementation("org.creekservice:creek-base-annotation:$creekVersion")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
