@@ -32,7 +32,10 @@ public enum BaseJsonMapper {
             JsonMapper.builder()
                     .addModule(new Jdk8Module())
                     .addModule(new JavaTimeModule())
-                    .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+                    .defaultPropertyInclusion(
+                            JsonInclude.Value.construct(
+                                    JsonInclude.Include.NON_EMPTY,
+                                    JsonInclude.Include.USE_DEFAULTS))
                     .enable(SerializationFeature.INDENT_OUTPUT)
                     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

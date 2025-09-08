@@ -51,7 +51,6 @@ dependencies {
     testImplementation(project(":client-extension"))
     testImplementation(project(":serde-test"))
     testImplementation(project(":test-service-json"))
-    testImplementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:kafka:$testContainersVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
