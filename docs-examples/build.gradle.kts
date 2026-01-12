@@ -19,7 +19,7 @@ plugins {
     id("org.creekservice.system.test") version "0.4.3"
 
 // begin-snippet: module-plugin
-    id("org.javamodularity.moduleplugin") version "1.8.15"
+    id("org.javamodularity.moduleplugin") version "2.0.0"
 // end-snippet
 }
 
@@ -48,7 +48,7 @@ dependencies {
     testImplementation("org.creekservice:creek-kafka-streams-test:0.4.3")
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:3.0")
-    testImplementation(platform("org.junit:junit-bom:5.13.4"))
+    testImplementation(platform("org.junit:junit-bom:6.0.2"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

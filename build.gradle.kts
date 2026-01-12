@@ -22,7 +22,7 @@ plugins {
     `creek-coverage-convention`
     `creek-publishing-convention` apply false
     `creek-sonatype-publishing-convention`
-    id("pl.allegro.tech.build.axion-release") version "1.20.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
+    id("pl.allegro.tech.build.axion-release") version "1.21.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.bmuschko.docker-remote-api") version "9.4.0" apply false
     id("org.creekservice.schema.json") version "0.4.3" apply false
 }
@@ -76,14 +76,14 @@ subprojects {
         set("jacksonVersion", "2.20.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
         set("jacksonAnnotationsVersion", "2.20") // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("slf4jVersion", "2.0.17")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-        set("log4jVersion", "2.25.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+        set("log4jVersion", "2.25.3")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("guavaVersion", "33.4.8-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.13.4")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.19.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
+        set("mockitoVersion", "5.21.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("confluentVersion", "8.0.0")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
+        set("confluentVersion", "8.1.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
         set("testContainersVersion", "1.19.8")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
