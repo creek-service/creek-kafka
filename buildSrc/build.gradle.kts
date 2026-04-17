@@ -35,11 +35,6 @@ kotlin {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = "$jvmTargetVer"
-    }
-}
 
 dependencies {
     implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.13")                // https://plugins.gradle.org/plugin/com.github.spotbugs
