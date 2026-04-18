@@ -160,6 +160,12 @@ public final class KafkaSerdeProviderFunctionalFixture {
         brokerByCluster.clear();
     }
 
+    /**
+     * Returns the Kafka container for the named cluster.
+     *
+     * @param clusterName the name of the cluster
+     * @return the container running the Kafka broker for the cluster
+     */
     public GenericContainer<?> kafkaContainer(final String clusterName) {
         final ConfluentKafkaContainer found = brokerByCluster.get(clusterName);
         if (found == null) {
@@ -219,6 +225,7 @@ public final class KafkaSerdeProviderFunctionalFixture {
         }
     }
 
+    /** Provides access to Kafka topics and test producer/consumer utilities for a test service instance. */
     public final class Tester implements Closeable {
 
         private final CreekContext creek;
@@ -236,6 +243,14 @@ public final class KafkaSerdeProviderFunctionalFixture {
             testers.add(this);
         }
 
+        /**
+         * Returns the accessor for the named topic.
+         *
+         * @param descriptor the topic descriptor
+         * @param <K> the key type
+         * @param <V> the value type
+         * @return the topic accessor
+         */
         public <K, V> KafkaTopic<K, V> topic(final KafkaTopicDescriptor<K, V> descriptor) {
             return extension.topic(descriptor);
         }

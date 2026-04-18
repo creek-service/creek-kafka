@@ -37,9 +37,13 @@ dependencies {
 // Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
 modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
 
-// Export org.testcontainers.kafka from the patched testcontainers module for main source:
+// Export org.testcontainers.kafka from the patched testcontainers module for main source and javadoc:
 tasks.compileJava {
     options.compilerArgs.add("--add-exports=testcontainers/org.testcontainers.kafka=creek.kafka.serde.test")
     options.compilerArgs.add("-Xlint:-exports")
+}
+
+tasks.javadoc {
+    (options as CoreJavadocOptions).addStringOption("-add-exports", "testcontainers/org.testcontainers.kafka=creek.kafka.serde.test")
 }
 
