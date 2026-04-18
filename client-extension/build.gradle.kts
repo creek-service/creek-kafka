@@ -33,9 +33,10 @@ dependencies {
 
     testImplementation("org.creekservice:creek-service-context:$creekVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
-    testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
-    testImplementation("org.testcontainers:kafka:$testContainersVersion")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
+    testImplementation("org.testcontainers:testcontainers-kafka:$testContainersVersion")
 }
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
-modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")
+// Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
+modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")

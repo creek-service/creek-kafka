@@ -52,8 +52,9 @@ import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
-import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -74,12 +75,12 @@ import org.testcontainers.utility.DockerImageName;
 public final class KafkaSerdeProviderFunctionalFixture {
 
     private static final DockerImageName KAFKA_IMAGE_NAME =
-            DockerImageName.parse("confluentinc/cp-kafka:7.3.1");
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.0");
     private static final int CONTAINER_STARTUP_ATTEMPTS = 3;
     private static final Duration CONTAINER_STARTUP_TIMEOUT = Duration.ofSeconds(90);
 
     private final Network network = Network.newNetwork();
-    private final Map<String, KafkaContainer> brokerByCluster;
+    private final Map<String, ConfluentKafkaContainer> brokerByCluster;
     private final List<CreatableKafkaTopic<?, ?>> topics;
     private final List<CreekExtensionOptions> options = new ArrayList<>();
     private final List<Tester> testers = new ArrayList<>();
@@ -106,10 +107,12 @@ public final class KafkaSerdeProviderFunctionalFixture {
                                 toMap(
                                         Function.identity(),
                                         clusterName ->
-                                                new KafkaContainer(KAFKA_IMAGE_NAME)
+                                                new ConfluentKafkaContainer(KAFKA_IMAGE_NAME)
                                                         .withNetwork(network)
                                                         .withNetworkAliases(
                                                                 clusterName + "-kafka-broker")
+                                                        .withListener(
+                                                                clusterName + "-kafka-broker:19092")
                                                         .withStartupAttempts(
                                                                 CONTAINER_STARTUP_ATTEMPTS)
                                                         .withStartupTimeout(
@@ -145,7 +148,7 @@ public final class KafkaSerdeProviderFunctionalFixture {
      * @return {@link Tester} instance that can be used to test serde operations.
      */
     public Tester start() {
-        brokerByCluster.values().forEach(KafkaContainer::start);
+        brokerByCluster.values().forEach(ConfluentKafkaContainer::start);
         return new Tester(topics);
     }
 
@@ -153,12 +156,12 @@ public final class KafkaSerdeProviderFunctionalFixture {
     public void stop() {
         testers.forEach(Tester::close);
         testers.clear();
-        brokerByCluster.values().forEach(KafkaContainer::stop);
+        brokerByCluster.values().forEach(ConfluentKafkaContainer::stop);
         brokerByCluster.clear();
     }
 
-    public KafkaContainer kafkaContainer(final String clusterName) {
-        final KafkaContainer found = brokerByCluster.get(clusterName);
+    public GenericContainer<?> kafkaContainer(final String clusterName) {
+        final ConfluentKafkaContainer found = brokerByCluster.get(clusterName);
         if (found == null) {
             throw new IllegalArgumentException("Unknown cluster: " + clusterName);
         }

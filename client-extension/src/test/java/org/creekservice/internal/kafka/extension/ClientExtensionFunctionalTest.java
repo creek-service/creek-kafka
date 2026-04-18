@@ -65,9 +65,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SuppressWarnings("SameParameterValue")
@@ -76,9 +76,10 @@ import org.testcontainers.utility.DockerImageName;
 @Execution(ExecutionMode.SAME_THREAD) // Due to static state
 class ClientExtensionFunctionalTest {
 
+    // Todo: update to 8.1.1 - better yet, pick it up from a system prop. - others too.
     @Container
-    private static final KafkaContainer KAFKA_CLUSTER =
-            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
+    private static final ConfluentKafkaContainer KAFKA_CLUSTER =
+            new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");

@@ -30,8 +30,16 @@ dependencies {
     implementation(project(":client-extension"))
     implementation("org.creekservice:creek-service-context:$creekVersion")
 
-    implementation("org.testcontainers:kafka:$testContainersVersion")
+    implementation("org.testcontainers:testcontainers-kafka:$testContainersVersion")
 }
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
-modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")
+// Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
+modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
+
+// Export org.testcontainers.kafka from the patched testcontainers module for main source:
+tasks.compileJava {
+    options.compilerArgs.add("--add-exports=testcontainers/org.testcontainers.kafka=creek.kafka.serde.test")
+    options.compilerArgs.add("-Xlint:-exports")
+}
+

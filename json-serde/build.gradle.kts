@@ -51,13 +51,13 @@ dependencies {
     testImplementation(project(":client-extension"))
     testImplementation(project(":serde-test"))
     testImplementation(project(":test-service-json"))
-    testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
-    testImplementation("org.testcontainers:kafka:$testContainersVersion")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 }
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
-modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")
+// Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
+modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
 
 creek.schema.json {
     typeScanning.packageWhiteList("org.creekservice.api.kafka.serde.json", "org.creekservice.internal.kafka.serde.json")
