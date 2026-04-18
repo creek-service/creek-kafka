@@ -31,7 +31,9 @@ import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
 
-/** Default implementation of {@link JsonSchemaStoreClient} backed by the Confluent schema registry. */
+/**
+ * Default implementation of {@link JsonSchemaStoreClient} backed by the Confluent schema registry.
+ */
 public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreClient {
 
     private final String schemaRegistryName;

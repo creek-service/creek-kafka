@@ -225,7 +225,10 @@ public final class KafkaSerdeProviderFunctionalFixture {
         }
     }
 
-    /** Provides access to Kafka topics and test producer/consumer utilities for a test service instance. */
+    /**
+     * Provides access to Kafka topics and test producer/consumer utilities for a test service
+     * instance.
+     */
     public final class Tester implements Closeable {
 
         private final CreekContext creek;

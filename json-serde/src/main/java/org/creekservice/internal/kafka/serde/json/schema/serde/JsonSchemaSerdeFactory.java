@@ -27,7 +27,10 @@ import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 
-/** Factory for creating JSON schema-validating Kafka {@link org.apache.kafka.common.serialization.Serde} instances. */
+/**
+ * Factory for creating JSON schema-validating Kafka {@link
+ * org.apache.kafka.common.serialization.Serde} instances.
+ */
 public final class JsonSchemaSerdeFactory {
 
     private final JsonMapper jsonMapper;

@@ -34,7 +34,10 @@ import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.internal.kafka.serde.json.schema.store.SchemaStore;
 import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
 
-/** Handles the lifecycle of JSON schema resources, ensuring they are registered in the schema registry. */
+/**
+ * Handles the lifecycle of JSON schema resources, ensuring they are registered in the schema
+ * registry.
+ */
 public final class JsonSchemaResourceHandler implements ResourceHandler<JsonSchemaDescriptor<?>> {
 
     private final SrSchemaStores schemaStores;
