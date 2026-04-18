@@ -43,6 +43,12 @@ public final class ProducerSchema implements YamlSchema {
         this.json = requireNonNull(json, "json");
     }
 
+    /**
+     * Create a {@link ProducerSchema} from a YAML string.
+     *
+     * @param yaml the YAML representation of the schema.
+     * @return the producer schema.
+     */
     public static ProducerSchema fromYaml(final String yaml) {
         final ProducerSchema schema = new ProducerSchema(yaml, Optional.empty());
         schema.validateYaml();
@@ -50,6 +56,12 @@ public final class ProducerSchema implements YamlSchema {
         return schema;
     }
 
+    /**
+     * Create a {@link ProducerSchema} from a JSON string.
+     *
+     * @param json the JSON representation of the schema.
+     * @return the producer schema.
+     */
     public static ProducerSchema fromJson(final String json) {
         final ProducerSchema schema =
                 new ProducerSchema(YamlSchemas.jsonToYaml(json), Optional.of(json));

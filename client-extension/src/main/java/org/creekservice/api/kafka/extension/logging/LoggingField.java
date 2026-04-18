@@ -18,7 +18,10 @@ package org.creekservice.api.kafka.extension.logging;
 
 /** Common logging fields. */
 public enum LoggingField {
+    /** The set of partition counts. */
     partitions,
+    /** The set of topic IDs. */
     topicIds,
+    /** A single topic ID. */
     topicId
 }

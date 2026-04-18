@@ -27,6 +27,7 @@ import org.creekservice.internal.kafka.serde.json.schema.store.RegisteredSchema;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 
+/** Factory for creating JSON schema-validating Kafka {@link org.apache.kafka.common.serialization.Serde} instances. */
 public final class JsonSchemaSerdeFactory {
 
     private final JsonMapper jsonMapper;
@@ -42,6 +43,14 @@ public final class JsonSchemaSerdeFactory {
                 .forEach(jsonMapper::registerSubtypes);
     }
 
+    /**
+     * Create a serde for the given registered schema.
+     *
+     * @param <T> the type to serialize and deserialize.
+     * @param schema the registered schema that defines the format and type.
+     * @return a Kafka serde that validates against the schema on both serialization and
+     *     deserialization.
+     */
     public <T> Serde<T> create(final RegisteredSchema<T> schema) {
         final SchemaValidator producerValidator = new SchemaFriendValidator(schema.schema());
         final SchemaValidator consumerValidator =

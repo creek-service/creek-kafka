@@ -34,6 +34,9 @@ public final class SchemaFriendValidator implements SchemaValidator {
     private final Validator validator;
     private final Schema parsedSchema;
 
+    /**
+     * @param schema the YAML schema to validate against.
+     */
     public SchemaFriendValidator(final YamlSchema schema) {
         this(schema, new Validator(true));
     }
@@ -64,13 +67,19 @@ public final class SchemaFriendValidator implements SchemaValidator {
         }
     }
 
+    /** Thrown when the schema cannot be parsed by the validator. */
     public static final class FailedToParseSchemaException extends SchemaException {
 
+        /**
+         * @param schema the schema that failed to parse.
+         * @param cause the underlying parse error.
+         */
         public FailedToParseSchemaException(final YamlSchema schema, final Throwable cause) {
             super("Failed to parse schema: " + schema.asJsonText(), cause);
         }
     }
 
+    /** Thrown when JSON data fails schema validation. */
     @VisibleForTesting
     public static final class JsonSchemaValidationFailed extends SchemaException {
         JsonSchemaValidationFailed(

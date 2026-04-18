@@ -52,10 +52,16 @@ public final class SchemaStoreEndpoints {
         }
     }
 
+    /**
+     * @return the set of URIs the schema registry is listening on.
+     */
     public Set<URI> endpoints() {
         return endpoints;
     }
 
+    /**
+     * @return an immutable copy of the schema registry client configuration.
+     */
     public Map<String, ?> configs() {
         return Map.copyOf(configs);
     }

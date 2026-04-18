@@ -26,6 +26,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /** Singleton Jackson JsonMapper, configured with base config and serde. */
 public enum BaseJsonMapper {
+    /** The singleton instance. */
     INSTANCE;
 
     private final JsonMapper mapper =
@@ -49,6 +50,9 @@ public enum BaseJsonMapper {
                     .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
                     .build();
 
+    /**
+     * @return a copy of the base {@link JsonMapper} with all base configuration applied.
+     */
     public static JsonMapper get() {
         return INSTANCE.mapper.copy();
     }

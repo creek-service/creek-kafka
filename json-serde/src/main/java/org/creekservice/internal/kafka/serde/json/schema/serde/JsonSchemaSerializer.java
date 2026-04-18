@@ -25,12 +25,21 @@ import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescri
 import org.creekservice.internal.kafka.serde.json.mapper.JsonWriter;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 
+/**
+ * Kafka serializer that validates the outgoing data against a schema before serializing to JSON.
+ *
+ * @param <T> the type to serialize.
+ */
 public final class JsonSchemaSerializer<T> implements Serializer<T> {
 
     private final JsonWriter<T> mapper;
     private final SchemaValidator validator;
     private Part part;
 
+    /**
+     * @param validator the schema validator to use for validating outgoing data.
+     * @param mapper the JSON writer to use for serialization.
+     */
     public JsonSchemaSerializer(final SchemaValidator validator, final JsonWriter<T> mapper) {
         this.mapper = requireNonNull(mapper, "mapper");
         this.validator = requireNonNull(validator, "validator");

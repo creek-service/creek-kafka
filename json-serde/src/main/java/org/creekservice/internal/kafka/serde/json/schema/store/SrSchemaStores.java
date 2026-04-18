@@ -32,6 +32,11 @@ public final class SrSchemaStores {
     private final SchemaStoreFactory schemaStoreFactory;
     private final Map<String, SrSchemaStore> cache = new ConcurrentHashMap<>();
 
+    /**
+     * @param endpointsLoader loader for resolving schema registry endpoint details by instance
+     *     name.
+     * @param clientFactory factory for creating schema registry clients.
+     */
     public SrSchemaStores(
             final SchemaStoreEndpoints.Loader endpointsLoader,
             final JsonSchemaStoreClient.Factory clientFactory) {
@@ -48,6 +53,12 @@ public final class SrSchemaStores {
         this.schemaStoreFactory = requireNonNull(schemaStoreFactory, "schemaStoreFactory");
     }
 
+    /**
+     * Get or create a {@link SchemaStore} for the given schema registry instance name.
+     *
+     * @param schemaRegistryName the logical name of the schema registry instance.
+     * @return the schema store for the named registry.
+     */
     public SchemaStore get(final String schemaRegistryName) {
         return cache.computeIfAbsent(schemaRegistryName, this::create);
     }

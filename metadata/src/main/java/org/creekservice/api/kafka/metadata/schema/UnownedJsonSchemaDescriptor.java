@@ -18,4 +18,9 @@ package org.creekservice.api.kafka.metadata.schema;
 
 import org.creekservice.api.platform.metadata.UnownedResource;
 
+/**
+ * Descriptor for a JSON schema resource that is owned by another component.
+ *
+ * @param <T> the Java type associated with the schema.
+ */
 public interface UnownedJsonSchemaDescriptor<T> extends JsonSchemaDescriptor<T>, UnownedResource {}
