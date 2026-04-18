@@ -76,7 +76,6 @@ import org.testcontainers.utility.DockerImageName;
 @Execution(ExecutionMode.SAME_THREAD) // Due to static state
 class ClientExtensionFunctionalTest {
 
-    // Todo: update to 8.1.1 - better yet, pick it up from a system prop. - others too.
     @Container
     private static final ConfluentKafkaContainer KAFKA_CLUSTER =
             new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
