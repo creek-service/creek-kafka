@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -30,7 +29,8 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
     private static final int PORT = 8081;
 
     @SuppressWarnings("resource")
-    public SchemaRegistryContainer(final DockerImageName imageName, final KafkaContainer kafka) {
+    public SchemaRegistryContainer(
+            final DockerImageName imageName, final GenericContainer<?> kafka) {
         super(imageName);
 
         withExposedPorts(PORT)
@@ -40,7 +40,7 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
                 .withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:" + PORT)
                 .withEnv(
                         "SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS",
-                        "PLAINTEXT://" + kafka.getNetworkAliases().get(0) + ":9092")
+                        "PLAINTEXT://" + kafka.getNetworkAliases().get(0) + ":19092")
                 .withEnv("SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL", "full_transitive")
                 .dependsOn(kafka)
                 .setWaitStrategy(new HostPortWaitStrategy());

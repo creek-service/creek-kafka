@@ -32,6 +32,7 @@ public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
     private final Map<URI, KafkaTopic<?, ?>> topics = new HashMap<>();
     private final KafkaResourceValidator validator;
 
+    /** Creates a new registry with the default validator. */
     public ResourceRegistry() {
         this(new KafkaResourceValidator());
     }

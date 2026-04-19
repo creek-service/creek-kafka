@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Coverage Status](https://coveralls.io/repos/github/creek-service/creek-kafka/badge.svg?branch=main)](https://coveralls.io/github/creek-service/creek-kafka?branch=main)
+[![codecov](https://codecov.io/gh/creek-service/creek-kafka/branch/main/graph/badge.svg)](https://codecov.io/gh/creek-service/creek-kafka)
 [![build](https://github.com/creek-service/creek-kafka/actions/workflows/build.yml/badge.svg)](https://github.com/creek-service/creek-kafka/actions/workflows/build.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.creekservice/creek-kafka-streams-extension.svg)](https://central.sonatype.dev/search?q=creek-kafka-*)
 [![CodeQL](https://github.com/creek-service/creek-kafka/actions/workflows/codeql.yml/badge.svg)](https://github.com/creek-service/creek-kafka/actions/workflows/codeql.yml)

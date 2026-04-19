@@ -55,6 +55,7 @@ import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEn
 public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreEndpoints.Loader {
 
     private static final String SR_PREFIX = "SCHEMA_REGISTRY_";
+
     /**
      * Environment var used to set the endpoints for a schema registry instance.
      *
@@ -64,6 +65,7 @@ public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreE
 
     private final Map<String, String> env;
 
+    /** Creates a loader that reads from the system environment variables. */
     public SystemEnvSchemaRegistryEndpointLoader() {
         this(System.getenv());
     }

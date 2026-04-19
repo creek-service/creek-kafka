@@ -133,7 +133,7 @@ class StartKafkaTestListenerFunctionalTest {
         final CreekTestSuite suite = mock(CreekTestSuite.class);
         final KafkaOptions options = mock(KafkaOptions.class);
         when(suite.options(KafkaOptions.class)).thenReturn(List.of(options));
-        when(options.kafkaDockerImage()).thenReturn("confluentinc/cp-kafka:7.1.4");
+        when(options.kafkaDockerImage()).thenReturn("confluentinc/cp-kafka:7.6.1");
 
         // When:
         listener.beforeSuite(suite);
@@ -143,7 +143,7 @@ class StartKafkaTestListenerFunctionalTest {
         assertThat(EXT_TESTER.runningContainerIds().get("kafka-default-0"), is(running()));
         assertThat(
                 dockerImageName(EXT_TESTER.runningContainerIds().get("kafka-default-0")),
-                is("confluentinc/cp-kafka:7.1.4"));
+                is("confluentinc/cp-kafka:7.6.1"));
     }
 
     @Test

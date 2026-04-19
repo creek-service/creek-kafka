@@ -47,6 +47,12 @@ public final class YamlSchemas {
 
     private YamlSchemas() {}
 
+    /**
+     * Convert a JSON schema string to YAML format.
+     *
+     * @param json the JSON schema text to convert.
+     * @return the equivalent YAML schema text.
+     */
     public static String jsonToYaml(final String json) {
         requireNonNull(json);
         try {
@@ -57,6 +63,12 @@ public final class YamlSchemas {
         }
     }
 
+    /**
+     * Convert a YAML schema string to JSON format.
+     *
+     * @param yaml the YAML schema text to convert.
+     * @return the equivalent JSON schema text.
+     */
     public static String yamlToJson(final String yaml) {
         requireNonNull(yaml);
         try {
@@ -67,6 +79,12 @@ public final class YamlSchemas {
         }
     }
 
+    /**
+     * Convert a YAML schema string to a plain Java object suitable for use with schema validators.
+     *
+     * @param yaml the YAML schema text to convert.
+     * @return the schema as a plain Java object.
+     */
     public static Object yamlToObject(final String yaml) {
         final JsonNode jsonNode = yamlToJsonNode(requireNonNull(yaml));
 
@@ -77,6 +95,12 @@ public final class YamlSchemas {
         }
     }
 
+    /**
+     * Validate that the provided YAML string is a valid JSON schema.
+     *
+     * @param yaml the YAML schema text to validate.
+     * @throws InvalidSchemaException if the YAML is not a valid JSON schema.
+     */
     public static void validate(final String yaml) {
         final JsonNode jsonNode = yamlToJsonNode(requireNonNull(yaml));
 
@@ -88,6 +112,13 @@ public final class YamlSchemas {
         }
     }
 
+    /**
+     * Check whether the given YAML schema uses a closed content model, i.e. all object definitions
+     * have {@code additionalProperties: false}.
+     *
+     * @param yaml the YAML schema text to check.
+     * @return {@code true} if all object definitions have a closed content model.
+     */
     public static boolean isClosedContentModel(final String yaml) {
         final JsonNode jsonNode = yamlToJsonNode(requireNonNull(yaml));
         final AtomicBoolean notClosed = new AtomicBoolean(false);
@@ -111,6 +142,13 @@ public final class YamlSchemas {
         return !notClosed.get();
     }
 
+    /**
+     * Convert a YAML schema to use an open content model by setting {@code additionalProperties:
+     * true} on all object definitions.
+     *
+     * @param yaml the YAML schema text to convert.
+     * @return the schema with all object definitions converted to an open content model.
+     */
     public static String toOpenContentModel(final String yaml) {
         final JsonNode jsonNode = yamlToJsonNode(requireNonNull(yaml));
 

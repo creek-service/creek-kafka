@@ -37,8 +37,16 @@ public interface KafkaSerdeProvider {
      */
     SerializationFormat format();
 
+    /**
+     * Initialize the serde provider, registering any resource handlers and returning a factory that
+     * can produce serdes.
+     *
+     * @param api the Creek service API.
+     * @return the serde factory.
+     */
     SerdeFactory initialize(CreekService api);
 
+    /** Factory for creating Kafka serdes for individual topic parts. */
     interface SerdeFactory {
 
         /**
