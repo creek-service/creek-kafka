@@ -22,11 +22,21 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.util.Map;
 
+/**
+ * Generic JSON mapper that reads and writes objects of a specific type using the provided {@link
+ * JsonMapper}.
+ *
+ * @param <T> the type to serialize and deserialize.
+ */
 public final class GenericMapper<T> implements JsonReader<T>, JsonWriter<T> {
 
     private final Class<T> type;
     private final JsonMapper mapper;
 
+    /**
+     * @param type the Java type to map.
+     * @param mapper the Jackson JSON mapper to use.
+     */
     public GenericMapper(final Class<T> type, final JsonMapper mapper) {
         this.type = requireNonNull(type, "type");
         this.mapper = requireNonNull(mapper, "mapper");

@@ -25,12 +25,21 @@ import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescri
 import org.creekservice.internal.kafka.serde.json.mapper.JsonReader;
 import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaValidator;
 
+/**
+ * Kafka deserializer that validates the incoming JSON bytes against a schema before deserializing.
+ *
+ * @param <T> the type to deserialize to.
+ */
 public final class JsonSchemaDeserializer<T> implements Deserializer<T> {
 
     private final JsonReader<T> mapper;
     private final SchemaValidator validator;
     private Part part;
 
+    /**
+     * @param validator the schema validator to use for validating incoming data.
+     * @param mapper the JSON reader to use for deserialization.
+     */
     public JsonSchemaDeserializer(final SchemaValidator validator, final JsonReader<T> mapper) {
         this.mapper = requireNonNull(mapper, "mapper");
         this.validator = requireNonNull(validator, "validator");

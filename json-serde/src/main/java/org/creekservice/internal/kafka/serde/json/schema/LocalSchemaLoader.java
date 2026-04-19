@@ -23,10 +23,17 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.schema.GeneratedSchemas;
 import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 
+/** Loads JSON schemas from the classpath. */
 public final class LocalSchemaLoader {
 
     private LocalSchemaLoader() {}
 
+    /**
+     * Load the JSON schema for the given type from the classpath.
+     *
+     * @param type the type whose schema should be loaded.
+     * @return the loaded producer schema.
+     */
     public static ProducerSchema loadFromClasspath(final Class<?> type) {
         final URL resource = findResource(type);
         return load(resource);
