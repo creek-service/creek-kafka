@@ -48,6 +48,7 @@ import org.creekservice.internal.kafka.serde.json.schema.store.SrSchemaStores;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
 import org.creekservice.internal.kafka.serde.json.schema.store.endpoint.SystemEnvSchemaRegistryEndpointLoader;
 
+/** Serde provider for the JSON schema serialization format. */
 public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
 
     private static final int MAX_CACHED_SCHEMAS = 1000;
@@ -56,6 +57,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
     private final SchemaStoreEndpoints.Loader defaultSchemaStoreEndpointLoader;
     private final SchemaStoresFactory schemaStoresFactory;
 
+    /** Creates a new provider using default schema store client and endpoint loader. */
     public JsonSchemaSerdeProvider() {
         this(
                 JsonSchemaSerdeProvider::createClient,

@@ -73,7 +73,7 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
     /** Descriptor for part of a topic's record. */
     interface PartDescriptor<T> extends ResourceCollection {
 
-        /** Identifies which part of a Kafka record this descriptor describes. */
+        /** Identifies which part of a Kafka record (key or value) is being described. */
         enum Part {
             /** The key part of the Kafka record. */
             key,

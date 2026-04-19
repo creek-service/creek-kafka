@@ -21,6 +21,11 @@ import static java.util.Objects.requireNonNull;
 import java.util.Objects;
 import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
 
+/**
+ * Represents a JSON schema that has been registered in the schema registry.
+ *
+ * @param <T> the Java type associated with the schema.
+ */
 public final class RegisteredSchema<T> {
 
     private final ProducerSchema schema;
@@ -28,6 +33,12 @@ public final class RegisteredSchema<T> {
     private final String subject;
     private final Class<T> type;
 
+    /**
+     * @param schema the producer schema that was registered.
+     * @param schemaId the ID assigned by the schema registry.
+     * @param subject the subject name used to register the schema.
+     * @param type the Java type associated with the schema.
+     */
     public RegisteredSchema(
             final ProducerSchema schema,
             final int schemaId,
@@ -54,14 +65,23 @@ public final class RegisteredSchema<T> {
                 && Objects.equals(type, that.type);
     }
 
+    /**
+     * @return the ID assigned to the schema by the schema registry.
+     */
     public int id() {
         return schemaId;
     }
 
+    /**
+     * @return the registered producer schema.
+     */
     public ProducerSchema schema() {
         return schema;
     }
 
+    /**
+     * @return the Java type associated with this schema.
+     */
     public Class<T> type() {
         return type;
     }

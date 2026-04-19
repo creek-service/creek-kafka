@@ -21,7 +21,6 @@ plugins {
 val kafkaVersion : String by extra
 val creekVersion : String by extra
 val spotBugsVersion : String by extra
-val testContainersVersion : String by extra
 
 dependencies {
     api(project(":client-extension"))

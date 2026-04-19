@@ -27,4 +27,5 @@ dependencies {
 }
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
-modularity.patchModule("testcontainers", "kafka-$testContainersVersion.jar")
+// Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
+modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")

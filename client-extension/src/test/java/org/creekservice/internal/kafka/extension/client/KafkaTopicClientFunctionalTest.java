@@ -54,9 +54,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
@@ -67,8 +67,8 @@ import org.testcontainers.utility.DockerImageName;
 class KafkaTopicClientFunctionalTest {
 
     @Container
-    private static final KafkaContainer KAFKA_CLUSTER =
-            new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.1"))
+    private static final ConfluentKafkaContainer KAFKA_CLUSTER =
+            new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90))
                     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");

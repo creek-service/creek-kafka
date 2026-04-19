@@ -65,6 +65,7 @@ public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreE
 
     private final Map<String, String> env;
 
+    /** Creates a loader that reads from the system environment variables. */
     public SystemEnvSchemaRegistryEndpointLoader() {
         this(System.getenv());
     }

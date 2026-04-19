@@ -18,9 +18,26 @@ package org.creekservice.internal.kafka.serde.json.schema.store;
 
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor;
 
+/** Provides access to a schema registry for registering and loading JSON schemas. */
 public interface SchemaStore {
 
+    /**
+     * Load the schema for the given topic part from the classpath and register it in the schema
+     * registry, checking compatibility with any existing versions.
+     *
+     * @param <T> the Java type of the topic part.
+     * @param part the topic part descriptor.
+     * @return the registered schema.
+     */
     <T> RegisteredSchema<T> registerFromClasspath(PartDescriptor<T> part);
 
+    /**
+     * Load the schema for the given topic part from the classpath and retrieve its registration
+     * details from the schema registry.
+     *
+     * @param <T> the Java type of the topic part.
+     * @param part the topic part descriptor.
+     * @return the registered schema.
+     */
     <T> RegisteredSchema<T> loadFromClasspath(PartDescriptor<T> part);
 }

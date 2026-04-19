@@ -16,8 +16,12 @@
 
 package org.creekservice.internal.kafka.serde.json.logging;
 
+/** Logging fields used in JSON serde structured log output. */
 public enum LoggingField {
+    /** The topic part (key or value). */
     part,
+    /** The schema ID assigned by the schema registry. */
     schemaId,
+    /** A topic ID. */
     topicId
 }
