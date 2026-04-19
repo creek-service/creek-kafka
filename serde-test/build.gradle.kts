@@ -22,7 +22,6 @@ val creekVersion : String by extra
 val kafkaVersion : String by extra
 val spotBugsVersion : String by extra
 val testContainersVersion : String by extra
-val confluentVersion : String by extra
 
 dependencies {
     api(project(":serde"))
@@ -47,20 +46,3 @@ tasks.compileJava {
 tasks.javadoc {
     (options as CoreJavadocOptions).addStringOption("-add-exports", "testcontainers/org.testcontainers.kafka=creek.kafka.serde.test")
 }
-
-val generateProperties by tasks.registering {
-    val outputDir = layout.buildDirectory.dir("generated/resources/main")
-    outputs.dir(outputDir)
-    inputs.property("confluentVersion", confluentVersion)
-
-    doLast {
-        val propsFile = outputDir.get().file("creek-kafka-serde-test.properties").asFile
-        propsFile.parentFile.mkdirs()
-        propsFile.writeText("confluentVersion=$confluentVersion\n")
-    }
-}
-
-sourceSets.main {
-    resources.srcDir(generateProperties)
-}
-

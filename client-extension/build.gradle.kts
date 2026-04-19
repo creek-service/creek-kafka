@@ -21,6 +21,7 @@ plugins {
 val creekVersion : String by extra
 val kafkaVersion : String by extra
 val testContainersVersion : String by extra
+val confluentVersion : String by extra
 
 dependencies {
     api(project(":metadata"))
@@ -40,3 +41,19 @@ dependencies {
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
 // Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
 modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
+
+val generateProperties by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/resources/main")
+    outputs.dir(outputDir)
+    inputs.property("confluentVersion", confluentVersion)
+
+    doLast {
+        val propsFile = outputDir.get().file("creek-kafka-clients-extension.properties").asFile
+        propsFile.parentFile.mkdirs()
+        propsFile.writeText("confluentVersion=$confluentVersion\n")
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(generateProperties)
+}
