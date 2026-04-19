@@ -50,10 +50,21 @@ public final class CompatabilityChecker {
 
     private final JsonSchemaStoreClient client;
 
+    /**
+     * @param client the schema store client used to retrieve existing schema versions.
+     */
     public CompatabilityChecker(final JsonSchemaStoreClient client) {
         this.client = requireNonNull(client, "client");
     }
 
+    /**
+     * Check that the proposed schema is both backwards and forwards compatible with all previously
+     * registered versions.
+     *
+     * @param subject the schema registry subject to check against.
+     * @param newProducerSchema the proposed new producer schema.
+     * @throws IncompatibleSchemaException if the schema is not compatible with an existing version.
+     */
     public void checkCompatability(final String subject, final ProducerSchema newProducerSchema) {
         final ConsumerSchema newConsumerSchema = newProducerSchema.toConsumerSchema();
 

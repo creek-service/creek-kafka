@@ -19,10 +19,17 @@ package org.creekservice.internal.kafka.serde.json.schema;
 /** Base type for exceptions relating to schema handling. */
 public abstract class SchemaException extends RuntimeException {
 
+    /**
+     * @param message the detail message.
+     */
     public SchemaException(final String message) {
         super(message);
     }
 
+    /**
+     * @param message the detail message.
+     * @param cause the cause of the exception.
+     */
     public SchemaException(final String message, final Throwable cause) {
         super(message, cause);
     }

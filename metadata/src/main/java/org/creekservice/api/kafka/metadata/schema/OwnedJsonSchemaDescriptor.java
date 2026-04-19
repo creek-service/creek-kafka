@@ -18,5 +18,9 @@ package org.creekservice.api.kafka.metadata.schema;
 
 import org.creekservice.api.platform.metadata.OwnedResource;
 
-/** Descriptor for an owned JSON schema resource. */
+/**
+ * Descriptor for a JSON schema resource that is owned by the component declaring it.
+ *
+ * @param <T> the Java type associated with the schema.
+ */
 public interface OwnedJsonSchemaDescriptor<T> extends JsonSchemaDescriptor<T>, OwnedResource {}

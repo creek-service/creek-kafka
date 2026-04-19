@@ -7,6 +7,9 @@
 --add-reads
   creek.kafka.clients.extension=creek.observability.logging.fixtures
 
+--add-exports
+  testcontainers/org.testcontainers.kafka=creek.kafka.clients.extension
+
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
 
@@ -23,7 +26,13 @@
   creek.kafka.clients.extension/org.creekservice.internal.kafka.extension=junit.jupiter
 
 --add-opens
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension=testcontainers.junit.jupiter
+
+--add-opens
   creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=junit.jupiter
+
+--add-opens
+  creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.client=testcontainers.junit.jupiter
 
 --add-opens
   creek.kafka.clients.extension/org.creekservice.internal.kafka.extension.config=com.google.common.testlib
