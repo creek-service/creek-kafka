@@ -111,6 +111,7 @@ subprojects {
     val junitVersion: String by extra
     val junitPioneerVersion: String by extra
     val mockitoVersion: String by extra
+    val confluentVersion : String by extra
 
     dependencies {
         constraints {
@@ -131,6 +132,10 @@ subprojects {
         testImplementation("com.google.guava:guava-testlib:$guavaVersion")
         testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    }
+
+    tasks.withType<Test>().configureEach {
+        systemProperty("confluentVersion", confluentVersion)
     }
 }
 

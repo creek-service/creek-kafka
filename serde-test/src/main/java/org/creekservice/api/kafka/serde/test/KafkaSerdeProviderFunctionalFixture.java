@@ -23,12 +23,15 @@ import static org.apache.kafka.clients.CommonClientConfigs.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -74,8 +77,9 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class KafkaSerdeProviderFunctionalFixture {
 
+    private static final String PROPERTIES_FILE = "creek-kafka-serde-test.properties";
     private static final DockerImageName KAFKA_IMAGE_NAME =
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.0");
+            DockerImageName.parse("confluentinc/cp-kafka:" + loadConfluentVersion());
     private static final int CONTAINER_STARTUP_ATTEMPTS = 3;
     private static final Duration CONTAINER_STARTUP_TIMEOUT = Duration.ofSeconds(90);
 
@@ -187,6 +191,27 @@ public final class KafkaSerdeProviderFunctionalFixture {
                                 cluster, BOOTSTRAP_SERVERS_CONFIG, broker.getBootstrapServers()));
 
         return options.build();
+    }
+
+    private static String loadConfluentVersion() {
+        try (InputStream is =
+                KafkaSerdeProviderFunctionalFixture.class
+                        .getClassLoader()
+                        .getResourceAsStream(PROPERTIES_FILE)) {
+            if (is == null) {
+                throw new IllegalStateException(
+                        "Resource not found on classpath: " + PROPERTIES_FILE);
+            }
+            final Properties props = new Properties();
+            props.load(is);
+            final String version = props.getProperty("confluentVersion", "");
+            if (version.isBlank()) {
+                throw new IllegalStateException("confluentVersion not set in " + PROPERTIES_FILE);
+            }
+            return version;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load " + PROPERTIES_FILE, e);
+        }
     }
 
     private static final class TestServiceDescriptor implements ServiceDescriptor {

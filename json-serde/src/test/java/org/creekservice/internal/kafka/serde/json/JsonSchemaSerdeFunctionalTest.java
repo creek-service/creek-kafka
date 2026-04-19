@@ -147,7 +147,9 @@ class JsonSchemaSerdeFunctionalTest {
     @Container
     private static final SchemaRegistryContainer SCHEMA_REGISTRY_1 =
             new SchemaRegistryContainer(
-                            DockerImageName.parse("confluentinc/cp-schema-registry:7.3.1"),
+                            DockerImageName.parse(
+                                    "confluentinc/cp-schema-registry:"
+                                            + System.getProperty("confluentVersion")),
                             TEST_FIXTURE.kafkaContainer(CLUSTER_NAME_1))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90));
@@ -155,7 +157,9 @@ class JsonSchemaSerdeFunctionalTest {
     @Container
     private static final SchemaRegistryContainer SCHEMA_REGISTRY_2 =
             new SchemaRegistryContainer(
-                            DockerImageName.parse("confluentinc/cp-schema-registry:7.3.1"),
+                            DockerImageName.parse(
+                                    "confluentinc/cp-schema-registry:"
+                                            + System.getProperty("confluentVersion")),
                             TEST_FIXTURE.kafkaContainer(CLUSTER_NAME_2))
                     .withStartupAttempts(3)
                     .withStartupTimeout(Duration.ofSeconds(90));
