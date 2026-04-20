@@ -18,6 +18,8 @@ package org.creekservice.internal.kafka.extension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +27,11 @@ class KafkaClientModulePropertiesTest {
 
     @Test
     void shouldReturnConfluentVersionMatchingSystemProperty() {
-        assertThat(
-                KafkaClientModuleProperties.confluentVersion(),
-                is(System.getProperty("confluentVersion")));
+        // When:
+        final String actual = KafkaClientModuleProperties.confluentVersion();
+
+        // Then:
+        assertThat(actual, is(System.getProperty("confluentVersion")));
+        assertThat(actual, is(not(nullValue())));
     }
 }

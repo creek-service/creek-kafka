@@ -24,7 +24,7 @@ import java.util.Properties;
 public final class KafkaClientModuleProperties {
 
     private static final String PROPERTIES_FILE = "creek-kafka-clients-extension.properties";
-    private static final String CONFLUENT_VERSION = load().getProperty("confluentVersion");
+    private static final String CONFLUENT_VERSION = loadConfluentVersion();
 
     private KafkaClientModuleProperties() {}
 
@@ -35,7 +35,7 @@ public final class KafkaClientModuleProperties {
         return CONFLUENT_VERSION;
     }
 
-    private static Properties load() {
+    private static String loadConfluentVersion() {
         try (InputStream is =
                 KafkaClientModuleProperties.class
                         .getClassLoader()
@@ -50,7 +50,7 @@ public final class KafkaClientModuleProperties {
             if (version == null || version.isBlank()) {
                 throw new IllegalStateException("confluentVersion not set in " + PROPERTIES_FILE);
             }
-            return props;
+            return version;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load " + PROPERTIES_FILE, e);
         }
