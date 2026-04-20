@@ -16,18 +16,14 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.testsuite;
 
-import static java.lang.System.lineSeparator;
 import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
-import static org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance.ExecResult.execResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +54,8 @@ class KafkaContainerDefTest {
             "SERVICE_NETWORK://" + SERVICE_NWK_NAME + ":9092";
     private static final String TEST_NWK_BOOTSTRAP = "TEST_NETWORK://" + TEST_NWK_NAME + ":123456";
 
+    private static final String RANDOM_CLUSTER_ID = "xYz1aB2cD3eF4gH5iJ6kLm";
+
     @Mock private ConfigurableServiceInstance instance;
     @Captor private ArgumentCaptor<String[]> cmdCaptor;
 
@@ -72,6 +70,12 @@ class KafkaContainerDefTest {
         when(instance.testNetworkPort(9093)).thenReturn(123456);
         when(instance.addEnv(any(), any())).thenReturn(instance);
         when(instance.addExposedPorts(anyInt())).thenReturn(instance);
+        when(instance.setStartupLogMessage(any(), anyInt())).thenReturn(instance);
+        when(instance.setStartupTimeout(any())).thenReturn(instance);
+        when(instance.setShutdownTimeout(any())).thenReturn(instance);
+        when(instance.setCommand(any(String[].class))).thenReturn(instance);
+        when(instance.execOnInstance("kafka-storage", "random-uuid"))
+                .thenReturn(ExecResult.execResult(0, RANDOM_CLUSTER_ID + "\n", ""));
     }
 
     @Test
@@ -105,7 +109,19 @@ class KafkaContainerDefTest {
     }
 
     @Test
-    void shouldStartKafkaWithScript() {
+    void shouldConfigureKRaftMode() {
+        // When:
+        def.configureInstance(instance);
+
+        // Then:
+        verify(instance).addEnv("KAFKA_NODE_ID", "1");
+        verify(instance).addEnv("KAFKA_PROCESS_ROLES", "broker,controller");
+        verify(instance).addEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
+        verify(instance).addEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:9094");
+    }
+
+    @Test
+    void shouldConfigureKafkaToWaitForStartScript() {
         // When:
         def.configureInstance(instance);
 
@@ -113,45 +129,8 @@ class KafkaContainerDefTest {
         final List<String> cmd = cmdLine();
         assertThat(cmd.get(0), is("sh"));
         assertThat(cmd.get(1), is("-c"));
-        assertThat(cmd.get(2), startsWith("#!/bin/bash" + lineSeparator()));
-    }
-
-    @Test
-    void shouldConfigureZooKeeperToStart() {
-        // When:
-        def.configureInstance(instance);
-
-        // Then:
-        verify(instance).addEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:2181");
-
-        assertThat(
-                cmdLine().get(2),
-                containsString(
-                        String.join(
-                                lineSeparator(),
-                                List.of(
-                                        "echo 'clientPort=2181' > zookeeper.properties",
-                                        "echo 'dataDir=/var/lib/zookeeper/data' >>"
-                                                + " zookeeper.properties",
-                                        "echo 'dataLogDir=/var/lib/zookeeper/log' >>"
-                                                + " zookeeper.properties",
-                                        "zookeeper-server-start ./zookeeper.properties &"))));
-    }
-
-    @Test
-    void shouldConfigureKafkaToStart() {
-        // When:
-        def.configureInstance(instance);
-
-        // Then:
-        assertThat(
-                cmdLine().get(2),
-                endsWith(
-                        String.join(
-                                lineSeparator(),
-                                List.of(
-                                        "echo '' > /etc/confluent/docker/ensure",
-                                        "/etc/confluent/docker/run"))));
+        assertThat(cmd.get(2), containsString("while [ ! -f /tmp/testcontainers_start.sh ]"));
+        assertThat(cmd.get(2), containsString("bash /tmp/testcontainers_start.sh"));
     }
 
     @Test
@@ -160,11 +139,10 @@ class KafkaContainerDefTest {
         def.configureInstance(instance);
 
         // Then:
-        verify(instance).addEnv("KAFKA_BROKER_ID", "1");
+        verify(instance).addEnv("KAFKA_NODE_ID", "1");
         verify(instance).addEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         verify(instance).addEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
-        verify(instance).addEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
-        verify(instance).addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1");
+        verify(instance).addEnv("KAFKA_TRANSACTION_STATE_LOG_NUM_PARTITIONS", "1");
         verify(instance).addEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
         verify(instance).addEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1");
         verify(instance).addEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
@@ -181,13 +159,12 @@ class KafkaContainerDefTest {
         verify(instance)
                 .addEnv(
                         "KAFKA_LISTENERS",
-                        "SERVICE_NETWORK://0.0.0.0:9092,TEST_NETWORK://0.0.0.0:9093");
+                        "SERVICE_NETWORK://0.0.0.0:9092,TEST_NETWORK://0.0.0.0:9093,CONTROLLER://localhost:9094");
         verify(instance)
                 .addEnv(
                         "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                        "SERVICE_NETWORK:PLAINTEXT,TEST_NETWORK:PLAINTEXT");
+                        "SERVICE_NETWORK:PLAINTEXT,TEST_NETWORK:PLAINTEXT,CONTROLLER:PLAINTEXT");
         verify(instance).addEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "SERVICE_NETWORK");
-        verify(instance).addEnv("KAFKA_ADVERTISED_LISTENERS", SERVICE_NWK_BOOTSTRAP);
     }
 
     @Test
@@ -200,7 +177,16 @@ class KafkaContainerDefTest {
     }
 
     @Test
-    void shouldSetLongerStartUpTimeoutAsKafkaCanTakeAWhile() {
+    void shouldConfigureStartupLogWaitStrategy() {
+        // When:
+        def.configureInstance(instance);
+
+        // Then:
+        verify(instance).setStartupLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1);
+    }
+
+    @Test
+    void shouldSetNinetySecondStartupTimeout() {
         // When:
         def.configureInstance(instance);
 
@@ -218,49 +204,30 @@ class KafkaContainerDefTest {
     }
 
     @Test
-    void shouldTweakKafkaListenersOnceStarted() {
-        // Given:
-        when(instance.execOnInstance(any(String[].class))).thenReturn(execResult(0, "", ""));
-
+    void shouldWriteStartScriptWithAdvertisedListenersWhenStarting() {
         // When:
-        def.instanceStarted(instance);
+        def.instanceStarting(instance);
 
         // Then:
+        final String expectedScript =
+                "#!/bin/bash\n"
+                        + "set -e\n"
+                        + "export CLUSTER_ID="
+                        + RANDOM_CLUSTER_ID
+                        + "\n"
+                        + "export KAFKA_ADVERTISED_LISTENERS="
+                        + TEST_NWK_BOOTSTRAP
+                        + ","
+                        + SERVICE_NWK_BOOTSTRAP
+                        + "\n"
+                        + "/etc/confluent/docker/configure\n"
+                        + "kafka-storage format --ignore-formatted -t \""
+                        + RANDOM_CLUSTER_ID
+                        + "\" -c /etc/kafka/kafka.properties\n"
+                        + "exec /etc/confluent/docker/launch\n";
         verify(instance)
-                .execOnInstance(
-                        "kafka-configs",
-                        "--alter",
-                        "--bootstrap-server",
-                        SERVICE_NWK_BOOTSTRAP,
-                        "--entity-type",
-                        "brokers",
-                        "--entity-name",
-                        "1",
-                        "--add-config",
-                        "advertised.listeners=["
-                                + TEST_NWK_BOOTSTRAP
-                                + ","
-                                + SERVICE_NWK_BOOTSTRAP
-                                + "]");
-    }
-
-    @Test
-    void shouldThrowIfTweakFailed() {
-        // Given:
-        final ExecResult execResult = execResult(1, "normal output", "error output");
-        when(instance.execOnInstance(any(String[].class))).thenReturn(execResult);
-
-        // When:
-        final Exception e =
-                assertThrows(RuntimeException.class, () -> def.instanceStarted(instance));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "Failed to configure Kafka's advertised listeners. 'kafka-configs''s exec"
-                                + " result: "
-                                + execResult));
+                .copyFileToContainer(
+                        eq(expectedScript), eq("/tmp/testcontainers_start.sh"), eq(true));
     }
 
     private List<String> cmdLine() {

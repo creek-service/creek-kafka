@@ -24,7 +24,7 @@ plugins {
     `creek-sonatype-publishing-convention`
     id("pl.allegro.tech.build.axion-release") version "1.21.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.bmuschko.docker-remote-api") version "9.4.0" apply false
-    id("org.creekservice.schema.json") version "0.4.3" apply false
+    id("org.creekservice.schema.json") version "0.4.4-SNAPSHOT" apply false
 }
 
 scmVersion {
@@ -80,7 +80,7 @@ subprojects {
         set("guavaVersion", "33.4.8-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.13.4")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.21.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
+        set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "3.8.1")            // https://mvnrepository.com/artifact/org.apache.kafka
         set("confluentVersion", "8.1.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
@@ -111,6 +111,7 @@ subprojects {
     val junitVersion: String by extra
     val junitPioneerVersion: String by extra
     val mockitoVersion: String by extra
+    val confluentVersion : String by extra
 
     dependencies {
         constraints {
@@ -130,7 +131,11 @@ subprojects {
         testImplementation("org.mockito:mockito-junit-jupiter:$mockitoVersion")
         testImplementation("com.google.guava:guava-testlib:$guavaVersion")
         testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    }
+
+    tasks.withType<Test>().configureEach {
+        systemProperty("confluentVersion", confluentVersion)
     }
 }
 

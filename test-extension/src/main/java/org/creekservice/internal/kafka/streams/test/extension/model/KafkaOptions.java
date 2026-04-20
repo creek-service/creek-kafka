@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.creekservice.api.system.test.extension.test.model.Option;
+import org.creekservice.internal.kafka.extension.KafkaClientModuleProperties;
 
 /** Test model extension to allow users to customise the Kafka test extension functionality. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -42,12 +43,22 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
     public static final Duration DEFAULT_EXTRA_TIMEOUT = Duration.ofSeconds(1);
 
     /**
+     * The default Confluent platform version to use for Docker images.
+     *
+     * @see <a href="https://hub.docker.com/r/confluentinc/cp-kafka/tags">Kafka versions on Docker
+     *     hub</a>
+     */
+    public static final String DEFAULT_CONFLUENT_VERSION =
+            KafkaClientModuleProperties.confluentVersion();
+
+    /**
      * The default image name to use for the Kafka broker.
      *
      * @see <a href="https://hub.docker.com/r/confluentinc/cp-kafka/tags">Kafka versions on Docker
      *     hub</a>
      */
-    public static final String DEFAULT_KAFKA_DOCKER_IMAGE = "confluentinc/cp-kafka:7.3.2";
+    public static final String DEFAULT_KAFKA_DOCKER_IMAGE =
+            "confluentinc/cp-kafka:" + DEFAULT_CONFLUENT_VERSION;
 
     private static final KafkaOptions DEFAULTS =
             new KafkaOptions(
