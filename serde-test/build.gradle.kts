@@ -46,4 +46,3 @@ tasks.compileJava {
 tasks.javadoc {
     (options as CoreJavadocOptions).addStringOption("-add-exports", "testcontainers/org.testcontainers.kafka=creek.kafka.serde.test")
 }
-

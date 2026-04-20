@@ -35,6 +35,7 @@ module creek.kafka.clients.extension {
     exports org.creekservice.api.kafka.extension.resource;
     exports org.creekservice.internal.kafka.extension to
             creek.kafka.streams.extension,
+            creek.kafka.serde.test,
             creek.kafka.test.extension;
     exports org.creekservice.internal.kafka.extension.config to
             creek.kafka.streams.extension;
