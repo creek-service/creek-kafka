@@ -19,6 +19,7 @@ package org.creekservice.internal.kafka.extension.client;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
 import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEFAULT_CLUSTER_NAME;
+import static org.creekservice.api.test.hamcrest.AssertEventually.assertThatEventually;
 import static org.creekservice.test.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -115,7 +116,7 @@ class KafkaTopicClientFunctionalTest {
         client.ensureTopicsExist(List.of(topic));
 
         // Then:
-        assertThat(topic, exists());
+        assertThatEventually(() -> topic, exists());
     }
 
     @Test
