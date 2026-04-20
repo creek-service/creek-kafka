@@ -52,6 +52,7 @@ import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
+import org.creekservice.internal.kafka.extension.KafkaClientModuleProperties;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
@@ -75,7 +76,8 @@ import org.testcontainers.utility.DockerImageName;
 public final class KafkaSerdeProviderFunctionalFixture {
 
     private static final DockerImageName KAFKA_IMAGE_NAME =
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.0");
+            DockerImageName.parse(
+                    "confluentinc/cp-kafka:" + KafkaClientModuleProperties.confluentVersion());
     private static final int CONTAINER_STARTUP_ATTEMPTS = 3;
     private static final Duration CONTAINER_STARTUP_TIMEOUT = Duration.ofSeconds(90);
 
