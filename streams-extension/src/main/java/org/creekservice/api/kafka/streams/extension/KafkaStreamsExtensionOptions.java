@@ -45,6 +45,8 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
 
     /** Sensible Kafka Streams defaults: */
+    @SuppressWarnings(
+            "deprecation") // ignored to maintain compatibility with older Kafka client versions.
     private static final Map<String, ?> STREAMS_DEFAULTS =
             Map.of(
                     // Kafka default is only 1. This isn't very resilient: up to a more sensible 3:
@@ -59,7 +61,7 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
                     StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,
                     1000,
                     // Configure an exception handler to log structured messages:
-                    StreamsConfig.PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
+                    StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
                     StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class);
 
     private final KafkaClientsExtensionOptions clientOptions;

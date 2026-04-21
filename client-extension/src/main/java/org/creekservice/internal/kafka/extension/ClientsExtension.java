@@ -90,7 +90,8 @@ public final class ClientsExtension implements KafkaClientsExtension {
         return consumers.computeIfAbsent(clusterName, this::createConsumer);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings(
+            "deprecation") // ignored to maintain compatibility with older Kafka client versions.
     @Override
     public void close(final Duration timeout) {
         for (final Producer<byte[], byte[]> producer : producers.values()) {
