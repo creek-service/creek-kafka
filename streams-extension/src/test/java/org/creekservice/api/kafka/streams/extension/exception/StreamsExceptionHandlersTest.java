@@ -28,6 +28,7 @@ import org.creekservice.api.test.observability.logging.structured.TestStructured
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class StreamsExceptionHandlersTest {
 
     private final TestStructuredLogger logger = TestStructuredLogger.create();

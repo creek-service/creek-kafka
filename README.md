@@ -49,17 +49,20 @@ The `tested version` column details the exact version of Kafka libraries testing
 
 | Kafka version | Tested version | Notes                                           |
 |---------------|----------------|-------------------------------------------------|
-| < 2.8         |                | Not compatible due to API changes in Streams    |
-| 2.8.+         | 2.8.2          | Supported & tested                              |
-| 3.0.+         | 3.0.2          | Supported & tested                              |
-| 3.1.+         | 3.1.2          | Supported & tested                              |
+| < 3.1         |                | Not compatible due to API changes in Streams    |
+| 3.1.+         | 3.1.0 & 3.1.2  | Supported & tested                              |
 | 3.2.+         | 3.2.3          | Supported & tested                              |
 | 3.3.+         | 3.3.2          | Supported & tested                              |
 | 3.4.+         | 3.4.1          | Supported & tested                              |
 | 3.5.+         | 3.5.2          | Supported & tested                              |
 | 3.6.+         | 3.6.2          | Supported & tested                              |
-| 3.7.+         | 3.7.0          | Supported & tested                              |
-| > 3.6         |                | Not currently tested / released. Should work... |
+| 3.7.+         | 3.7.2          | Supported & tested                              |
+| 3.8.+         | 3.8.1          | Supported & tested                              |
+| 3.9.+         | 3.9.2          | Supported & tested                              |
+| 4.0.+         | 4.0.2          | Supported & tested                              |
+| 4.1.+         | 4.1.2          | Supported & tested                              |
+| 4.2.+         | 4.2.0          | Supported & tested                              |
+| > 4.3+        |                | Not currently tested / released. Should work... |
 
 In Gradle, it is possible to force the use of an older Kafka client if you wish using a resolution strategy:
 
@@ -67,7 +70,7 @@ In Gradle, it is possible to force the use of an older Kafka client if you wish 
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.kafka") {
-            useVersion("2.8.2")
+            useVersion("4.0.2")
         }
     }
 }

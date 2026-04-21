@@ -35,6 +35,8 @@ public final class StreamsExceptionHandlers {
             StructuredLoggerFactory.internalLogger(StreamsExceptionHandlers.class);
 
     /** Exception handler that logs the exception and causes the streams app to exit. */
+    @SuppressWarnings(
+            "deprecation") // ignored to maintain compatibility with older Kafka client versions.
     public static final class LogAndFailProductionExceptionHandler
             implements ProductionExceptionHandler {
 
