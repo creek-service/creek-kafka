@@ -77,7 +77,7 @@ class TopicConsumerTest {
         when(topic.deserializeValue(any())).thenAnswer(inv -> bytesToString(inv.getArgument(0)));
 
         when(kafkaConsumer.poll(Duration.ofSeconds(1)))
-                .thenReturn(new ConsumerRecords<>(Map.of(tp0, List.of(cr))));
+                .thenReturn(new ConsumerRecords<>(Map.of(tp0, List.of(cr)), Map.of()));
     }
 
     @Test
@@ -145,7 +145,7 @@ class TopicConsumerTest {
         // Given:
         cr = new ConsumerRecord<>("t", 0, 0, null, null);
         when(kafkaConsumer.poll(Duration.ofSeconds(1)))
-                .thenReturn(new ConsumerRecords<>(Map.of(tp0, List.of(cr))));
+                .thenReturn(new ConsumerRecords<>(Map.of(tp0, List.of(cr)), Map.of()));
 
         // When:
         final List<ConsumedRecord> result = topicConsumer.consume(1, START.plusSeconds(10));

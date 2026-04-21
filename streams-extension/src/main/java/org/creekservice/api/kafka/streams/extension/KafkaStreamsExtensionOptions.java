@@ -59,7 +59,7 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
                     StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,
                     1000,
                     // Configure an exception handler to log structured messages:
-                    StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
+                    StreamsConfig.PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
                     StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class);
 
     private final KafkaClientsExtensionOptions clientOptions;

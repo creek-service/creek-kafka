@@ -159,7 +159,6 @@ class KafkaTopicClientFunctionalTest {
 
     private Matcher<? super CreatableKafkaTopic<?, ?>> exists() {
         return new TypeSafeDiagnosingMatcher<>() {
-            @SuppressWarnings("deprecation")
             @Override
             protected boolean matchesSafely(
                     final CreatableKafkaTopic<?, ?> topic, final Description mismatchDescription) {
@@ -170,7 +169,10 @@ class KafkaTopicClientFunctionalTest {
                     final Admin admin = admins.get(topic.cluster());
 
                     final TopicDescription description =
-                            admin.describeTopics(List.of(topicName)).all().get().get(topic.name());
+                            admin.describeTopics(List.of(topicName))
+                                    .allTopicNames()
+                                    .get()
+                                    .get(topic.name());
                     if (description.partitions().size() != topic.config().partitions()) {
                         mismatchDescription
                                 .appendText("Topic has wrong partition count. Expected: ")

@@ -135,7 +135,7 @@ class KafkaStreamsExtensionOptionsTest {
                         .propertiesBuilder()
                         .build(Set.of())
                         .get("any")
-                        .get(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG),
+                        .get(StreamsConfig.PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG),
                 is(StreamsExceptionHandlers.LogAndFailProductionExceptionHandler.class));
     }
 
