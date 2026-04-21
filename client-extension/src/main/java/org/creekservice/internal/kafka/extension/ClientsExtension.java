@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.kafka.clients.consumer.CloseOptions;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -91,6 +90,7 @@ public final class ClientsExtension implements KafkaClientsExtension {
         return consumers.computeIfAbsent(clusterName, this::createConsumer);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void close(final Duration timeout) {
         for (final Producer<byte[], byte[]> producer : producers.values()) {
@@ -99,7 +99,7 @@ public final class ClientsExtension implements KafkaClientsExtension {
         producers.clear();
 
         for (final Consumer<byte[], byte[]> consumer : consumers.values()) {
-            consumer.close(CloseOptions.timeout(timeout));
+            consumer.close(timeout);
         }
         consumers.clear();
     }
