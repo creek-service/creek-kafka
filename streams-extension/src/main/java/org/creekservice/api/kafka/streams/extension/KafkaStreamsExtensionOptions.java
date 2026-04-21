@@ -45,6 +45,8 @@ public final class KafkaStreamsExtensionOptions implements ClientsExtensionOptio
     public static final Duration DEFAULT_STREAMS_CLOSE_TIMEOUT = Duration.ofSeconds(30);
 
     /** Sensible Kafka Streams defaults: */
+    @SuppressWarnings(
+            "deprecation") // ignored to maintain compatibility with older Kafka client versions.
     private static final Map<String, ?> STREAMS_DEFAULTS =
             Map.of(
                     // Kafka default is only 1. This isn't very resilient: up to a more sensible 3:

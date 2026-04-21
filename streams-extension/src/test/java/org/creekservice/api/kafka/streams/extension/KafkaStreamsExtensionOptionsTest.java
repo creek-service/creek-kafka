@@ -46,6 +46,7 @@ import org.creekservice.internal.kafka.streams.extension.observation.DefaultStat
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class KafkaStreamsExtensionOptionsTest {
 
     private KafkaStreamsExtensionOptions.Builder builder;
