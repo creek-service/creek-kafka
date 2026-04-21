@@ -49,3 +49,4 @@ updates:
     directory: /test-service-json
     schedule:
       interval: monthly
+# triggered: 2026-04-21
