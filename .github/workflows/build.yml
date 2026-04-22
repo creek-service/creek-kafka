@@ -96,7 +96,7 @@ jobs:
           path: '**/build/test-results/**/*.xml'
           retention-days: 5
 
-  publish_linux:
+  publish:
     needs: [ build_linux ]
     permissions:
       packages: write
@@ -175,7 +175,7 @@ jobs:
 
   create-gh-release:
     if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-alpha')
-    needs: [build_linux, build_windows]
+    needs: [publish, build_windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
