@@ -15,7 +15,7 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/creek-service/
     username: x-access-token
-    password: "\u0067hp_LtyvXrQZen3WlKenUhv21Mg6NG38jn0AO2YH"
+    password: ${{secrets.GITHUB_TOKEN}}
 updates:
   - package-ecosystem: github-actions
     directory: /
