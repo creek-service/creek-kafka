@@ -13,8 +13,8 @@ registries:
     url: https://s01.oss.sonatype.org/content/repositories/snapshots/
   creek-github-packages:
     type: maven-repository
-    url: https://maven.pkg.github.com/creek-service/*
-    username: "Creek-Bot-Token"
+    url: https://maven.pkg.github.com/creek-service/
+    username: x-access-token
     password: "\u0067hp_LtyvXrQZen3WlKenUhv21Mg6NG38jn0AO2YH"
 updates:
   - package-ecosystem: github-actions
