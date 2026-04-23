@@ -23,7 +23,7 @@ plugins {
     `creek-publishing-convention` apply false
     `creek-sonatype-publishing-convention`
     id("pl.allegro.tech.build.axion-release") version "1.21.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
-    id("com.bmuschko.docker-remote-api") version "9.4.0" apply false
+    id("com.bmuschko.docker-remote-api") version "10.0.0" apply false
     id("org.creekservice.schema.json") version "0.4.4-SNAPSHOT" apply false
 }
 
@@ -84,7 +84,7 @@ subprojects {
         // Update kafka_version in `.github/workflows/build.yml` when updating this version
         set("kafkaVersion", "4.2.0")            // https://mvnrepository.com/artifact/org.apache.kafka
         set("confluentVersion", "8.1.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
-        set("testContainersVersion", "2.0.4")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "2.0.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
