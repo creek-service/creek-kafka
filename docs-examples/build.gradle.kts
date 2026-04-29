@@ -16,7 +16,7 @@
 
 plugins {
     java
-    id("org.creekservice.system.test") version "0.4.3"
+    id("org.creekservice.system.test") version "0.4.4"
 
 // begin-snippet: module-plugin
     id("org.javamodularity.moduleplugin") version "2.0.0"
