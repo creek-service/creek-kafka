@@ -77,3 +77,4 @@ configurations.all {
 ```
 
 [1]: https://www.creekservice.org/basic-kafka-streams-demo/
+
