@@ -24,7 +24,7 @@ plugins {
     `creek-sonatype-publishing-convention`
     id("pl.allegro.tech.build.axion-release") version "1.21.1" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.bmuschko.docker-remote-api") version "10.0.0" apply false
-    id("org.creekservice.schema.json") version "0.4.4-SNAPSHOT" apply false
+    id("org.creekservice.schema.json") version "0.4.4" apply false
 }
 
 scmVersion {
