@@ -48,7 +48,7 @@ dependencies {
     testImplementation("org.creekservice:creek-kafka-streams-test:0.4.4")
 // end-snippet
     testImplementation("org.hamcrest:hamcrest-core:3.0")
-    testImplementation(platform("org.junit:junit-bom:6.0.3"))
+    testImplementation(platform("org.junit:junit-bom:6.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
