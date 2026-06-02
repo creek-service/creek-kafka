@@ -33,7 +33,7 @@ import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 
 /**
- * Test helper methods for creating input and output topics when using Creek and {@link
+ * Test helper methods for creating input and output topics when using Creek and the {@link
  * TopologyTestDriver}.
  *
  * <p>Example usage:

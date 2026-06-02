@@ -21,9 +21,8 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.resource.KafkaTopicInfo;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicInput;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicOutput;
@@ -80,7 +79,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
                 api.tests().env().currentSuite().services().stream()
                         .map(ServiceInstance::descriptor)
                         .flatMap(Optional::stream)
-                        .collect(Collectors.toList());
+                        .toList();
 
         collectedTopics = Optional.of(topicCollector.collectTopics(servicesUnderTest));
     }
@@ -91,7 +90,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
     }
 
     @Override
-    public void validateCanProduce(final KafkaTopic<?, ?> topic) {
+    public void validateCanProduce(final KafkaTopicInfo topic) {
         if (allDescriptorsAre(
                 d -> d instanceof KafkaTopicOutput | d instanceof OwnedKafkaTopicOutput, topic)) {
             throw new InvalidTopicOperationException("produce to", "consume from", topic);
@@ -99,7 +98,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
     }
 
     @Override
-    public void validateCanConsume(final KafkaTopic<?, ?> topic) {
+    public void validateCanConsume(final KafkaTopicInfo topic) {
         if (allDescriptorsAre(
                 d -> d instanceof KafkaTopicInput | d instanceof OwnedKafkaTopicInput, topic)) {
             throw new InvalidTopicOperationException("consume from", "produce to", topic);
@@ -107,7 +106,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
     }
 
     private boolean allDescriptorsAre(
-            final Predicate<KafkaTopicDescriptor<?, ?>> predicate, final KafkaTopic<?, ?> topic) {
+            final Predicate<KafkaTopicDescriptor<?, ?>> predicate, final KafkaTopicInfo topic) {
 
         final List<KafkaTopicDescriptor<?, ?>> allDescriptors =
                 collectedTopics
@@ -119,7 +118,7 @@ public final class TopicValidatingListener implements TestEnvironmentListener, T
 
     private static final class InvalidTopicOperationException extends RuntimeException {
         InvalidTopicOperationException(
-                final String op, final String reverseOp, final KafkaTopic<?, ?> topic) {
+                final String op, final String reverseOp, final KafkaTopicInfo topic) {
             super(
                     "Tests can not "
                             + op

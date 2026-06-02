@@ -18,45 +18,31 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
-import org.creekservice.internal.kafka.streams.test.extension.yaml.TypeCoercer;
 
-final class RecordCoercer {
+final class RecordNormaliser {
 
-    private final TypeCoercer typeCoercer = new TypeCoercer();
-
-    List<TopicRecord> coerce(
-            final Collection<TopicRecord> records, final KafkaTopicDescriptor<?, ?> topic) {
-        return records.stream().map(r -> coerce(r, topic)).collect(Collectors.toList());
+    List<TopicRecord> normalise(
+            final Collection<TopicRecord> records, final TestKafkaTopic testTopic) {
+        return records.stream().map(r -> normalise(r, testTopic)).toList();
     }
 
-    private TopicRecord coerce(final TopicRecord record, final KafkaTopicDescriptor<?, ?> topic) {
+    private TopicRecord normalise(final TopicRecord record, final TestKafkaTopic testTopic) {
+        boolean handlingKey = true;
         try {
-            final Optional3<Object> key =
-                    record.key().map(k -> coerce("key", k, topic.key().type()));
-
-            final Optional3<Object> value =
-                    record.value().map(v -> coerce("value", v, topic.value().type()));
-
+            final Optional3<Object> key = record.key().map(testTopic::normaliseKey);
+            handlingKey = false;
+            final Optional3<Object> value = record.value().map(testTopic::normaliseValue);
             return record.with(key, value);
         } catch (final Exception e) {
-            throw new TopicExpectationException(
-                    "Failed to coerce expected record."
-                            + " topic: "
-                            + topic.name()
-                            + ", location: "
-                            + record.location(),
-                    e);
-        }
-    }
-
-    private <T> T coerce(final String fieldName, final Object value, final Class<T> type) {
-        try {
-            return typeCoercer.coerce(value, type);
-        } catch (final Exception e) {
+            final String fieldName = handlingKey ? "key" : "value";
+            final Object data =
+                    handlingKey ? record.key().orElseThrow() : record.value().orElseThrow();
+            final Class<?> type =
+                    handlingKey
+                            ? testTopic.descriptor().key().type()
+                            : testTopic.descriptor().value().type();
             throw new TopicExpectationException(
                     "The record's "
                             + fieldName
@@ -66,11 +52,11 @@ final class RecordCoercer {
                             + " "
                             + fieldName
                             + ": "
-                            + value
+                            + data
                             + ", "
                             + fieldName
                             + "_type: "
-                            + value.getClass().getName()
+                            + data.getClass().getName()
                             + ", topic_"
                             + fieldName
                             + "_type: "

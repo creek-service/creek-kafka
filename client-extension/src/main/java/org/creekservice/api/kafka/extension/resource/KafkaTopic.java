@@ -25,14 +25,7 @@ import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
  * @param <K> key type
  * @param <V> value type
  */
-public interface KafkaTopic<K, V> {
-
-    /**
-     * @return the name of the topic
-     */
-    default String name() {
-        return descriptor().name();
-    }
+public interface KafkaTopic<K, V> extends KafkaTopicInfo {
 
     /**
      * @return the value type

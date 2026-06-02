@@ -28,11 +28,13 @@ dependencies {
     api("org.creekservice:creek-system-test-extension:$creekVersion")
 
     implementation(project(":streams-extension"))
+    implementation(project(":serde"))
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
+    testImplementation(project(":json-serde"))
     testImplementation(project(":test-service-native"))
     testImplementation("org.creekservice:creek-system-test-executor:$creekVersion")
     testImplementation("org.creekservice:creek-system-test-test-util:$creekVersion")

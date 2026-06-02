@@ -10,7 +10,6 @@ properties:
     format: date
   localDateTime:
     type: string
-    format: date-time
   localTime:
     type: string
   monthDay:

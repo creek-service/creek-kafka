@@ -19,7 +19,6 @@ package org.creekservice.api.kafka.extension;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.client.TopicClient;
 import org.creekservice.api.kafka.extension.config.ClustersProperties;
@@ -73,7 +72,7 @@ public final class KafkaClientsExtensionProvider
     @Override
     public KafkaClientsExtension initialize(final CreekService api) {
         final List<ComponentDescriptor> components =
-                api.components().descriptors().stream().collect(Collectors.toList());
+                api.components().descriptors().stream().toList();
 
         final ClientsExtensionOptions options =
                 api.options()

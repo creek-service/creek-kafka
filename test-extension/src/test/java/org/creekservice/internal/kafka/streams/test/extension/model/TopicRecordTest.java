@@ -377,7 +377,7 @@ class TopicRecordTest {
     }
 
     @Test
-    void shouldUpdateWithCoercedKeyAndValue() {
+    void shouldUpdateWithNormalisedKeyAndValue() {
         // Given:
         final TopicRecord record =
                 new TopicRecord(LOCATION, "c", "t", Optional3.of("k"), Optional3.of("v"));

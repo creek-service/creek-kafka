@@ -18,6 +18,7 @@ package org.creekservice.internal.kafka.streams.test.extension.model;
 
 import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.DEFAULT_EXTRA_TIMEOUT;
 import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.DEFAULT_KAFKA_DOCKER_IMAGE;
+import static org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions.DEFAULT_SCHEMA_REGISTRY_DOCKER_IMAGE;
 import static org.creekservice.internal.kafka.streams.test.extension.model.ModelUtil.createParser;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -48,6 +49,7 @@ class TestOptionsKafka {
         assertThat(result.verifierTimeout(), is(Optional.empty()));
         assertThat(result.extraTimeout(), is(DEFAULT_EXTRA_TIMEOUT));
         assertThat(result.kafkaDockerImage(), is(DEFAULT_KAFKA_DOCKER_IMAGE));
+        assertThat(result.schemaRegistryDockerImage(), is(DEFAULT_SCHEMA_REGISTRY_DOCKER_IMAGE));
     }
 
     @Test
@@ -59,6 +61,7 @@ class TestOptionsKafka {
                 + "verifierTimeout: PT49.1S\n"
                 + "extraTimeout: PT2S\n"
                 + "kafkaDockerImage: custom-image\n"
+                + "schemaRegistryDockerImage: custom-sr-image\n"
                 + "notes: ignored";
 
         // When formatting:on:
@@ -69,6 +72,7 @@ class TestOptionsKafka {
         assertThat(result.verifierTimeout(), is(Optional.of(Duration.ofSeconds(49, 100000000))));
         assertThat(result.extraTimeout(), is(Duration.ofSeconds(2)));
         assertThat(result.kafkaDockerImage(), is("custom-image"));
+        assertThat(result.schemaRegistryDockerImage(), is("custom-sr-image"));
     }
 
     @Test
@@ -98,6 +102,7 @@ class TestOptionsKafka {
                         Optional.of(Duration.ofSeconds(1)),
                         Optional.of(Duration.ofSeconds(2)),
                         Optional.of("kafka:6.2"),
+                        Optional.of("schema-registry:6.2"),
                         Optional.empty());
 
         // When:
@@ -109,5 +114,6 @@ class TestOptionsKafka {
         assertThat(result.verifierTimeout(), is(Optional.of(Duration.ofSeconds(1))));
         assertThat(result.extraTimeout(), is(Duration.ofSeconds(2)));
         assertThat(result.kafkaDockerImage(), is("kafka:6.2"));
+        assertThat(result.schemaRegistryDockerImage(), is("schema-registry:6.2"));
     }
 }

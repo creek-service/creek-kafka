@@ -17,7 +17,6 @@
 package org.creekservice.internal.kafka.serde.json;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
@@ -117,7 +116,7 @@ public class JsonSchemaSerdeProvider implements KafkaSerdeProvider {
         return new DefaultJsonSchemaRegistryClient(
                 schemaRegistryName,
                 new CachedSchemaRegistryClient(
-                        endpoints.endpoints().stream().map(URI::toString).collect(toList()),
+                        endpoints.endpoints().stream().map(URI::toString).toList(),
                         MAX_CACHED_SCHEMAS,
                         List.of(new JsonSchemaProvider()),
                         endpoints.configs(),

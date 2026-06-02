@@ -31,7 +31,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
 import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
@@ -117,7 +116,7 @@ class TopicCollectorTest {
 
         // Then:
         assertThat(result.clusters(), is(empty()));
-        assertThat(result.stream().collect(Collectors.toList()), is(empty()));
+        assertThat(result.stream().toList(), is(empty()));
     }
 
     @Test

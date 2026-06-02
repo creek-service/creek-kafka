@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
@@ -31,7 +30,6 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 
 final class TopicConsumers {
 
@@ -40,13 +38,13 @@ final class TopicConsumers {
     private final TopicConsumerFactory consumerFactory;
 
     TopicConsumers(
-            final Map<String, KafkaTopic<?, ?>> topics, final Consumer<byte[], byte[]> consumer) {
+            final Map<String, TestKafkaTopic> topics, final Consumer<byte[], byte[]> consumer) {
         this(topics, consumer, TopicConsumer::new);
     }
 
     @VisibleForTesting
     TopicConsumers(
-            final Map<String, KafkaTopic<?, ?>> topics,
+            final Map<String, TestKafkaTopic> topics,
             final Consumer<byte[], byte[]> consumer,
             final TopicConsumerFactory consumerFactory) {
         this.consumer = requireNonNull(consumer, "consumer");
@@ -62,7 +60,7 @@ final class TopicConsumers {
     }
 
     private static Map<String, TopicInfo> buildTopics(
-            final Map<String, KafkaTopic<?, ?>> topics, final Consumer<byte[], byte[]> consumer) {
+            final Map<String, TestKafkaTopic> topics, final Consumer<byte[], byte[]> consumer) {
         final Map<String, Map<TopicPartition, Long>> endOffsets =
                 endOffsets(consumer, topics.keySet());
 
@@ -77,9 +75,7 @@ final class TopicConsumers {
             final Consumer<byte[], byte[]> consumer, final Set<String> topicNames) {
 
         final List<TopicPartition> partitions =
-                topicNames.stream()
-                        .flatMap(topic -> partitionsFor(topic, consumer))
-                        .collect(toList());
+                topicNames.stream().flatMap(topic -> partitionsFor(topic, consumer)).toList();
 
         return consumer.endOffsets(partitions).entrySet().stream()
                 .collect(
@@ -97,18 +93,14 @@ final class TopicConsumers {
         return pis.stream().map(pi -> new TopicPartition(pi.topic(), pi.partition()));
     }
 
-    private static final class TopicInfo {
-        private final KafkaTopic<?, ?> topic;
-        private final Map<TopicPartition, Long> endOffsets;
-
-        TopicInfo(final KafkaTopic<?, ?> topic, final Map<TopicPartition, Long> endOffsets) {
-            this.topic = requireNonNull(topic, "topic");
-            this.endOffsets = Map.copyOf(requireNonNull(endOffsets, "endOffsets"));
+    private record TopicInfo(TestKafkaTopic topic, Map<TopicPartition, Long> endOffsets) {
+        private TopicInfo {
+            endOffsets = Map.copyOf(requireNonNull(endOffsets, "endOffsets"));
         }
     }
 
     @VisibleForTesting
     interface TopicConsumerFactory {
-        TopicConsumer create(KafkaTopic<?, ?> topic, Consumer<byte[], byte[]> consumer);
+        TopicConsumer create(TestKafkaTopic testTopic, Consumer<byte[], byte[]> consumer);
     }
 }

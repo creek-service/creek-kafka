@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.serde.json.schema.resource;
 
 import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
@@ -118,7 +117,7 @@ final class SchemaResourceValidator {
                 schema.schemaRegistryName(),
                 schema.part().name(),
                 schema.part().topic().id(),
-                schema.resources().map(ResourceDescriptor::id).collect(toList()));
+                schema.resources().map(ResourceDescriptor::id).toList());
     }
 
     private static String formatId(final SchemaDescriptor<?> descriptor) {
@@ -180,11 +179,7 @@ final class SchemaResourceValidator {
                     .add("topic: " + schema.part().topic().id())
                     .add("schemaRegistryName: " + schema.schemaRegistryName())
                     .add("part: " + schema.part().name())
-                    .add(
-                            "resources: "
-                                    + schema.resources()
-                                            .map(ResourceDescriptor::id)
-                                            .collect(toList()))
+                    .add("resources: " + schema.resources().map(ResourceDescriptor::id).toList())
                     .add("location: " + codeLocation(schema))
                     .toString();
         }

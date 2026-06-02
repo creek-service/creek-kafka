@@ -21,12 +21,12 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
-import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
@@ -37,16 +37,21 @@ import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 public final class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
 
     private final ClientsExtension clientsExt;
-    private final RecordCoercer recordCoercer = new RecordCoercer();
+    private final SystemTestSerdeProviders testSerdeProviders;
+    private final RecordNormaliser recordNormaliser = new RecordNormaliser();
     private final TopicValidator topicValidator;
 
     /**
      * @param clientsExt client test extension
+     * @param testSerdeProviders the system test serde providers.
      * @param topicValidator topic validator
      */
     public TopicExpectationHandler(
-            final ClientsExtension clientsExt, final TopicValidator topicValidator) {
+            final ClientsExtension clientsExt,
+            final SystemTestSerdeProviders testSerdeProviders,
+            final TopicValidator topicValidator) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
+        this.testSerdeProviders = requireNonNull(testSerdeProviders, "testSerdeProviders");
         this.topicValidator = requireNonNull(topicValidator, "topicValidator");
     }
 
@@ -70,7 +75,7 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
         final List<Verifier> clusterVerifiers =
                 byClusterThenTopic.entrySet().stream()
                         .map(e -> prepare(e.getKey(), e.getValue(), options))
-                        .collect(toList());
+                        .toList();
 
         return () -> clusterVerifiers.forEach(Verifier::verify);
     }
@@ -84,14 +89,25 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                         .collect(
                                 toMap(
                                         Map.Entry::getKey,
-                                        e -> kafkaTopic(cluster, e.getKey(), e.getValue())));
+                                        e ->
+                                                kafkaTopic(
+                                                        cluster,
+                                                        e.getKey(),
+                                                        e.getValue().get(0).location())));
 
         topics.values().forEach(topicValidator::validateCanConsume);
 
-        final TopicConsumers topicConsumers =
-                new TopicConsumers(topics, clientsExt.consumer(cluster));
+        final Map<String, TestKafkaTopic> testTopics =
+                topics.entrySet().stream()
+                        .collect(
+                                toMap(
+                                        Map.Entry::getKey,
+                                        e -> testSerdeProviders.get(e.getValue().descriptor())));
 
-        final List<Verifier> topicVerifiers =
+        final TopicConsumers topicConsumers =
+                new TopicConsumers(testTopics, clientsExt.consumer(cluster));
+
+        final List<? extends Verifier> topicVerifiers =
                 byTopic.entrySet().stream()
                         .map(
                                 e ->
@@ -99,9 +115,9 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                                                 e.getKey(),
                                                 e.getValue(),
                                                 options,
-                                                topics,
+                                                testTopics,
                                                 topicConsumers))
-                        .collect(toList());
+                        .toList();
 
         return () -> topicVerifiers.forEach(Verifier::verify);
     }
@@ -110,34 +126,35 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
             final String topicName,
             final List<TopicRecord> expectedRecords,
             final ExpectationOptions options,
-            final Map<String, KafkaTopic<?, ?>> topics,
+            final Map<String, TestKafkaTopic> testTopics,
             final TopicConsumers topicConsumers) {
 
-        final KafkaTopicDescriptor<?, ?> topic = topics.get(topicName).descriptor();
-        final List<TopicRecord> coercedExpected = recordCoercer.coerce(expectedRecords, topic);
+        final TestKafkaTopic testTopic = testTopics.get(topicName);
+        final List<TopicRecord> normalisedExpected =
+                recordNormaliser.normalise(expectedRecords, testTopic);
         final KafkaOptions kafkaOptions = TestOptionsAccessor.get(options);
 
         return new TopicVerifier(
                 topicName,
                 topicConsumers,
-                new RecordMatcher(coercedExpected, kafkaOptions.outputOrdering()),
+                new RecordMatcher(normalisedExpected, kafkaOptions.outputOrdering()),
                 kafkaOptions.verifierTimeout().orElse(options.timeout()),
                 kafkaOptions.extraTimeout());
     }
 
     private KafkaTopic<?, ?> kafkaTopic(
-            final String cluster, final String topic, final List<TopicRecord> records) {
+            final String cluster, final String topic, final URI location) {
         try {
             return clientsExt.topic(cluster, topic);
         } catch (final Exception e) {
             throw new TopicExpectationException(
                     "The expected record's cluster or topic is not known."
                             + " cluster: "
-                            + records.get(0).clusterName()
+                            + cluster
                             + ", topic: "
-                            + records.get(0).topicName()
+                            + topic
                             + ", location: "
-                            + records.get(0).location(),
+                            + location,
                     e);
         }
     }

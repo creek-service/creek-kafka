@@ -50,7 +50,7 @@ import org.creekservice.internal.kafka.serde.json.model.TypeWithEnum;
 import org.creekservice.internal.kafka.serde.json.model.TypeWithExplicitPolymorphism;
 import org.creekservice.internal.kafka.serde.json.model.TypeWithImplicitPolymorphism;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
-import org.creekservice.internal.kafka.serde.json.schema.validation.SchemaFriendValidator.JsonSchemaValidationFailed;
+import org.creekservice.internal.kafka.serde.json.schema.validation.JsonSchemaValidationFailed;
 import org.creekservice.internal.kafka.serde.json.util.TopicDescriptors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -205,7 +205,7 @@ class JsonSchemaSerdeFunctionalTest {
                                                                 .endpoints()
                                                                 .stream()
                                                                 .map(URI::toString)
-                                                                .collect(Collectors.toList()),
+                                                                .toList(),
                                                         10,
                                                         List.of(new JsonSchemaProvider()),
                                                         Map.of())));

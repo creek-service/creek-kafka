@@ -22,38 +22,31 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
-import org.creekservice.internal.kafka.streams.test.extension.yaml.TypeCoercer;
 
 /** {@link InputHandler} for {@link TopicInput}. */
 public final class TopicInputHandler implements InputHandler<TopicInput> {
 
     private final ClientsExtension clientsExt;
-    private final TypeCoercer coercer;
+    private final SystemTestSerdeProviders testSerdeProviders;
     private final Set<Producer<byte[], byte[]>> toFlush = new HashSet<>();
     private final TopicValidator topicValidator;
 
     /**
      * @param clientsExt the client extension.
+     * @param testSerdeProviders the system test serde providers.
      * @param topicValidator a topic validator.
      */
     public TopicInputHandler(
-            final ClientsExtension clientsExt, final TopicValidator topicValidator) {
-        this(clientsExt, new TypeCoercer(), topicValidator);
-    }
-
-    @VisibleForTesting
-    TopicInputHandler(
             final ClientsExtension clientsExt,
-            final TypeCoercer typeCoercer,
+            final SystemTestSerdeProviders testSerdeProviders,
             final TopicValidator topicValidator) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
-        this.coercer = requireNonNull(typeCoercer, "typeCoercer");
+        this.testSerdeProviders = requireNonNull(testSerdeProviders, "testSerdeProviders");
         this.topicValidator = requireNonNull(topicValidator, "topicValidator");
     }
 
@@ -69,34 +62,21 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     }
 
     private void process(final TopicRecord record) {
-        send(record, kafkaTopic(record));
-    }
+        final TestKafkaTopic testTopic = kafkaTopic(record);
 
-    private <K, V> void send(final TopicRecord record, final KafkaTopic<K, V> topic) {
-        topicValidator.validateCanProduce(topic);
+        topicValidator.validateCanProduce(testTopic);
 
-        final byte[] key =
-                record.key()
-                        .map(k -> coerceKey(k, topic, record))
-                        .map(k -> serializeKey(k, topic, record))
-                        .orElse(null, null);
-
-        final byte[] value =
-                record.value()
-                        .map(v -> coerceValue(v, topic, record))
-                        .map(v -> serializeValue(v, topic, record))
-                        .orElse(null, null);
-
+        final ProducerRecord<byte[], byte[]> producerRecord = serialize(record, testTopic);
         final Producer<byte[], byte[]> producer = clientsExt.producer(record.clusterName());
-
-        producer.send(new ProducerRecord<>(topic.name(), key, value));
-
+        producer.send(producerRecord);
         toFlush.add(producer);
     }
 
-    private KafkaTopic<?, ?> kafkaTopic(final TopicRecord record) {
+    private TestKafkaTopic kafkaTopic(final TopicRecord record) {
         try {
-            return clientsExt.topic(record.clusterName(), record.topicName());
+            final KafkaTopic<?, ?> topic =
+                    clientsExt.topic(record.clusterName(), record.topicName());
+            return testSerdeProviders.get(topic.descriptor());
         } catch (final Exception e) {
             throw new TopicInputException(
                     "The input record's cluster or topic is not known."
@@ -110,72 +90,21 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
         }
     }
 
-    private <K> K coerceKey(
-            final Object key, final KafkaTopic<K, ?> topic, final TopicRecord record) {
+    private static ProducerRecord<byte[], byte[]> serialize(
+            final TopicRecord record, final TestKafkaTopic testTopic) {
+        boolean handlingKey = true;
         try {
-            return coercer.coerce(key, topic.descriptor().key().type());
-        } catch (final Exception e) {
-            throw new TopicInputException(
-                    "The record's key is not compatible with the topic's key type."
-                            + " key: "
-                            + key
-                            + ", key_type: "
-                            + key.getClass().getName()
-                            + ", topic_key_type: "
-                            + topic.descriptor().key().type().getName()
-                            + ", topic: "
-                            + topic.name()
-                            + ", location: "
-                            + record.location(),
-                    e);
-        }
-    }
+            final byte[] key = record.key().map(testTopic::serializeKey).orElse(null, null);
+            handlingKey = false;
+            final byte[] value = record.value().map(testTopic::serializeValue).orElse(null, null);
 
-    private <V> V coerceValue(
-            final Object value, final KafkaTopic<?, V> topic, final TopicRecord record) {
-        try {
-            return coercer.coerce(value, topic.descriptor().value().type());
+            return new ProducerRecord<>(testTopic.name(), key, value);
         } catch (final Exception e) {
+            final String part = handlingKey ? "key" : "value";
+            final Object data = handlingKey ? record.key() : record.value();
             throw new TopicInputException(
-                    "The record's value is not compatible with the topic's value type."
-                            + " value: "
-                            + value
-                            + ", value_type: "
-                            + value.getClass().getName()
-                            + ", topic_value_type: "
-                            + topic.descriptor().value().type().getName()
-                            + ", topic: "
-                            + topic.name()
-                            + ", location: "
-                            + record.location(),
-                    e);
-        }
-    }
-
-    private <K> byte[] serializeKey(
-            final K key, final KafkaTopic<K, ?> topic, final TopicRecord record) {
-        try {
-            return topic.serializeKey(key);
-        } catch (final Exception e) {
-            throw new TopicInputException(
-                    "Failed to serialize the record's key: "
-                            + key
-                            + ", location: "
-                            + record.location(),
-                    e);
-        }
-    }
-
-    private <V> byte[] serializeValue(
-            final V value, final KafkaTopic<?, V> topic, final TopicRecord record) {
-        try {
-            return topic.serializeValue(value);
-        } catch (final Exception e) {
-            throw new TopicInputException(
-                    "Failed to serialize the record's value: "
-                            + value
-                            + ", location: "
-                            + record.location(),
+                    "Failed to serialize the record's %s: %s, location: %s"
+                            .formatted(part, data, record.location()),
                     e);
         }
     }

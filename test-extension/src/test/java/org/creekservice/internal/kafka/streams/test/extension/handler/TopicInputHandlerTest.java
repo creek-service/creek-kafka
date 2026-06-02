@@ -39,7 +39,6 @@ import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
-import org.creekservice.internal.kafka.streams.test.extension.yaml.TypeCoercer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +60,9 @@ class TopicInputHandlerTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ClientsExtension clientsExt;
 
-    @Mock private TypeCoercer coercer;
+    @Mock private SystemTestSerdeProviders testSerdeProviders;
+    @Mock private TestKafkaTopic testTopicA;
+    @Mock private TestKafkaTopic testTopicB;
     @Mock private TopicInput input;
     @Mock private InputOptions options;
     @Mock private Producer<byte[], byte[]> producerA;
@@ -79,7 +80,7 @@ class TopicInputHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new TopicInputHandler(clientsExt, coercer, topicValidator);
+        handler = new TopicInputHandler(clientsExt, testSerdeProviders, topicValidator);
 
         final TopicRecord record0 =
                 new TopicRecord(
@@ -104,31 +105,14 @@ class TopicInputHandlerTest {
         doReturn(topicA).when(clientsExt).topic(any(), eq("topic-a"));
         doReturn(topicB).when(clientsExt).topic(any(), eq("topic-b"));
 
-        when(topicA.name()).thenReturn("topic-a");
-        when(topicB.name()).thenReturn("topic-b");
-
-        when(topicA.serializeKey(any())).thenReturn(SERIALIZED_KEY_A);
-        when(topicB.serializeKey(any())).thenReturn(SERIALIZED_KEY_B);
-
-        when(topicA.serializeValue(any())).thenReturn(SERIALIZED_VALUE_A);
-        when(topicB.serializeValue(any())).thenReturn(SERIALIZED_VALUE_B);
-
-        when(topicA.descriptor().key().type()).thenReturn(Integer.class);
-        when(topicB.descriptor().key().type()).thenReturn(Integer.class);
-
-        when(topicA.descriptor().value().type()).thenReturn(String.class);
-        when(topicB.descriptor().value().type()).thenReturn(String.class);
-
-        when(coercer.coerce(any(), any()))
-                .thenAnswer(
-                        inv -> {
-                            final Class<?> arg1 = inv.getArgument(1);
-                            if (arg1.equals(Integer.class)) {
-                                return inv.<Number>getArgument(0).intValue() + 1;
-                            }
-
-                            return "coerced-" + inv.getArgument(0);
-                        });
+        when(testSerdeProviders.get(topicA.descriptor())).thenReturn(testTopicA);
+        when(testSerdeProviders.get(topicB.descriptor())).thenReturn(testTopicB);
+        when(testTopicA.name()).thenReturn("topic-a");
+        when(testTopicB.name()).thenReturn("topic-b");
+        when(testTopicA.serializeKey(87)).thenReturn(SERIALIZED_KEY_A);
+        when(testTopicB.serializeKey(123L)).thenReturn(SERIALIZED_KEY_B);
+        when(testTopicA.serializeValue(0)).thenReturn(SERIALIZED_VALUE_A);
+        when(testTopicB.serializeValue("1")).thenReturn(SERIALIZED_VALUE_B);
     }
 
     @Test
@@ -165,33 +149,13 @@ class TopicInputHandlerTest {
     }
 
     @Test
-    void shouldCoerceKeys() {
-        // When:
-        handler.process(input, options);
-
-        // Then:
-        verify(coercer).coerce(87, Integer.class);
-        verify(coercer).coerce(123L, Integer.class);
-    }
-
-    @Test
-    void shouldCoerceValues() {
-        // When:
-        handler.process(input, options);
-
-        // Then:
-        verify(coercer).coerce(0, String.class);
-        verify(coercer).coerce("1", String.class);
-    }
-
-    @Test
     void shouldSerializeKeys() {
         // When:
         handler.process(input, options);
 
         // Then:
-        verify(topicA).serializeKey(88);
-        verify(topicB).serializeKey(124);
+        verify(testTopicA).serializeKey(87);
+        verify(testTopicB).serializeKey(123L);
     }
 
     @Test
@@ -200,8 +164,8 @@ class TopicInputHandlerTest {
         handler.process(input, options);
 
         // Then:
-        verify(topicA).serializeValue("coerced-0");
-        verify(topicB).serializeValue("coerced-1");
+        verify(testTopicA).serializeValue(0);
+        verify(testTopicB).serializeValue("1");
     }
 
     @Test
@@ -376,50 +340,10 @@ class TopicInputHandlerTest {
     }
 
     @Test
-    void shouldThrowIfKeyCoercionFails() {
-        // Given:
-        final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(coercer).coerce(eq(123L), any());
-
-        // When:
-        final Exception e =
-                assertThrows(RuntimeException.class, () -> handler.process(input, options));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "The record's key is not compatible with the topic's key type. key: 123,"
-                            + " key_type: java.lang.Long, topic_key_type: java.lang.Integer, topic:"
-                            + " topic-b, location: record1:///location"));
-        assertThat(e.getCause(), is(cause));
-    }
-
-    @Test
-    void shouldThrowIfValueCoercionFails() {
-        // Given:
-        final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(coercer).coerce(any(), eq(String.class));
-
-        // When:
-        final Exception e =
-                assertThrows(RuntimeException.class, () -> handler.process(input, options));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "The record's value is not compatible with the topic's value type. value:"
-                            + " 0, value_type: java.lang.Integer, topic_value_type:"
-                            + " java.lang.String, topic: topic-a, location: record0:///location"));
-        assertThat(e.getCause(), is(cause));
-    }
-
-    @Test
     void shouldThrowIfKeySerializationFails() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(topicB).serializeKey(any());
+        when(testTopicB.serializeKey(any())).thenThrow(cause);
 
         // When:
         final Exception e =
@@ -428,7 +352,7 @@ class TopicInputHandlerTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                is("Failed to serialize the record's key: 124, location: record1:///location"));
+                is("Failed to serialize the record's key: 123, location: record1:///location"));
         assertThat(e.getCause(), is(cause));
     }
 
@@ -436,7 +360,7 @@ class TopicInputHandlerTest {
     void shouldThrowIfValueSerializationFails() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(topicB).serializeValue(any());
+        when(testTopicB.serializeValue(any())).thenThrow(cause);
 
         // When:
         final Exception e =
@@ -446,7 +370,7 @@ class TopicInputHandlerTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Failed to serialize the record's value: coerced-1, location:"
+                        "Failed to serialize the record's value: 1, location:"
                                 + " record1:///location"));
         assertThat(e.getCause(), is(cause));
     }

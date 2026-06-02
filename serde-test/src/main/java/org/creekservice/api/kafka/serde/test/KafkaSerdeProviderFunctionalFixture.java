@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -220,10 +219,7 @@ public final class KafkaSerdeProviderFunctionalFixture {
         }
 
         private <T> Collection<T> topics(final Class<T> type) {
-            return topics.stream()
-                    .filter(type::isInstance)
-                    .map(type::cast)
-                    .collect(Collectors.toList());
+            return topics.stream().filter(type::isInstance).map(type::cast).toList();
         }
     }
 
@@ -357,7 +353,7 @@ public final class KafkaSerdeProviderFunctionalFixture {
                                             .config()
                                             .partitions())
                             .mapToObj(p -> new TopicPartition(topic.name(), p))
-                            .collect(Collectors.toList());
+                            .toList();
 
             consumer.assign(tps);
 

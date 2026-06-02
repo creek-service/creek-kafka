@@ -98,7 +98,7 @@ public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreE
                 Arrays.stream(endPoints.split("\\s*,\\s*"))
                         .filter(txt -> !txt.isBlank())
                         .map(URI::create)
-                        .collect(Collectors.toList());
+                        .toList();
         if (uris.isEmpty()) {
             throw new InvalidSchemaRegistryEndpointException(
                     "Endpoints variable was empty", schemaRegistryInstance);

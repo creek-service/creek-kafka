@@ -36,10 +36,20 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    implementation("net.jimblackler.jsonschemafriend:core:0.12.5")
+    implementation("org.creekservice:creek-json-schema-validator:$creekVersion")
 
     implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
     implementation("io.confluent:kafka-json-schema-provider:$confluentVersion")
+
+    // Explicit modules that are transitive runtime deps of the above libraries.
+    // JPMS will not resolve explicit (named) modules into the module graph unless
+    // they are explicitly required. These are needed by automatic modules above
+    // (e.g. kafka-json-schema-provider needs org.json, commons-validator needs commons-beanutils,
+    //  kafka-json-schema-provider → json-sKema needs kotlin.stdlib).
+    implementation("org.json:json:20250107")
+    implementation("commons-beanutils:commons-beanutils:1.11.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("com.github.luben:zstd-jni:1.5.6-10")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 

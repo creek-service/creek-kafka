@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.serde.json.schema.resource;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
 import java.util.Collection;
@@ -91,7 +90,7 @@ public final class JsonSchemaResourceHandler implements ResourceHandler<JsonSche
                 log ->
                         log.with(
                                 "schema-ids",
-                                schema.stream().map(ResourceDescriptor::id).collect(toList())));
+                                schema.stream().map(ResourceDescriptor::id).toList()));
 
         final SchemaStore schemaStore = schemaStores.get(schemaRegistryName);
         schema.stream().map(SchemaDescriptor::part).forEach(schemaStore::registerFromClasspath);

@@ -101,7 +101,7 @@ public final class TopicRecord {
     }
 
     /**
-     * Transform the record to one containing the supplied (coerced) {@code newKey} and {@code
+     * Transform the record to one containing the supplied (normalised) {@code newKey} and {@code
      * newValue}
      *
      * @param newKey the key to set on the new instance.

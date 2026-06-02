@@ -17,7 +17,6 @@
 package org.creekservice.internal.kafka.serde.json.schema.store.client;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import io.confluent.kafka.schemaregistry.ParsedSchema;
@@ -109,7 +108,7 @@ public final class DefaultJsonSchemaRegistryClient implements JsonSchemaStoreCli
                                             subject,
                                             version,
                                             client.getByVersion(subject, version, false)))
-                    .collect(toList());
+                    .toList();
         } catch (final Exception e) {
             throw new SchemaRegistryClientException(
                     "Failed to retrieve all schema versions", subject, schemaRegistryName, e);

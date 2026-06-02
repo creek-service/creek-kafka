@@ -16,7 +16,7 @@
 
 package org.creekservice.internal.kafka.streams.test.extension.handler;
 
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.kafka.extension.resource.KafkaTopicInfo;
 
 /** Validates operations on Kafka topics. */
 public interface TopicValidator {
@@ -31,7 +31,7 @@ public interface TopicValidator {
      * @throws RuntimeException if the supplied topic is only ever produced to by the
      *     services-under-test
      */
-    void validateCanProduce(KafkaTopic<?, ?> topic);
+    void validateCanProduce(KafkaTopicInfo topic);
 
     /**
      * Is it valid for a test to consume from the supplied {@code topic}?
@@ -43,5 +43,5 @@ public interface TopicValidator {
      * @throws RuntimeException if the supplied topic is only ever consumed by the
      *     services-under-test
      */
-    void validateCanConsume(KafkaTopic<?, ?> topic);
+    void validateCanConsume(KafkaTopicInfo topic);
 }

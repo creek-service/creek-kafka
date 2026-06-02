@@ -29,6 +29,8 @@ dependencies {
 
     api("org.apache.kafka:kafka-clients:$kafkaVersion")
 
+    implementation("org.creekservice:creek-base-type:${creekVersion}")
+
     testImplementation(project(":serde-test"))
 }
 
