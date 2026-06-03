@@ -48,6 +48,5 @@ module creek.kafka.serde.json.schema {
 
     exports org.creekservice.api.kafka.serde.json;
     exports org.creekservice.api.kafka.serde.json.schema.store.client;
-    exports org.creekservice.api.kafka.serde.json.schema.store.endpoint;
     exports org.creekservice.api.kafka.serde.json.schema;
 }

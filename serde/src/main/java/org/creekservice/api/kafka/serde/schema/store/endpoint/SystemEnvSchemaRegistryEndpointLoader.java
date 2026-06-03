@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.serde.json.schema.store.endpoint;
+package org.creekservice.api.kafka.serde.schema.store.endpoint;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 
 /**
  * Loads SchemaRegistry endpoint info from environment variables.
@@ -66,8 +65,8 @@ public final class SystemEnvSchemaRegistryEndpointLoader implements SchemaStoreE
     private final Map<String, String> env;
 
     /** Creates a loader that reads from the system environment variables. */
-    public SystemEnvSchemaRegistryEndpointLoader() {
-        this(System.getenv());
+    public static SystemEnvSchemaRegistryEndpointLoader create() {
+        return new SystemEnvSchemaRegistryEndpointLoader(System.getenv());
     }
 
     @VisibleForTesting

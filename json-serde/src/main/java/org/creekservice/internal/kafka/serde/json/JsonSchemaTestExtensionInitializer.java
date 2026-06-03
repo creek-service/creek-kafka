@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeTestExtensionInitializer;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 
 /** Initializer that configures the JSON Schema serde for test execution. */

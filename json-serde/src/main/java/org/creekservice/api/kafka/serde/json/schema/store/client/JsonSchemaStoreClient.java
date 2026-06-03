@@ -18,7 +18,7 @@ package org.creekservice.api.kafka.serde.json.schema.store.client;
 
 import java.util.List;
 import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 
 /** Client for interacting with a JSON Schema store. */
 public interface JsonSchemaStoreClient {

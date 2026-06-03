@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.kafka.serde.json.schema.store.endpoint;
+package org.creekservice.api.kafka.serde.schema.store.endpoint;
 
 import java.net.URI;
 import java.util.List;

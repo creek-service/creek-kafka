@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 
 /**
  * Schema registry endpoints loader for test framework.

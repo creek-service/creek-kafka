@@ -20,6 +20,7 @@ plugins {
 
 val creekVersion : String by extra
 val kafkaVersion : String by extra
+val confluentVersion : String by extra
 val testContainersVersion : String by extra
 
 dependencies {
@@ -29,7 +30,8 @@ dependencies {
 
     api("org.apache.kafka:kafka-clients:$kafkaVersion")
 
-    implementation("org.creekservice:creek-base-type:${creekVersion}")
+    implementation("org.creekservice:creek-base-type:$creekVersion")
+    implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
 
     testImplementation(project(":serde-test"))
 }
