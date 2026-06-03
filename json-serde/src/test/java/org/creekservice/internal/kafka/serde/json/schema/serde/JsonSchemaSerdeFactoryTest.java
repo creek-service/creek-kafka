@@ -180,7 +180,7 @@ class JsonSchemaSerdeFactoryTest {
 
         // Then:
         assertThat(e.getMessage(), is("Validation failed. topic: t, part: value"));
-        assertThat(e.getCause().getMessage(), containsString("Expected: [integer] Found: [null]"));
+        assertThat(e.getCause().getMessage(), containsString("null found, integer expected"));
     }
 
     @Test
@@ -199,7 +199,7 @@ class JsonSchemaSerdeFactoryTest {
 
         // Then:
         assertThat(e.getMessage(), is("Validation failed. topic: t, part: value"));
-        assertThat(e.getCause().getMessage(), containsString("Missing property id"));
+        assertThat(e.getCause().getMessage(), containsString("required property 'id' not found"));
     }
 
     @Test
@@ -237,7 +237,9 @@ class JsonSchemaSerdeFactoryTest {
 
         // Then:
         assertThat(e.getMessage(), is("Validation failed. topic: t, part: value"));
-        assertThat(e.getCause().getMessage(), containsString("Object not in enum"));
+        assertThat(
+                e.getCause().getMessage(),
+                containsString("does not have a value in the enumeration"));
     }
 
     @Test
@@ -259,7 +261,7 @@ class JsonSchemaSerdeFactoryTest {
         assertThat(e.getMessage(), is("Validation failed. topic: t, part: value"));
         assertThat(
                 e.getCause().getMessage(),
-                containsString("Object not in enums: [one, two, three]"));
+                containsString("does not have a value in the enumeration"));
     }
 
     @Test

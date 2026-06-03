@@ -15,7 +15,11 @@
  */
 
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeTestExtensionInitializer;
+import org.creekservice.api.kafka.serde.provider.KafkaSystemTestSerdeProvider;
 import org.creekservice.internal.kafka.serde.json.JsonSchemaSerdeProvider;
+import org.creekservice.internal.kafka.serde.json.JsonSchemaSystemTestSerdeProvider;
+import org.creekservice.internal.kafka.serde.json.JsonSchemaTestExtensionInitializer;
 
 /** Provider of JSON serde functionality to Creel. */
 module creek.kafka.serde.json.schema {
@@ -26,15 +30,23 @@ module creek.kafka.serde.json.schema {
     requires com.fasterxml.jackson.dataformat.yaml;
     requires com.fasterxml.jackson.datatype.jdk8;
     requires com.fasterxml.jackson.datatype.jsr310;
-    requires jimblackler.jsonschemafriend.core;
+    requires creek.json.schema.validator;
     requires kafka.schema.registry.client;
     requires kafka.json.schema.provider;
+    requires kotlin.stdlib;
+    requires org.json;
+    requires com.github.luben.zstd_jni;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.annotation;
 
     provides KafkaSerdeProvider with
             JsonSchemaSerdeProvider;
+    provides KafkaSystemTestSerdeProvider with
+            JsonSchemaSystemTestSerdeProvider;
+    provides KafkaSerdeTestExtensionInitializer with
+            JsonSchemaTestExtensionInitializer;
 
     exports org.creekservice.api.kafka.serde.json;
     exports org.creekservice.api.kafka.serde.json.schema.store.client;
-    exports org.creekservice.api.kafka.serde.json.schema.store.endpoint;
     exports org.creekservice.api.kafka.serde.json.schema;
 }

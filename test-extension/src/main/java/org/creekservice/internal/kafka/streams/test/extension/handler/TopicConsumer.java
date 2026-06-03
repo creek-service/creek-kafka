@@ -30,28 +30,27 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class TopicConsumer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TopicExpectationHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TopicConsumer.class);
 
-    private final KafkaTopic<?, ?> topic;
+    private final TestKafkaTopic topic;
     private final Consumer<byte[], byte[]> consumer;
     private final Clock clock;
 
-    TopicConsumer(final KafkaTopic<?, ?> topic, final Consumer<byte[], byte[]> consumer) {
+    TopicConsumer(final TestKafkaTopic topic, final Consumer<byte[], byte[]> consumer) {
         this(topic, consumer, Clock.systemUTC());
     }
 
     @VisibleForTesting
     TopicConsumer(
-            final KafkaTopic<?, ?> topic,
+            final TestKafkaTopic topic,
             final Consumer<byte[], byte[]> consumer,
             final Clock clock) {
-        this.topic = requireNonNull(topic, "topic");
+        this.topic = requireNonNull(topic, "testTopic");
         this.consumer = requireNonNull(consumer, "consumer");
         this.clock = requireNonNull(clock, "clock");
     }
@@ -70,10 +69,9 @@ final class TopicConsumer {
         }
 
         LOGGER.info(
-                "Consuming expected output from "
-                        + topic.name()
-                        + ", with starting offsets: "
-                        + startOffsets);
+                "Consuming expected output from {}, with starting offsets: {}",
+                topic.name(),
+                startOffsets);
     }
 
     List<ConsumedRecord> consume(final long minRecords, final Instant end) {
@@ -88,7 +86,7 @@ final class TopicConsumer {
                                 new ConsumedRecord(
                                         record, deserializeKey(record), deserializeValue(record));
 
-                        LOGGER.debug("Consumed: " + consumedRecord);
+                        LOGGER.debug("Consumed: {}", consumedRecord);
                         consumed.add(consumedRecord);
                     });
         }

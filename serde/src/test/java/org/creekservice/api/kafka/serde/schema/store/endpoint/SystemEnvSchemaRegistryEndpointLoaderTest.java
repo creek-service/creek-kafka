@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.kafka.serde.json.schema.store.endpoint;
+package org.creekservice.api.kafka.serde.schema.store.endpoint;
 
 import static io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig.BEARER_AUTH_CREDENTIALS_SOURCE;
 import static io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig.CLIENT_NAMESPACE;
@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.util.Map;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
 import org.junit.jupiter.api.Test;
 
 class SystemEnvSchemaRegistryEndpointLoaderTest {

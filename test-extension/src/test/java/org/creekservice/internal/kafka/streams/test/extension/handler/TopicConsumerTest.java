@@ -41,7 +41,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +58,7 @@ class TopicConsumerTest {
     private static final byte[] BINARY_KEY = "key".getBytes(UTF_8);
     private static final byte[] BINARY_VALUE = "value".getBytes(UTF_8);
 
-    @Mock private KafkaTopic<?, ?> topic;
+    @Mock private TestKafkaTopic topic;
     @Mock private Consumer<byte[], byte[]> kafkaConsumer;
     @Mock private Clock clock;
     @Mock private TopicPartition tp0;
@@ -74,6 +73,7 @@ class TopicConsumerTest {
         topicConsumer = new TopicConsumer(topic, kafkaConsumer, clock);
 
         when(clock.instant()).thenReturn(START);
+        when(topic.name()).thenReturn("t");
         when(topic.deserializeKey(any())).thenAnswer(inv -> bytesToString(inv.getArgument(0)));
         when(topic.deserializeValue(any())).thenAnswer(inv -> bytesToString(inv.getArgument(0)));
 

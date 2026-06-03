@@ -15,7 +15,9 @@
  */
 
 import org.creekservice.api.kafka.serde.provider.KafkaSerdeProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSystemTestSerdeProvider;
 import org.creekservice.internal.kafka.serde.provider.NativeKafkaSerdeProvider;
+import org.creekservice.internal.kafka.serde.provider.NativeKafkaSystemTestSerdeProvider;
 
 /** Base types for extending Creek Kafka with custom serialization formats. */
 module creek.kafka.serde {
@@ -23,11 +25,17 @@ module creek.kafka.serde {
     requires transitive creek.base.annotation;
     requires transitive creek.service.api;
     requires transitive kafka.clients;
+    requires creek.base.type;
+    requires kafka.schema.registry.client;
 
     exports org.creekservice.api.kafka.serde.provider;
+    exports org.creekservice.api.kafka.serde.schema.store.endpoint;
 
     uses KafkaSerdeProvider;
+    uses KafkaSystemTestSerdeProvider;
 
     provides KafkaSerdeProvider with
             NativeKafkaSerdeProvider;
+    provides KafkaSystemTestSerdeProvider with
+            NativeKafkaSystemTestSerdeProvider;
 }

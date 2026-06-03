@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.MockEndpointsLoader;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.MockEndpointsLoader;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
 

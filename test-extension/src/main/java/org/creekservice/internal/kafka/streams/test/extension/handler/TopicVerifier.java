@@ -24,7 +24,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.MatchResult.Unmatched;
@@ -91,7 +90,7 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
 
     private static AssertionError missingRecordsError(final MatchResult result) {
         final List<String> unmatched =
-                result.unmatched().stream().map(TopicVerifier::format).collect(Collectors.toList());
+                result.unmatched().stream().map(TopicVerifier::format).toList();
 
         return new AssertionError(
                 result.unmatched().size()
@@ -117,7 +116,7 @@ final class TopicVerifier implements ExpectationHandler.Verifier {
         final List<String> mismatchReasons =
                 unmatched.mismatches().stream()
                         .map(e -> "(" + e.mismatchDescription() + ") " + e.actual())
-                        .collect(Collectors.toList());
+                        .toList();
 
         return "Expected: "
                 + unmatched.expected()

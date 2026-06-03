@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -161,7 +160,7 @@ class ClientExtensionFunctionalTest {
         final List<TopicPartition> tps =
                 IntStream.range(0, topicDef.config().partitions())
                         .mapToObj(p -> new TopicPartition(topic.name(), p))
-                        .collect(Collectors.toList());
+                        .toList();
 
         final Consumer<byte[], byte[]> consumer = ext.consumer();
         consumer.assign(tps);

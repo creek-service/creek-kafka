@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.extension.resource;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
 import java.util.Collection;
@@ -122,7 +121,7 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
                 log ->
                         log.with(
                                 LoggingField.topicIds,
-                                topics.stream().map(ResourceDescriptor::id).collect(toList())));
+                                topics.stream().map(ResourceDescriptor::id).toList()));
 
         topicClientFactory.create(cluster, properties.get(cluster)).ensureTopicsExist(topics);
     }
@@ -135,7 +134,7 @@ public class TopicResourceHandler implements ResourceHandler<KafkaTopicDescripto
                 log ->
                         log.with(
                                 LoggingField.topicIds,
-                                topics.stream().map(KafkaTopicDescriptor::id).collect(toList())));
+                                topics.stream().map(KafkaTopicDescriptor::id).toList()));
 
         final Map<String, Object> kafkaProperties = properties.get(cluster);
 

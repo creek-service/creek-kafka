@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
-import org.creekservice.api.kafka.extension.resource.KafkaTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +49,8 @@ class TopicConsumersTest {
     private static final String TOPIC_B = "topic-b";
     private static final TopicPartition TP_B_0 = new TopicPartition(TOPIC_B, 0);
 
-    @Mock private KafkaTopic<?, ?> topicA;
-    @Mock private KafkaTopic<?, ?> topicB;
+    @Mock private TestKafkaTopic topicA;
+    @Mock private TestKafkaTopic topicB;
     @Mock private Consumer<byte[], byte[]> kafkaConsumer;
     @Mock private TopicConsumers.TopicConsumerFactory consumerFactory;
 
@@ -134,13 +133,13 @@ class TopicConsumersTest {
         return mock;
     }
 
-    private static Map<String, KafkaTopic<?, ?>> topics(final Object... elements) {
+    private static Map<String, TestKafkaTopic> topics(final Object... elements) {
         assertThat("length is odd", elements.length & 1, is(0));
 
         // For consistent ordering in the test:
-        final LinkedHashMap<String, KafkaTopic<?, ?>> topics = new LinkedHashMap<>();
+        final LinkedHashMap<String, TestKafkaTopic> topics = new LinkedHashMap<>();
         for (int i = 0; i < elements.length; i += 2) {
-            topics.put((String) elements[i], (KafkaTopic<?, ?>) elements[i + 1]);
+            topics.put((String) elements[i], (TestKafkaTopic) elements[i + 1]);
         }
         return topics;
     }

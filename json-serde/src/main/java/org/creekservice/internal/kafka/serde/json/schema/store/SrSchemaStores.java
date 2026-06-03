@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 
 /** Tracks known schema stores */
 public final class SrSchemaStores {

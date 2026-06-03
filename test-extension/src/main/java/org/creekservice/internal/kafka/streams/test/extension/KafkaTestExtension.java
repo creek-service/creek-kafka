@@ -16,14 +16,17 @@
 
 package org.creekservice.internal.kafka.streams.test.extension;
 
+import java.util.ServiceLoader;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionOptions;
 import org.creekservice.api.kafka.extension.KafkaClientsExtensionProvider;
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeTestExtensionInitializer;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerContainer;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
+import org.creekservice.internal.kafka.streams.test.extension.handler.SystemTestSerdeProviders;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TopicInputHandler;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
@@ -47,27 +50,40 @@ public final class KafkaTestExtension implements CreekTestExtension {
     @Override
     public void initialize(final CreekSystemTest api) {
         final ClusterEndpointsProvider clusterEndpointsProvider = new ClusterEndpointsProvider();
+        final SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider =
+                new SchemaRegistryEndpointsProvider();
+
         api.extensions()
                 .addOption(
                         KafkaClientsExtensionOptions.builder()
                                 .withKafkaPropertiesOverrides(clusterEndpointsProvider)
                                 .build());
 
+        ServiceLoader.load(KafkaSerdeTestExtensionInitializer.class)
+                .forEach(
+                        init ->
+                                init.extensionOptions(schemaRegistryEndpointsProvider::get)
+                                        .forEach(option -> api.extensions().addOption(option)));
+
         final ClientsExtension clientsExt =
                 (ClientsExtension)
                         api.extensions().ensureExtension(KafkaClientsExtensionProvider.class);
 
+        final SystemTestSerdeProviders testSerdeProviders = SystemTestSerdeProviders.create();
+
         final TestListenerContainer testListeners = api.tests().env().listeners();
 
-        testListeners.append(new StartKafkaTestListener(api, clusterEndpointsProvider));
+        testListeners.append(
+                new StartKafkaTestListener(
+                        api, clusterEndpointsProvider, schemaRegistryEndpointsProvider));
 
         final TopicValidatingListener topicValidator = new TopicValidatingListener(api);
         testListeners.append(topicValidator);
 
         initializeModel(
                 api.tests().model(),
-                new TopicInputHandler(clientsExt, topicValidator),
-                new TopicExpectationHandler(clientsExt, topicValidator));
+                new TopicInputHandler(clientsExt, testSerdeProviders, topicValidator),
+                new TopicExpectationHandler(clientsExt, testSerdeProviders, topicValidator));
     }
 
     /**

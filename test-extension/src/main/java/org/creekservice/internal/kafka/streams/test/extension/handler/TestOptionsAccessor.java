@@ -19,7 +19,6 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
@@ -59,9 +58,7 @@ public final class TestOptionsAccessor {
                 return userSupplied.get(0);
             default:
                 final List<URI> locations =
-                        userSupplied.stream()
-                                .map(KafkaOptions::location)
-                                .collect(Collectors.toList());
+                        userSupplied.stream().map(KafkaOptions::location).toList();
                 throw new IllegalArgumentException(
                         "Test suite should only define single '"
                                 + KafkaOptions.NAME

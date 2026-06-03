@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.extension.resource;
 
 import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.creekservice.api.base.type.CodeLocation.codeLocation;
 
@@ -177,7 +176,7 @@ final class KafkaResourceValidator {
                 topic.cluster(),
                 uniqueHash(topic.key()),
                 uniqueHash(topic.value()),
-                topic.resources().map(ResourceDescriptor::id).collect(toList()));
+                topic.resources().map(ResourceDescriptor::id).toList());
     }
 
     private static int uniqueHashOfConfig(final CreatableKafkaTopic<?, ?> topic) {

@@ -26,8 +26,8 @@ import com.google.common.testing.NullPointerTester;
 import java.util.Map;
 import java.util.Optional;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.MockEndpointsLoader;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.MockEndpointsLoader;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

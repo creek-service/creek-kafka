@@ -19,7 +19,7 @@ package org.creekservice.internal.kafka.serde.json;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.creekservice.api.kafka.serde.json.schema.store.endpoint.SchemaStoreEndpoints;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
