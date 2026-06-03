@@ -27,6 +27,7 @@ val testContainersVersion : String by extra
 
 dependencies {
     api(project(":serde"))
+    api(project(":schema-store"))
 
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("org.creekservice:creek-observability-logging:$creekVersion")

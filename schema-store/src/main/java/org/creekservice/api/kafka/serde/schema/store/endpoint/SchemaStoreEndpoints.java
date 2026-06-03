@@ -98,13 +98,11 @@ public final class SchemaStoreEndpoints {
      * Type that can be used to control where the details of the schema registry are loaded from.
      *
      * <p>This type can be customised via the {@code
-     * org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions.Builder#withTypeOverride} or
-     * similar methods. Pass {@code SchemaRegistryEndpoint.Loader.class} as the first param and a
-     * custom implementation as the second.
+     * JsonSerdeExtensionOptions.Builder#withTypeOverride} method. Pass {@code
+     * SchemaRegistryEndpoint.Loader.class} as the first param and a custom implementation as the
+     * second.
      *
-     * <p>If not customised, the default {@link
-     * org.creekservice.api.kafka.serde.schema.store.endpoint.SystemEnvSchemaRegistryEndpointLoader}
-     * will be used.
+     * <p>If not customised, the default {@link SystemEnvSchemaRegistryEndpointLoader} will be used.
      */
     public interface Loader {
 

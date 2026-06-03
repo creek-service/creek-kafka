@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2026 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2024-2026 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,13 @@ plugins {
 }
 
 val creekVersion : String by extra
-val kafkaVersion : String by extra
+val confluentVersion : String by extra
 val testContainersVersion : String by extra
 
 dependencies {
-    api(project(":metadata"))
     api("org.creekservice:creek-base-annotation:$creekVersion")
-    api("org.creekservice:creek-service-api:$creekVersion")
 
-    api("org.apache.kafka:kafka-clients:$kafkaVersion")
-
-    implementation("org.creekservice:creek-base-type:$creekVersion")
+    implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
 
     testImplementation(project(":serde-test"))
 }

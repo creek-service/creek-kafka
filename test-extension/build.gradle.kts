@@ -28,6 +28,7 @@ dependencies {
     api("org.creekservice:creek-system-test-extension:$creekVersion")
 
     implementation(project(":streams-extension"))
+    implementation(project(":schema-store"))
     implementation(project(":serde"))
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind")
