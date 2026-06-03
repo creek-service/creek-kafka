@@ -27,25 +27,12 @@ import java.util.Map;
  * needed when upgrading Creek.
  *
  * <p>Register the mock during testing so that no external Schema Registry endpoint environment
- * variables are required. The mock is normally installed via {@link
- * org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions#testBuilder()}:
+ * variables are required. The mock is normally installed via the {@code testBuild()} method of the
+ * options class of which ever serde module(s) you are using. For example:
  *
  * <pre>
  * CreekServices.builder(new MyServiceDescriptor())
  *    .with(JsonSerdeExtensionOptions.testBuilder().build())
- *    .build();
- * </pre>
- *
- * <p>Or a custom client can be installed:
- *
- * <pre>
- * CreekServices.builder(new MyServiceDescriptor())
- *    .with(JsonSerdeExtensionOptions.builder()
- *        // Install custom store client:
- *        .withTypeOverride(JsonSchemaStoreClient.Factory.class, CustomStoreClient::new)
- *        // Install custom endpoint loading:
- *        .withTypeOverride(SchemaStoreEndpoints.Loader.class, new CustomStoreEndpointLoader()::load)
- *        .build())
  *    .build();
  * </pre>
  */
