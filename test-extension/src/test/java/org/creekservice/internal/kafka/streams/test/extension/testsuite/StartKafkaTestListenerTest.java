@@ -35,6 +35,7 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Configu
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.SchemaRegistryEndpointsProvider;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,7 @@ import org.mockito.quality.Strictness;
 class StartKafkaTestListenerTest {
 
     private static final String KAFKA_DOCKER_IMAGE = "some-kafka-docker-image";
+    private static final String SR_DOCKER_IMAGE = "some-sr-docker-image";
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CreekSystemTest api;
@@ -63,15 +65,25 @@ class StartKafkaTestListenerTest {
     @Mock private ServiceDescriptor descriptor0;
     @Mock private ServiceDescriptor descriptor1;
     @Mock private TopicCollector topicCollector;
+    @Mock private SchemaCollector schemaCollector;
     @Mock private CollectedTopics collectedTopics;
+    @Mock private SchemaCollector.CollectedSchemaRegistries collectedSchemaRegistries;
     @Mock private ClusterEndpointsProvider clusterEndpointsProvider;
+    @Mock private SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider;
     @Mock private CreekTestSuite suite;
+    @Mock private KafkaOptions testOption;
 
     private StartKafkaTestListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new StartKafkaTestListener(api, clusterEndpointsProvider, topicCollector);
+        listener =
+                new StartKafkaTestListener(
+                        api,
+                        clusterEndpointsProvider,
+                        schemaRegistryEndpointsProvider,
+                        topicCollector,
+                        schemaCollector);
 
         when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(serviceInstance0, serviceInstance1));
@@ -83,11 +95,14 @@ class StartKafkaTestListenerTest {
         when(descriptor0.name()).thenReturn("service-0");
         when(descriptor1.name()).thenReturn("service-1");
 
-        final KafkaOptions testOption = mock(KafkaOptions.class);
-        when(testOption.kafkaDockerImage()).thenReturn(KAFKA_DOCKER_IMAGE);
-        when(suite.options(KafkaOptions.class)).thenReturn(List.of(testOption));
-
         when(topicCollector.collectTopics(any())).thenReturn(collectedTopics);
+        when(schemaCollector.collectSchemaRegistries(any())).thenReturn(collectedSchemaRegistries);
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of());
+        when(collectedSchemaRegistries.isEmpty()).thenReturn(true);
+
+        when(testOption.kafkaDockerImage()).thenReturn(KAFKA_DOCKER_IMAGE);
+        when(testOption.schemaRegistryDockerImage()).thenReturn(SR_DOCKER_IMAGE);
+        when(suite.options(KafkaOptions.class)).thenReturn(List.of(testOption));
     }
 
     @Test
@@ -239,5 +254,138 @@ class StartKafkaTestListenerTest {
         // Then:
         verify(serviceInstance0).addEnv("KAFKA_BOB_APPLICATION_ID", "service-0");
         verify(serviceInstance1).addEnv("KAFKA_JANET_APPLICATION_ID", "service-1");
+    }
+
+    @Test
+    void shouldNotStartSchemaRegistryIfNoSchemaRegistriesFound() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of());
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(schemaRegistryEndpointsProvider, never()).put(any(), any());
+    }
+
+    @Test
+    void shouldAddSchemaRegistryContainerPerRegistry() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+
+        final ConfigurableServiceInstance kafkaInst = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any())).thenReturn(kafkaInst);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(api.tests().env().currentSuite().services())
+                .add(new SchemaRegistryContainerDef("registry-a", SR_DOCKER_IMAGE, kafkaInst));
+    }
+
+    @Test
+    void shouldStartSchemaRegistry() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+
+        final ConfigurableServiceInstance srInst = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any()))
+                .thenReturn(mock(ConfigurableServiceInstance.class))
+                .thenReturn(srInst);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(srInst).start();
+    }
+
+    @Test
+    void shouldSetSchemaRegistryEndpoints() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+
+        final ConfigurableServiceInstance srInst = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any()))
+                .thenReturn(mock(ConfigurableServiceInstance.class))
+                .thenReturn(srInst);
+        when(srInst.testNetworkHostname()).thenReturn("localhost");
+        when(srInst.testNetworkPort(SchemaRegistryContainerDef.SCHEMA_REGISTRY_PORT))
+                .thenReturn(38081);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(schemaRegistryEndpointsProvider)
+                .put("registry-a", Map.of("endpoints", "http://localhost:38081"));
+    }
+
+    @Test
+    void shouldSetSchemaRegistryEnvOnServicesUnderTest() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+
+        final ConfigurableServiceInstance srInst = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any()))
+                .thenReturn(mock(ConfigurableServiceInstance.class))
+                .thenReturn(srInst);
+        when(srInst.name()).thenReturn("schema-registry-registry-a");
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        final String expectedEnvValue =
+                "http://schema-registry-registry-a:"
+                        + SchemaRegistryContainerDef.SCHEMA_REGISTRY_PORT;
+        verify(serviceInstance0).addEnv("SCHEMA_REGISTRY_REGISTRY-A_ENDPOINTS", expectedEnvValue);
+        verify(serviceInstance1).addEnv("SCHEMA_REGISTRY_REGISTRY-A_ENDPOINTS", expectedEnvValue);
+    }
+
+    @Test
+    void shouldClearSchemaRegistryEndpointsOnAfterSuite() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+        listener.beforeSuite(suite);
+
+        // When:
+        listener.afterSuite(null, null);
+
+        // Then:
+        verify(schemaRegistryEndpointsProvider).put("registry-a", Map.of());
+    }
+
+    @Test
+    void shouldStopSchemaRegistryOnlyOnce() {
+        // Given:
+        when(collectedTopics.clusters()).thenReturn(Set.of("bob"));
+        when(collectedSchemaRegistries.registryNames()).thenReturn(Set.of("registry-a"));
+        when(collectedSchemaRegistries.clusterFor("registry-a")).thenReturn("bob");
+
+        final ConfigurableServiceInstance srInst = mock(ConfigurableServiceInstance.class);
+        when(api.tests().env().currentSuite().services().add(any()))
+                .thenReturn(mock(ConfigurableServiceInstance.class))
+                .thenReturn(srInst);
+        listener.beforeSuite(suite);
+
+        // When:
+        listener.afterSuite(null, null);
+        listener.afterSuite(null, null);
+
+        // Then:
+        verify(srInst).stop();
     }
 }

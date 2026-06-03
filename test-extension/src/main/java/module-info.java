@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import org.creekservice.api.kafka.serde.provider.KafkaSerdeTestExtensionInitializer;
+import org.creekservice.api.kafka.serde.provider.KafkaSystemTestSerdeProvider;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.internal.kafka.streams.test.extension.KafkaTestExtension;
 
@@ -24,6 +26,7 @@ module creek.kafka.test.extension {
     requires transitive com.fasterxml.jackson.databind;
     requires creek.kafka.clients.extension;
     requires creek.kafka.metadata;
+    requires creek.kafka.serde;
     requires creek.base.type;
     requires org.slf4j;
 
@@ -31,6 +34,9 @@ module creek.kafka.test.extension {
             com.fasterxml.jackson.databind;
     exports org.creekservice.internal.kafka.streams.test.extension.util to
             com.fasterxml.jackson.databind;
+
+    uses KafkaSerdeTestExtensionInitializer;
+    uses KafkaSystemTestSerdeProvider;
 
     provides CreekTestExtension with
             KafkaTestExtension;

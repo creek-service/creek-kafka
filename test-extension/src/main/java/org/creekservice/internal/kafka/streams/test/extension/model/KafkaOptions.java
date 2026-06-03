@@ -60,8 +60,18 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
     public static final String DEFAULT_KAFKA_DOCKER_IMAGE =
             "confluentinc/cp-kafka:" + DEFAULT_CONFLUENT_VERSION;
 
+    /**
+     * The default image name to use for the Schema Registry.
+     *
+     * @see <a href="https://hub.docker.com/r/confluentinc/cp-schema-registry/tags">Schema Registry
+     *     versions on Docker hub</a>
+     */
+    public static final String DEFAULT_SCHEMA_REGISTRY_DOCKER_IMAGE =
+            "confluentinc/cp-schema-registry:" + DEFAULT_CONFLUENT_VERSION;
+
     private static final KafkaOptions DEFAULTS =
             new KafkaOptions(
+                    Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
@@ -85,6 +95,7 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
     private final Optional<Duration> verifierTimeout;
     private final Duration extraTimeout;
     private final String kafkaDockerImage;
+    private final String schemaRegistryDockerImage;
 
     /**
      * @return default options.
@@ -98,6 +109,8 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
      * @param verifierTimeout optional explicit verifier timeout
      * @param extraTimeout optional explicit timeout for additional records.
      * @param kafkaDockerImage optional explicit docker container name to use for Kafka broker.
+     * @param schemaRegistryDockerImage optional explicit docker container name to use for Schema
+     *     Registry.
      * @param notes optional ignored notes.
      */
     @SuppressWarnings("unused") // Invoked by Jackson via reflection
@@ -106,6 +119,8 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
             @JsonProperty("verifierTimeout") final Optional<Duration> verifierTimeout,
             @JsonProperty("extraTimeout") final Optional<Duration> extraTimeout,
             @JsonProperty("kafkaDockerImage") final Optional<String> kafkaDockerImage,
+            @JsonProperty("schemaRegistryDockerImage")
+                    final Optional<String> schemaRegistryDockerImage,
             @JsonProperty("notes") final Optional<String> notes) {
 
         this(
@@ -113,6 +128,7 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
                 verifierTimeout,
                 extraTimeout.orElse(DEFAULT_EXTRA_TIMEOUT),
                 kafkaDockerImage.orElse(DEFAULT_KAFKA_DOCKER_IMAGE),
+                schemaRegistryDockerImage.orElse(DEFAULT_SCHEMA_REGISTRY_DOCKER_IMAGE),
                 LocationAware.UNKNOWN_LOCATION);
     }
 
@@ -121,11 +137,14 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
             final Optional<Duration> verifierTimeout,
             final Duration extraTimeout,
             final String kafkaDockerImage,
+            final String schemaRegistryDockerImage,
             final URI location) {
         this.outputOrdering = requireNonNull(outputOrdering, "outputOrdering");
         this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
         this.extraTimeout = requireNonNull(extraTimeout, "extraTimeout");
         this.kafkaDockerImage = requireNonBlank(kafkaDockerImage, "kafkaDockerImage");
+        this.schemaRegistryDockerImage =
+                requireNonBlank(schemaRegistryDockerImage, "schemaRegistryDockerImage");
         this.location = requireNonNull(location, "location");
     }
 
@@ -166,10 +185,22 @@ public final class KafkaOptions implements Option, LocationAware<KafkaOptions> {
         return kafkaDockerImage;
     }
 
+    /**
+     * @return the docker image name to use for the Schema Registry.
+     */
+    public String schemaRegistryDockerImage() {
+        return schemaRegistryDockerImage;
+    }
+
     @Override
     public KafkaOptions withLocation(final URI location) {
         return new KafkaOptions(
-                outputOrdering, verifierTimeout, extraTimeout, kafkaDockerImage, location);
+                outputOrdering,
+                verifierTimeout,
+                extraTimeout,
+                kafkaDockerImage,
+                schemaRegistryDockerImage,
+                location);
     }
 
     @Override

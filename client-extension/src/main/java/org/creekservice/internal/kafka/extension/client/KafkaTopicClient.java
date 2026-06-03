@@ -18,7 +18,6 @@ package org.creekservice.internal.kafka.extension.client;
 
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static org.apache.kafka.clients.admin.ConfigEntry.ConfigSource.DYNAMIC_TOPIC_CONFIG;
 
 import java.net.URI;
@@ -28,7 +27,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
@@ -94,7 +92,7 @@ public final class KafkaTopicClient implements TopicClient {
                 topics.stream()
                         .filter(topic -> !topic.cluster().equals(clusterName))
                         .map(CreatableKafkaTopic::id)
-                        .collect(Collectors.toList());
+                        .toList();
 
         if (!wrongCluster.isEmpty()) {
             throw new IllegalArgumentException(
@@ -115,8 +113,7 @@ public final class KafkaTopicClient implements TopicClient {
      */
     private void create(final List<? extends CreatableKafkaTopic<?, ?>> topics, final Admin admin) {
 
-        final List<NewTopic> newTopics =
-                topics.stream().map(KafkaTopicClient::toNewTopic).collect(toList());
+        final List<NewTopic> newTopics = topics.stream().map(KafkaTopicClient::toNewTopic).toList();
 
         final CreateTopicsResult result = admin.createTopics(newTopics);
 
@@ -131,7 +128,7 @@ public final class KafkaTopicClient implements TopicClient {
                         final List<ConfigEntry> config =
                                 result.config(topic).get().entries().stream()
                                         .filter(c -> c.source() == DYNAMIC_TOPIC_CONFIG)
-                                        .collect(toList());
+                                        .toList();
 
                         logger.info(
                                 "Created topic",

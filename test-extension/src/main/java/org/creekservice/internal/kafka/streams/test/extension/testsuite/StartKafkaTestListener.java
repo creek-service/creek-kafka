@@ -37,6 +37,7 @@ import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.kafka.extension.resource.TopicCollector;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.SchemaRegistryEndpointsProvider;
 import org.creekservice.internal.kafka.streams.test.extension.handler.TestOptionsAccessor;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 
@@ -48,46 +49,84 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
 
     private final CreekSystemTest api;
     private final TopicCollector topicCollector;
+    private final SchemaCollector schemaCollector;
     private final ClusterEndpointsProvider clusterEndpointsProvider;
+    private final SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider;
     private final Map<String, ServiceInstance> kafkaInstances = new HashMap<>();
+    private final Map<String, ServiceInstance> schemaRegistryInstances = new HashMap<>();
 
     /**
      * @param api the system test api.
      * @param clusterEndpointsProvider a provider of cluster endpoint information.
+     * @param schemaRegistryEndpointsProvider a provider of schema registry endpoint information.
      */
     public StartKafkaTestListener(
-            final CreekSystemTest api, final ClusterEndpointsProvider clusterEndpointsProvider) {
-        this(api, clusterEndpointsProvider, new TopicCollector());
+            final CreekSystemTest api,
+            final ClusterEndpointsProvider clusterEndpointsProvider,
+            final SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider) {
+        this(
+                api,
+                clusterEndpointsProvider,
+                schemaRegistryEndpointsProvider,
+                new TopicCollector(),
+                new SchemaCollector());
     }
 
     @VisibleForTesting
     StartKafkaTestListener(
             final CreekSystemTest api,
             final ClusterEndpointsProvider clusterEndpointsProvider,
-            final TopicCollector topicCollector) {
+            final SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider,
+            final TopicCollector topicCollector,
+            final SchemaCollector schemaCollector) {
         this.api = requireNonNull(api, "api");
         this.topicCollector = requireNonNull(topicCollector, "topicCollector");
+        this.schemaCollector = requireNonNull(schemaCollector, "schemaCollector");
         this.clusterEndpointsProvider =
                 requireNonNull(clusterEndpointsProvider, "clusterEndpointsProvider");
+        this.schemaRegistryEndpointsProvider =
+                requireNonNull(schemaRegistryEndpointsProvider, "schemaRegistryEndpointsProvider");
     }
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         final KafkaOptions options = TestOptionsAccessor.get(suite);
+        final List<ConfigurableServiceInstance> services =
+                api.tests().env().currentSuite().services().stream().toList();
+
         final Map<String, List<ConfigurableServiceInstance>> clusterServices =
-                api.tests().env().currentSuite().services().stream()
+                services.stream()
                         .flatMap(this::requiredClusters)
                         .collect(
                                 groupingBy(
-                                        ClusterInstance::clusterName,
-                                        mapping(ClusterInstance::service, toList())));
+                                        KafkaCluster::clusterName,
+                                        mapping(KafkaCluster::service, toList())));
 
         clusterServices.forEach(
                 (clusterName, clusterUsers) -> createCluster(clusterName, clusterUsers, options));
+
+        final Map<String, List<ConfigurableServiceInstance>> registryUsers =
+                services.stream()
+                        .flatMap(this::requiredSchemaRegistries)
+                        .collect(
+                                groupingBy(
+                                        SchemaRegistryInstance::registryName,
+                                        mapping(SchemaRegistryInstance::service, toList())));
+
+        registryUsers.forEach(
+                (registryName, users) -> createSchemaRegistry(registryName, users, options));
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
+        schemaRegistryInstances
+                .keySet()
+                .forEach(
+                        registryName ->
+                                schemaRegistryEndpointsProvider.put(registryName, Map.of()));
+        schemaRegistryInstances.values().forEach(ServiceInstance::stop);
+        schemaRegistryInstances.clear();
+
         kafkaInstances
                 .keySet()
                 .forEach(clusterName -> clusterEndpointsProvider.put(clusterName, Map.of()));
@@ -95,7 +134,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
         kafkaInstances.clear();
     }
 
-    private Stream<ClusterInstance> requiredClusters(final ConfigurableServiceInstance service) {
+    private Stream<KafkaCluster> requiredClusters(final ConfigurableServiceInstance service) {
         return service.descriptor()
                 .map(
                         descriptor ->
@@ -103,9 +142,7 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
                                         .collectTopics(List.of(descriptor))
                                         .clusters()
                                         .stream()
-                                        .map(
-                                                clusterName ->
-                                                        new ClusterInstance(clusterName, service)))
+                                        .map(clusterName -> new KafkaCluster(clusterName, service)))
                 .orElse(Stream.of());
     }
 
@@ -155,21 +192,90 @@ public final class StartKafkaTestListener implements TestEnvironmentListener {
                                 instance.descriptor().orElseThrow().name()));
     }
 
-    private static final class ClusterInstance {
-        private final String clusterName;
-        private final ConfigurableServiceInstance service;
+    private Stream<SchemaRegistryInstance> requiredSchemaRegistries(
+            final ConfigurableServiceInstance service) {
+        return service.descriptor()
+                .map(
+                        descriptor -> {
+                            final SchemaCollector.CollectedSchemaRegistries collected =
+                                    schemaCollector.collectSchemaRegistries(List.of(descriptor));
+                            return collected.registryNames().stream()
+                                    .map(
+                                            registryName ->
+                                                    new SchemaRegistryInstance(
+                                                            registryName,
+                                                            collected.clusterFor(registryName),
+                                                            service));
+                        })
+                .orElse(Stream.of());
+    }
 
-        ClusterInstance(final String clusterName, final ConfigurableServiceInstance service) {
-            this.clusterName = requireNonBlank(clusterName, "cluster");
-            this.service = requireNonNull(service, "service");
+    private void createSchemaRegistry(
+            final String registryName,
+            final Collection<ConfigurableServiceInstance> users,
+            final KafkaOptions options) {
+
+        final SchemaCollector.CollectedSchemaRegistries collected =
+                schemaCollector.collectSchemaRegistries(
+                        users.stream().flatMap(s -> s.descriptor().stream()).toList());
+
+        final String clusterName = collected.clusterFor(registryName);
+        final ServiceInstance kafka = kafkaInstances.get(clusterName);
+
+        final ServiceInstance schemaRegistry =
+                api.tests()
+                        .env()
+                        .currentSuite()
+                        .services()
+                        .add(
+                                new SchemaRegistryContainerDef(
+                                        registryName, options.schemaRegistryDockerImage(), kafka));
+
+        schemaRegistry.start();
+        schemaRegistryInstances.put(registryName, schemaRegistry);
+
+        setSchemaRegistryEnv(users, registryName, schemaRegistry);
+
+        schemaRegistryEndpointsProvider.put(
+                registryName,
+                Map.of(
+                        "endpoints",
+                        "http://"
+                                + schemaRegistry.testNetworkHostname()
+                                + ":"
+                                + schemaRegistry.testNetworkPort(
+                                        SchemaRegistryContainerDef.SCHEMA_REGISTRY_PORT)));
+    }
+
+    private void setSchemaRegistryEnv(
+            final Collection<ConfigurableServiceInstance> users,
+            final String registryName,
+            final ServiceInstance schemaRegistry) {
+        final String prefix = "SCHEMA_REGISTRY_" + registryName.toUpperCase() + "_";
+
+        users.forEach(
+                instance ->
+                        instance.addEnv(
+                                prefix + "ENDPOINTS",
+                                "http://"
+                                        + schemaRegistry.name()
+                                        + ":"
+                                        + SchemaRegistryContainerDef.SCHEMA_REGISTRY_PORT));
+    }
+
+    private record KafkaCluster(String clusterName, ConfigurableServiceInstance service) {
+        private KafkaCluster {
+            requireNonBlank(clusterName, "cluster");
+            requireNonNull(service, "service");
         }
+    }
 
-        public String clusterName() {
-            return clusterName;
-        }
-
-        public ConfigurableServiceInstance service() {
-            return service;
+    private record SchemaRegistryInstance(
+            String registryName, String clusterName, ConfigurableServiceInstance service) {
+        private SchemaRegistryInstance {
+            requireNonBlank(registryName, "registryName");
+            requireNonBlank(clusterName, "clusterName");
+            requireNonNull(service, "service");
         }
     }
 }

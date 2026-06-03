@@ -16,54 +16,36 @@
 
 package org.creekservice.internal.kafka.serde.json.schema.validation;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Map;
-import net.jimblackler.jsonschemafriend.Schema;
-import net.jimblackler.jsonschemafriend.SchemaStore;
-import net.jimblackler.jsonschemafriend.ValidationException;
-import net.jimblackler.jsonschemafriend.Validator;
-import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.json.schema.validator.JsonSchemaValidator;
+import org.creekservice.api.json.schema.validator.SchemaValidationException;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.PartDescriptor.Part;
 import org.creekservice.api.kafka.serde.json.schema.YamlSchema;
 import org.creekservice.internal.kafka.serde.json.schema.SchemaException;
 
-/** Validator implementation that uses JsonSchemaFriend validator library. */
-public final class SchemaFriendValidator implements SchemaValidator {
+/** Validator implementation backed by the Creek JSON schema validator. */
+public final class CreekSchemaValidator implements SchemaValidator {
 
-    private final Validator validator;
-    private final Schema parsedSchema;
+    private final JsonSchemaValidator validator;
 
     /**
      * @param schema the YAML schema to validate against.
      */
-    public SchemaFriendValidator(final YamlSchema schema) {
-        this(schema, new Validator(true));
-    }
-
-    @VisibleForTesting
-    SchemaFriendValidator(final YamlSchema schema, final Validator validator) {
-        this.parsedSchema = parseSchema(schema);
-        this.validator = requireNonNull(validator, "validator");
+    public CreekSchemaValidator(final YamlSchema schema) {
+        try {
+            this.validator = JsonSchemaValidator.fromSchema(schema.toString());
+        } catch (SchemaValidationException e) {
+            throw new FailedToParseSchemaException(schema, e);
+        }
     }
 
     @Override
     public void validate(
             final Map<String, ?> objectProperties, final String topic, final Part part) {
         try {
-            validator.validate(parsedSchema, objectProperties);
-        } catch (ValidationException e) {
+            validator.validate(objectProperties);
+        } catch (SchemaValidationException e) {
             throw new JsonSchemaValidationFailed(topic, part, e);
-        }
-    }
-
-    private Schema parseSchema(final YamlSchema schema) {
-        try {
-            final SchemaStore schemaStore = new SchemaStore(true);
-            final Object o = schema.asObject();
-            return schemaStore.loadSchema(o);
-        } catch (Exception e) {
-            throw new FailedToParseSchemaException(schema, e);
         }
     }
 
@@ -76,15 +58,6 @@ public final class SchemaFriendValidator implements SchemaValidator {
          */
         public FailedToParseSchemaException(final YamlSchema schema, final Throwable cause) {
             super("Failed to parse schema: " + schema.asJsonText(), cause);
-        }
-    }
-
-    /** Thrown when JSON data fails schema validation. */
-    @VisibleForTesting
-    public static final class JsonSchemaValidationFailed extends SchemaException {
-        JsonSchemaValidationFailed(
-                final String topic, final Part part, final ValidationException cause) {
-            super("Validation failed." + " topic: " + topic + ", part: " + part, cause);
         }
     }
 }

@@ -61,17 +61,21 @@ public final class NativeKafkaSerdeProvider implements KafkaSerdeProvider {
     @Override
     public SerdeFactory initialize(final CreekService api) {
         return new SerdeFactory() {
-            @SuppressWarnings("unchecked")
             @Override
             public <T> Serde<T> createSerde(final KafkaTopicDescriptor.PartDescriptor<T> part) {
-                final Supplier<Serde<?>> supplier = SUPPLIERS.get(part.type());
-                if (supplier == null) {
-                    throw new UnsupportedTypeException(part.type());
-                }
-
-                return (Serde<T>) supplier.get();
+                return serde(part.type());
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> Serde<T> serde(final Class<T> type) {
+        final Supplier<Serde<?>> supplier = SUPPLIERS.get(type);
+        if (supplier == null) {
+            throw new UnsupportedTypeException(type);
+        }
+
+        return (Serde<T>) supplier.get();
     }
 
     private static final class UnsupportedTypeException extends IllegalArgumentException {

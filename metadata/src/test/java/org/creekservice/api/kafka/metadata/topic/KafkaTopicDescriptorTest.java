@@ -16,18 +16,22 @@
 
 package org.creekservice.api.kafka.metadata.topic;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.stream.Stream;
 import org.creekservice.api.kafka.metadata.SerializationFormat;
+import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.junit.jupiter.api.Test;
 
 class KafkaTopicDescriptorTest {
@@ -73,7 +77,7 @@ class KafkaTopicDescriptorTest {
                 };
 
         // Then:
-        assertThat(part.resources().collect(toList()), is(List.of()));
+        assertThat(part.resources().toList(), is(List.of()));
     }
 
     @Test
@@ -92,6 +96,44 @@ class KafkaTopicDescriptorTest {
         // Then:
         assertThat(e.getCause(), instanceOf(URISyntaxException.class));
         assertThat(e.getMessage(), containsString("Malformed escape pair"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldReturnResourcesFromKeyAndValueParts() {
+        // Given:
+        final ResourceDescriptor keyResource = mock(ResourceDescriptor.class);
+        final ResourceDescriptor valueResource = mock(ResourceDescriptor.class);
+        final KafkaTopicDescriptor.PartDescriptor<Void> key =
+                mock(KafkaTopicDescriptor.PartDescriptor.class);
+        final KafkaTopicDescriptor.PartDescriptor<Void> value =
+                mock(KafkaTopicDescriptor.PartDescriptor.class);
+        doReturn(Stream.of(keyResource)).when(key).resources();
+        doReturn(Stream.of(valueResource)).when(value).resources();
+
+        final KafkaTopicDescriptor<Void, Void> desc =
+                new KafkaTopicDescriptor<>() {
+                    @Override
+                    public String name() {
+                        return "t";
+                    }
+
+                    @Override
+                    public PartDescriptor<Void> key() {
+                        return key;
+                    }
+
+                    @Override
+                    public PartDescriptor<Void> value() {
+                        return value;
+                    }
+                };
+
+        // When:
+        final List<? extends ResourceDescriptor> result = desc.resources().toList();
+
+        // Then:
+        assertThat(result, contains(keyResource, valueResource));
     }
 
     @Test

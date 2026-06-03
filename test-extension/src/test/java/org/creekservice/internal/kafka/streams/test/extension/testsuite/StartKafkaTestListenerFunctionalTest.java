@@ -44,7 +44,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -69,6 +68,7 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Service
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester;
 import org.creekservice.internal.kafka.streams.test.extension.ClusterEndpointsProvider;
+import org.creekservice.internal.kafka.streams.test.extension.SchemaRegistryEndpointsProvider;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -99,6 +99,8 @@ class StartKafkaTestListenerFunctionalTest {
     private static ConfigurableServiceInstance testService;
     private static final ClusterEndpointsProvider clusterEndpointsProvider =
             new ClusterEndpointsProvider();
+    private static final SchemaRegistryEndpointsProvider schemaRegistryEndpointsProvider =
+            new SchemaRegistryEndpointsProvider();
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
@@ -117,7 +119,9 @@ class StartKafkaTestListenerFunctionalTest {
         when(api.tests().env().currentSuite().services().stream())
                 .thenReturn(Stream.of(testService));
 
-        listener = new StartKafkaTestListener(api, clusterEndpointsProvider);
+        listener =
+                new StartKafkaTestListener(
+                        api, clusterEndpointsProvider, schemaRegistryEndpointsProvider);
     }
 
     @AfterAll
@@ -307,7 +311,7 @@ class StartKafkaTestListenerFunctionalTest {
                                                 + ", only: "
                                                 + EXT_TESTER.dockerServicesContainer().stream()
                                                         .map(ServiceInstance::name)
-                                                        .collect(Collectors.toList())));
+                                                        .toList()));
     }
 
     private String dockerImageName(final String containerId) {

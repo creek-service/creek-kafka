@@ -42,6 +42,11 @@ public interface KafkaTopicDescriptor<K, V> extends ResourceDescriptor {
         return resourceId(cluster(), name());
     }
 
+    @Override
+    default Stream<? extends ResourceDescriptor> resources() {
+        return Stream.concat(key().resources(), value().resources());
+    }
+
     /**
      * @return name of the topic as it is in Kafka.
      */

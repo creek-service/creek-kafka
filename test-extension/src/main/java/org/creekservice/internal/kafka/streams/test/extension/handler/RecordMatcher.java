@@ -99,7 +99,7 @@ final class RecordMatcher {
         final List<Unmatched> unmatched =
                 Stream.concat(skipped.stream(), remaining.values().stream().flatMap(List::stream))
                         .map(expected -> unmatched(expected, extras))
-                        .collect(toList());
+                        .toList();
 
         return new MatchResult(matched, unmatched, extras);
     }
@@ -133,7 +133,7 @@ final class RecordMatcher {
                                                         .orElse(
                                                                 "Records match, but the order is"
                                                                         + " wrong")))
-                        .collect(toList());
+                        .toList();
 
         return new Unmatched(expected, mismatched);
     }
