@@ -24,6 +24,7 @@ import org.creekservice.internal.kafka.serde.json.JsonSchemaTestExtensionInitial
 /** Provider of JSON serde functionality to Creel. */
 module creek.kafka.serde.json.schema {
     requires transitive creek.kafka.serde;
+    requires transitive creek.kafka.schema.store;
     requires creek.base.type;
     requires creek.observability.logging;
     requires com.fasterxml.jackson.databind;
