@@ -26,10 +26,8 @@ module creek.kafka.serde {
     requires transitive creek.service.api;
     requires transitive kafka.clients;
     requires creek.base.type;
-    requires kafka.schema.registry.client;
 
     exports org.creekservice.api.kafka.serde.provider;
-    exports org.creekservice.api.kafka.serde.schema.store.endpoint;
 
     uses KafkaSerdeProvider;
     uses KafkaSystemTestSerdeProvider;

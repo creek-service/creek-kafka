@@ -27,6 +27,7 @@ module creek.kafka.test.extension {
     requires creek.kafka.clients.extension;
     requires creek.kafka.metadata;
     requires creek.kafka.serde;
+    requires creek.kafka.schema.store;
     requires creek.base.type;
     requires org.slf4j;
 
