@@ -61,7 +61,7 @@ dependencies {
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 
     constraints {
-        implementation("org.scala-lang:scala-library:3.8.3") {
+        implementation("org.scala-lang:scala-library:3.8.4") {
             because("lower versions have security vulnerabilities")
         }
         implementation("commons-validator:commons-validator:1.10.1") {
