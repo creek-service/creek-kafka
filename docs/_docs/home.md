@@ -254,23 +254,17 @@ This behaviour is customizable. See [`KafkaStreamsExtensionOptions.Builder.withK
 of a service, or services. Of course, unit testing still has its place.
 {: .notice--info}
 
-The `creek-kafka-streams-test.jar` contains test helpers, that can be added as a test dependency, to help with 
-unit testing Kafka Streams topologies.
+The standard Kafka Streams `TopologyTestDriver` can be used to unit test the KafkaSteams topology, and Creek integrates with it easily.
 
-{% highlight kotlin %}
-{% include_snippet deps from ../docs-examples/build.gradle.kts %}
-{% include_snippet streams-test from ../docs-examples/build.gradle.kts %}
-}
+Use [`KafkaStreamsExtensionOptions.testBuilder()`][streamsOptions] to configure the [streams extension](#kafka-streams-extension) for unit testing.
+Test topic helpers for creating input and output topics with a [`TopologyTestDriver`][ksTest] can be created locally in your test source set.
+For example:
+
+{% highlight java %}
+{% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/streams/TestTopics.java %}
 {% endhighlight %}
 
-##### Writing topology unit tests
-
-This module provides classes to make it easier to write unit tests for Kafka Streams' topologies:
-
-* [`TestKafkaStreamsExtensionOptions`][testKsExtOpt] can be used to configure the [streams extension](#kafka-streams-extension) for unit testing.
-* [`TestTopics`][testTopics] can be used to create input and output topics when using [`TopologyTestDriver`][ksTest].
-  
-For example:
+Usage example:
 
 {% highlight java %}
 {% include_snippet topology-builder-test from ../docs-examples/src/test/java/com/acme/examples/streams/TopologyBuilderTest.java %}
@@ -669,7 +663,7 @@ class TopologyTest {
   @BeforeAll
   public static void classSetup() {
     ctx = CreekServices.builder(new TestServiceDescriptor())
-            .with(TestKafkaStreamsExtensionOptions.defaults())
+            .with(KafkaStreamsExtensionOptions.testBuilder().build())
             .with(JsonSerdeExtensionOptions.builder()
                     // Install custom client:
                     .withTypeOverride(
@@ -752,8 +746,6 @@ The `creek-kafka-serde-test` jar contains a test utility that will test a serial
 [serdes]: https://javadoc.io/doc/org.apache.kafka/kafka-clients/latest/org/apache/kafka/common/serialization/Serdes.html
 [topicPartFormatMethod]: https://javadoc.io/static/org.creekservice/creek-kafka-metadata/0.4.0/creek.kafka.metadata/org/creekservice/api/kafka/metadata/KafkaTopicDescriptor.PartDescriptor.html#format()
 [topicDescriptors]: https://github.com/creek-service/creek-kafka/blob/bb79516b4fba0fbda6d17cb9b82a3a6773913fe5/test-service/src/main/java/org/creekservice/internal/kafka/test/service/TopicDescriptors.java
-[testKsExtOpt]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestKafkaStreamsExtensionOptions.html
-[testTopics]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestTopics.html
 [ksTest]: https://kafka.apache.org/documentation/streams/developer-guide/testing.html
 [systemTest]: https://github.com/creek-service/creek-system-test
 [gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin

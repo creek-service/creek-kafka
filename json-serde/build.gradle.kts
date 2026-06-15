@@ -61,9 +61,6 @@ dependencies {
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 
     constraints {
-        implementation("org.scala-lang:scala-library:3.8.3") {
-            because("lower versions have security vulnerabilities")
-        }
         implementation("commons-validator:commons-validator:1.10.1") {
             because("Moves commons-beanutils:commons-beanutils past version suffering from CVE-2025-48734 / GHSA-wxr5-93ph-8wr9")
         }

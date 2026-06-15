@@ -22,8 +22,7 @@ import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
-import org.creekservice.api.kafka.streams.test.TestKafkaStreamsExtensionOptions;
-import org.creekservice.api.kafka.streams.test.TestTopics;
+import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
 import org.junit.jupiter.api.AfterEach;
@@ -51,7 +50,7 @@ class TopologyBuilderTest {
     public static void classSetup() {
         ctx = CreekServices.builder(new MyServiceDescriptor())
                 // Configure Creek to work without an actual cluster:
-                .with(TestKafkaStreamsExtensionOptions.defaults())
+                .with(KafkaStreamsExtensionOptions.testBuilder())
                 .build();
     }
 
@@ -65,8 +64,8 @@ class TopologyBuilderTest {
         testDriver = new TopologyTestDriver(topology, ext.properties(DEFAULT_CLUSTER_NAME));
 
         // Use Creek's `TestTopics` to build topics:
-        inputTopic = TestTopics.inputTopic(InputTopic, ctx, testDriver);
-        outputTopic = TestTopics.outputTopic(OutputTopic, ctx, testDriver);
+        inputTopic = TestTopics.inputTopic(InputTopic, ext, testDriver);
+        outputTopic = TestTopics.outputTopic(OutputTopic, ext, testDriver);
     }
 
     @AfterEach
