@@ -16,7 +16,6 @@
 
 package org.creekservice;
 
-import org.creekservice.api.kafka.streams.test.TestTopics;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.test.conformity.ConformityTester;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ class ModuleTest {
 
     @Test
     void shouldConform() {
-        ConformityTester.builder(TestTopics.class)
+        ConformityTester.builder(ModuleTest.class)
                 .withExcludedClasses(
                         "Descriptors must have public constructors", true, ServiceDescriptor.class)
                 .check();

@@ -16,14 +16,8 @@
 
 package org.creekservice.api.kafka.streams.test;
 
-import static java.util.Objects.requireNonNull;
-
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
@@ -54,7 +48,11 @@ import org.creekservice.api.service.context.CreekContext;
  *   outputTopic = outputTopic(OutputTopic, ctx, testDriver);
  * }
  * </pre>
+ *
+ * @deprecated create a version in each demo repo.
  */
+@SuppressWarnings("resource")
+@Deprecated(forRemoval = true, since = "0.4.5")
 public final class TestTopics {
 
     private TestTopics() {}
@@ -62,7 +60,7 @@ public final class TestTopics {
     /**
      * Create a test input topic
      *
-     * @param topic the topic descriptor
+     * @param topicDescriptor the topic descriptor
      * @param ctx the creek context
      * @param testDriver the Streams topology test driver
      * @param <K> the topic key type
@@ -73,18 +71,21 @@ public final class TestTopics {
      *     org.apache.kafka.common.serialization.Serializer)
      */
     public static <K, V> TestInputTopic<K, V> inputTopic(
-            final KafkaTopicDescriptor<K, V> topic,
+            final KafkaTopicDescriptor<K, V> topicDescriptor,
             final CreekContext ctx,
             final TopologyTestDriver testDriver) {
-        final TopicSerde<K, V> serde = topicSerde(topic, ctx);
+        final KafkaTopic<K, V> topic =
+                ctx.extension(KafkaClientsExtension.class).topic(topicDescriptor);
         return testDriver.createInputTopic(
-                topic.name(), serde.keySerde.serializer(), serde.valueSerde.serializer());
+                topicDescriptor.name(),
+                topic.keySerde().serializer(),
+                topic.valueSerde().serializer());
     }
 
     /**
      * Create a test input topic
      *
-     * @param topic the topic descriptor
+     * @param topicDescriptor the topic descriptor
      * @param ctx the creek context
      * @param testDriver the Streams topology test driver
      * @param startTimestamp Start timestamp for auto-generated record time
@@ -97,16 +98,17 @@ public final class TestTopics {
      *     org.apache.kafka.common.serialization.Serializer, Instant, Duration)
      */
     public static <K, V> TestInputTopic<K, V> inputTopic(
-            final KafkaTopicDescriptor<K, V> topic,
+            final KafkaTopicDescriptor<K, V> topicDescriptor,
             final CreekContext ctx,
             final TopologyTestDriver testDriver,
             final Instant startTimestamp,
             final Duration autoAdvance) {
-        final TopicSerde<K, V> serde = topicSerde(topic, ctx);
+        final KafkaTopic<K, V> topic =
+                ctx.extension(KafkaClientsExtension.class).topic(topicDescriptor);
         return testDriver.createInputTopic(
-                topic.name(),
-                serde.keySerde.serializer(),
-                serde.valueSerde.serializer(),
+                topicDescriptor.name(),
+                topic.keySerde().serializer(),
+                topic.valueSerde().serializer(),
                 startTimestamp,
                 autoAdvance);
     }
@@ -114,7 +116,7 @@ public final class TestTopics {
     /**
      * Create a test output topic
      *
-     * @param topic the topic descriptor
+     * @param topicDescriptor the topic descriptor
      * @param ctx the creek context
      * @param testDriver the Streams topology test driver
      * @param <K> the topic key type
@@ -125,41 +127,14 @@ public final class TestTopics {
      *     org.apache.kafka.common.serialization.Deserializer)
      */
     public static <K, V> TestOutputTopic<K, V> outputTopic(
-            final KafkaTopicDescriptor<K, V> topic,
+            final KafkaTopicDescriptor<K, V> topicDescriptor,
             final CreekContext ctx,
             final TopologyTestDriver testDriver) {
-        final TopicSerde<K, V> serde = topicSerde(topic, ctx);
+        final KafkaTopic<K, V> topic =
+                ctx.extension(KafkaClientsExtension.class).topic(topicDescriptor);
         return testDriver.createOutputTopic(
-                topic.name(), serde.keySerde.deserializer(), serde.valueSerde.deserializer());
-    }
-
-    private static <K, V> TopicSerde<K, V> topicSerde(
-            final KafkaTopicDescriptor<K, V> def, final CreekContext ctx) {
-        try (KafkaClientsExtension ext = ctx.extension(KafkaClientsExtension.class)) {
-            final KafkaTopic<K, V> topic = ext.topic(def);
-            final TopicSerde<K, V> serde = new TopicSerde<>(topic.keySerde(), topic.valueSerde());
-
-            final Map<String, Object> props = new HashMap<>();
-            final Properties properties = ext.properties(def.cluster());
-            properties.stringPropertyNames().forEach(k -> props.put(k, properties.getProperty(k)));
-
-            serde.configure(props);
-            return serde;
-        }
-    }
-
-    private static final class TopicSerde<K, V> {
-        final Serde<K> keySerde;
-        final Serde<V> valueSerde;
-
-        private TopicSerde(final Serde<K> keySerde, final Serde<V> valueSerde) {
-            this.keySerde = requireNonNull(keySerde, "keySerde");
-            this.valueSerde = requireNonNull(valueSerde, "valueSerde");
-        }
-
-        void configure(final Map<String, ?> config) {
-            keySerde.configure(config, true);
-            valueSerde.configure(config, false);
-        }
+                topicDescriptor.name(),
+                topic.keySerde().deserializer(),
+                topic.valueSerde().deserializer());
     }
 }
