@@ -1,5 +1,5 @@
 --add-modules
-  org.hamcrest,creek.test.util,creek.kafka.streams.test
+  org.hamcrest
 
 --add-reads
-  custom.serde.format=org.hamcrest,creek.test.util,creek.kafka.streams.test
+  custom.serde.format=org.hamcrest

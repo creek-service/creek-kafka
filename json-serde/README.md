@@ -14,14 +14,6 @@ For example, in Gradle `build.gradle.kts`:
 ```kotlin
 repositories {
     maven {
-        url = uri("https://jitpack.io")
-        // Optionally limit the scope artefacts:
-        mavenContent {
-            includeGroup("net.jimblackler.jsonschemafriend")
-        }
-    }
-
-    maven {
         url = uri("https://packages.confluent.io/maven/")
         // Optionally limit the scope artefacts:
         mavenContent {

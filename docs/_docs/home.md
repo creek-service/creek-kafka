@@ -25,16 +25,12 @@ The extentions themselves are compiled with the latest versions of the Kafka cli
 However, they are compatible with older versions, as set out in the table below.
 The `tested version` column details the exact version of Kafka libraries testing covers.
 
-| Kafka version | Tested version | Notes                                           |
-|---------------|----------------|-------------------------------------------------|
-| < 2.8         |                | Not compatible due to API changes in Streams    |
-| 2.8.+         | 2.8.2          | Supported & tested                              |
-| 3.0.+         | 3.0.2          | Supported & tested                              |
-| 3.1.+         | 3.1.2          | Supported & tested                              |
-| 3.2.+         | 3.2.3          | Supported & tested                              |
-| 3.3.+         | 3.3.2          | Supported & tested                              |
-| 3.4.+         | 3.4.0          | Supported & tested                              |
-| > 3.4         |                | Not currently tested / released. Should work... |
+| Kafka version | Tested versions                                                      | Notes                                           |
+|---------------|----------------------------------------------------------------------|-------------------------------------------------|
+| < 3.1.0       | 3.1.0                                                                | Not compatible due to API changes in Streams    |
+| 3.+           | 3.1.0, 3.1.2, 3.2.3, 3.3.2, 3.4.1, 3.5.2, 3.6.2, 3.7.2, 3.8.1, 3.9.2 | Supported & tested                              |
+| 4.+           | 4.0.2, 4.1.2, 4.2.0, 4.3.0                                            | Supported & tested                              |
+| > 4.3.0       |                                                                      | Not currently tested / released. Should work... |
 
 In Gradle, it is possible to force the use of an older Kafka client, if you wish, using a resolution strategy.
 In Kotlin, this looks like:
@@ -48,7 +44,7 @@ In Kotlin, this looks like:
 The `creek-kafka-metadata.jar` contains metadata types that can be used in aggregate and service descriptor to define
 Kafka resources the component uses or exposes.
 
-To use the metadata, simply the `creek-kafka-metadata.jar` as a dependency to the `api` or `services` module.
+To use the metadata, simply add the `creek-kafka-metadata.jar` as a dependency to the `api` or `services` module.
 
 {% highlight kotlin %}
 {% include_snippet deps from ../docs-examples/build.gradle.kts %}
@@ -87,7 +83,7 @@ producers, consumers and the admin client.
 By default, if the `creek-kafka-extension.jar` is on the class or module path, Creek will load the
 extension and use it to handle any topic resources.
 
-To use the extension, simply the `creek-kafka-extension.jar` as a dependency to a service.
+To use the extension, simply add the `creek-kafka-extension.jar` as a dependency to a service.
 
 {% highlight kotlin %}
 {% include_snippet deps from ../docs-examples/build.gradle.kts %}
@@ -126,7 +122,7 @@ An alternative to using `KafkaClientsExtensionOptions` to configure Kafka client
 variables. By default, any environment variable prefixed with `KAFKA_` will be passed to the Kafka clients.
 
 It is common to pass `bootstrap.servers` and authentication information to the service in this way, so that different
-values can be passed in different environments. For example, `bootstrap.servers` cam be passed by setting a
+values can be passed in different environments. For example, `bootstrap.servers` can be passed by setting a
 `KAFKA_BOOTSTRAP_SERVERS` environment variable. This is how the [system tests][systemTest] pass the Kafka bootstrap
 to your service.
 
@@ -143,53 +139,16 @@ of a service, or services. Of course, unit testing still has its place.
 Creek-kafka can be configured to not require an actual Kafka cluster during unit testing.
 This is most commonly achieved by configuring creek with the options built from `KafkaClientsExtensionOptions.testBuilder()`:
 
-```java
-class ClientTest {
+{% highlight java %}
+{% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/client/ClientTest.java %}
+{% endhighlight %}
 
-  private static KafkaClientsExtension ext;
-
-  @BeforeAll
-  public static void classSetup() {
-    CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
-            // Configure Creek to work without an actual cluster:
-            .with(KafkaClientsExtensionOptions.testBuilder().build())
-            .build();
-
-    ext = ctx.extension(KafkaClientsExtension.class);
-  }
-  
-  // Tests are free to get serde from ext...
-}
-```
-[todo]: http://Convert to snippet once released.
 ...alternatively, a custom client can be installed. The `CustomTopicClient` type used below can implement
 `MockTopicClient` or `TopicClient`:
 
-```java
-class ClientTest {
-
-  private static KafkaClientsExtension ext;
-
-  @BeforeAll
-  public static void classSetup() {
-    CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
-            // Configure Creek to work without an actual cluster:
-            .with(KafkaClientsExtensionOptions.builder()
-                    .withTypeOverride(TopicClient.Factory.class, CustomTopicClient::new)
-                    .build())
-            .build();
-
-    ext = ctx.extension(KafkaClientsExtension.class);
-  }
-  
-  // Tests are free to get serde from ext...
-}
-```
-[todo]: http://Convert to snippet once released.
-
-**ProTip:** The serde being used may also need configuring in unit tests to work without external services, e.g. a Schema Registry.
-Consult the documentation for the serde in use.
-{: .notice--info}
+{% highlight java %}
+{% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/client/CustomClientTest.java %}
+{% endhighlight %}
 
 ### Kafka Streams extension
 
@@ -200,7 +159,7 @@ adding Streams specific functionality.
 By default, if the `creek-kafka-streams-extension.jar` is on the class or module path, Creek will load the
 extension and use it to handle any topic resources and provide functionality for Kafka Streams based apps.
 
-To use the extension, simply the `creek-kafka-streams-extension.jar` as a dependency to a service.
+To use the extension, simply add the `creek-kafka-streams-extension.jar` as a dependency to a service.
 
 {% highlight kotlin %}
 {% include_snippet deps from ../docs-examples/build.gradle.kts %}
@@ -240,7 +199,7 @@ An alternative to using `KafkaStreamsExtensionOptions` to configure Kafka client
 variables. By default, any environment variable prefixed with `KAFKA_` will be passed to the Kafka clients.
 
 It is common to pass `bootstrap.servers` and authentication information to the service in this way, so that different
-values can be passed in different environments. For example, `bootstrap.servers` cam be passed by setting a
+values can be passed in different environments. For example, `bootstrap.servers` can be passed by setting a
 `KAFKA_BOOTSTRAP_SERVERS` environment variable. This is how the [system tests][systemTest] pass the Kafka bootstrap
 to your service.
 
@@ -248,29 +207,23 @@ See [`SystemEnvPropertyOverrides`][envPropOverrides] for more info, including mu
 
 This behaviour is customizable. See [`KafkaStreamsExtensionOptions.Builder.withKafkaPropertiesOverrides`][streamPropOverrides] for more info.
 
-#### Unit testing topologies
+#### Unit testing
 
 **ProTip:** Creek recommends focusing on [system-tests][systemTest] for testing the combined business functionality
 of a service, or services. Of course, unit testing still has its place.
 {: .notice--info}
 
-The `creek-kafka-streams-test.jar` contains test helpers, that can be added as a test dependency, to help with 
-unit testing Kafka Streams topologies.
+The standard Kafka Streams `TopologyTestDriver` can be used to unit test the KafkaSteams topology, and Creek integrates with it easily.
 
-{% highlight kotlin %}
-{% include_snippet deps from ../docs-examples/build.gradle.kts %}
-{% include_snippet streams-test from ../docs-examples/build.gradle.kts %}
-}
+Use [`KafkaStreamsExtensionOptions.testBuilder()`][streamsOptions] to configure the [streams extension](#kafka-streams-extension) for unit testing.
+Test topic helpers for creating input and output topics with a [`TopologyTestDriver`][ksTest] can be created locally in your test source set.
+For example:
+
+{% highlight java %}
+{% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/streams/TestTopics.java %}
 {% endhighlight %}
 
-##### Writing topology unit tests
-
-This module provides classes to make it easier to write unit tests for Kafka Streams' topologies:
-
-* [`TestKafkaStreamsExtensionOptions`][testKsExtOpt] can be used to configure the [streams extension](#kafka-streams-extension) for unit testing.
-* [`TestTopics`][testTopics] can be used to create input and output topics when using [`TopologyTestDriver`][ksTest].
-  
-For example:
+Usage example:
 
 {% highlight java %}
 {% include_snippet topology-builder-test from ../docs-examples/src/test/java/com/acme/examples/streams/TopologyBuilderTest.java %}
@@ -396,6 +349,8 @@ records:
     key: 2    
 ```
 
+[todo]: http://read-these-example-yaml-files-from-disk
+
 #### Expectation model extensions
 
 The Kafka test extension registers a `creek/kafka-topic@1` expectation model extension.
@@ -434,26 +389,33 @@ records:
     value: ~
 ```
 
-## Kafka serialization formats
+[todo]: http://read-these-example-yaml-files-from-disk
+
+## Serialization formats
 
 The `creek-kafka-serde.jar` provides the base types used to define and register a serde provider for Creek Kafka.
 
-Serialization formats are pluggable. allowing users to plug in their own custom serialization formats, should they want. 
+Serialization formats are pluggable, allowing users to plug in their own custom serialization formats, should they want. 
 Each format a component uses must have exactly one matching [`KafkaSerdeProvider`][serdeProvider] implementation available
-at runtime, on the class-path or module-path.
+at runtime, on the class-path or module-path. 
+
+Integration with the Creek system tests framework can be achieved by implementing a suitable
+[`KafkaSystemTestSerdeProvider`][systemTestSerdeProvider] to handle (de)serialization and normalisation.
+Implementing a suitable [`KafkaSerdeTestExtensionInitializer`][serdeTestExtensionInitializer] allows the formats options to be configured
+appropriate for system tests.
 
 Currently supported serialization formats:
 
-| Serialization format          | Notes                                              |
-|-------------------------------|----------------------------------------------------|
-| [`kafka`](#kafka-format)      | Serialization using the Kafka clients serializers. |
-| [`json`](#json-schema-format) | Schema validated JSON serialization                |
+| Serialization format                 | Notes                                              |
+|--------------------------------------|----------------------------------------------------|
+| [`kafka`](#kafka-format)             | Serialization using the Kafka clients serializers. |
+| [`json-schema`](#json-schema-format) | Schema validated JSON serialization                |
 
 ...or extend Creek with a [custom format](#custom-formats). 
 
 ### `kafka` format
 
-The `creek-kafka-serde.jar` also comes with an in-built `kafka` serialization format, 
+The `creek-kafka-serde.jar` also comes with a built-in `kafka` serialization format, 
 which supports the standard set of Kafka serializers.
 The serializer handles the following types:
 
@@ -500,6 +462,7 @@ for more information on _why_ only producers register schemas in the Schema Regi
 
 It is recommended that schemas are generated from Java classes using the [Creek JSON Schema Gradle plugin](https://github.com/creek-service/creek-json-schema-gradle-plugin).
 This plugin will, by default, create the closed content model JSON schemas that this serde requires.
+(Creek internally handles converting the closed content model the producer registers to an open content model the consumer needs)
 
 #### Confluent compatability
 
@@ -524,20 +487,20 @@ current JSON schema serde is not fit for purpose. Hence, coming up with our own.
 
 Let's look at the pros and cons between the two:
 
-|     | Confluent Serde                          | Creek Serde                       |
-|-----|------------------------------------------|-----------------------------------|
-| 1.  | Broken schema evolution                  | Usable schema evolution.          |
-| 2.  | Generates schema at runtime.             | Generates schema at compile-time. |
-| 3.  | Schemas published on first use.          | Schemas published on startup.     |
-| 4.  | Supports per-record & per-topic schemas. | Supports only per-topic schemas.  |
-| 5.  | Compatible with Confluent UI             | Unsure if compatible with UI      |
-| 6.  | Hard to evolve a key schema              | Key schemas can be evolved.       |
+|     | Confluent Serde                              | Creek Serde                             |
+|-----|----------------------------------------------|-----------------------------------------|
+| 1.  | ❌ Broken schema evolution                   | ✅ Usable schema evolution.              |
+| 2.  | ❌ Generates schema at runtime.              | ✅ Generates schema at compile-time.     |
+| 3.  | ❌ Schemas published on first use.           | ✅ Schemas published on startup.         |
+| 4.  | ✅ Supports per-record & per-topic schemas.  | ❌ Supports only per-topic schemas.      |
+| 5.  | ✅ Compatible with Confluent UI              | ❌ Unsure if compatible with UI          |
+| 6.  | ❌ Hard to evolve a key schema               | ✅ Key schemas can be evolved.           |
 
 Let's look at each of these in more detail:
 
 1. Probably the biggest difference is how the two serde handle schema compatability.
    In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) Confluent's
-   currently model just doesn't work, and we think ours is better.
+   current model just doesn't work, and we think ours is better.
 2. Generating schemas at compile-time reduces service startup times,
    and allows engineers the freedom to inspect schemas, and even test they are as expected or don't change unexpectedly, if they wish
 3. Publishing schemas on first use has a few downsides, especially on a topic that doesn't see much traffic.
@@ -566,36 +529,30 @@ Let's look at each of these in more detail:
 
 #### Dependencies
 
-The `creek-kafka-json-serde.jar` module has dependencies not stored in maven central.
-To use the module add Confluent's and JitPack's repositories to your build scripts.
+The `creek-kafka-json-serde.jar` module has dependencies on Confluent's own Jars, which are not stored in maven central.
+To use the module, add Confluent's repository to your build scripts.
 
 For example, in Gradle `build.gradle.kts`:
 
-```kotlin
+{% highlight kotlin %}
 repositories {
-    maven {
-        url = uri("https://jitpack.io")
-        // Optionally limit the scope artefacts:
-        mavenContent {
-            includeGroup("net.jimblackler.jsonschemafriend")
-        }
-    }
-
-    maven {
-        url = uri("https://packages.confluent.io/maven/")
-        // Optionally limit the scope artefacts:
-        mavenContent {
-            includeGroup("io.confluent")
-        }
-    }
+  {% include_snippet confluent-repo from ../docs-examples/build.gradle.kts %}
 }
-```
+
+dependencies { 
+{% include_snippet josn-serde from ../docs-examples/build.gradle.kts %}
+}
+{% endhighlight %}
 
 #### Options
 
 The format supports customisation via the `JsonSerdeExtensionOptions` type.
 
 For example, it is possible to register subtypes of polymorphic base types:
+
+Manually registering subtypes is only necessary when this information is not available to Jackson already,
+i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubTypes`.
+{: .notice--info}
 
 ```java
 public final class ServiceMain {
@@ -616,76 +573,28 @@ public final class ServiceMain {
 
         new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
     }
-    
-    private ServiceMain(KafkaClientsExtension ext) {
-      //...
-    }
-    
-    private void run() {
-      //...
-    }
 }
 ```
 [todo]: http://Convert to snippet once released.
 
-Manually registering subtypes is only necessary when this information is not available to Jackson already,
-i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubTypes`.
+#### Unit testing
 
-#### Writing tests
-
-If you are writing unit or functional tests that require JSON serde, 
+If you are writing unit tests that require JSON serde, 
 you can configure the serde provider to use a mock Schema Registry client.
 
 This is most commonly achieved using the `testBuilder` method on the options class:
 
-```java
-class UnitTest {
-    
-  private static CreekContext ctx;
- 
-  @BeforeAll
-  public static void classSetup() {
-    ctx = CreekServices.builder(new TestServiceDescriptor())
-            // Configure JSON Serde for testing:
-            .with(JsonSerdeExtensionOptions.testBuilder().build())
-            // Configure Kafka clients for testing:
-            .with(KafkaClientsExtensionOptions.testBuilder().build())
-            .build();
-   }
-
-   // Tests are free to get serde from ext...
-}
-```
-[todo]: http://Convert to snippet once released.
+{% highlight java %}
+{% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/client/JsonClientTest.java %}
+{% endhighlight %}
 
 ...alternatively, a custom schema client can be installed. The `CustomSchemaClient` type used below can implement
 `MockJsonSchemaStoreClient` or `JsonSchemaStoreClient`:
 
-```java
-class TopologyTest {
-    
-  private static CreekContext ctx;
- 
-  @BeforeAll
-  public static void classSetup() {
-    ctx = CreekServices.builder(new TestServiceDescriptor())
-            .with(TestKafkaStreamsExtensionOptions.defaults())
-            .with(JsonSerdeExtensionOptions.builder()
-                    // Install custom client:
-                    .withTypeOverride(
-                            JsonSchemaStoreClient.Factory.class,
-                            (schemaRegistryName, endpoints) ->
-                                    new CustomSchemaClient(
-                                            schemaRegistryName,
-                                            new MockSchemaRegistryClient(
-                                                    List.of(new JsonSchemaProvider()))))
-                    // Install custom endpoint loader:
-                    .withTypeOverride(SchemaStoreEndpoints.Loader.class, new MockEndpointsLoader() {}))
-            .build();
-   }
+{% highlight java %}
+{% include_snippet class-setup from ../docs-examples/src/test/java/com/acme/examples/streams/JsonTopologyBuilderTest.java %}
 }
-```
-[todo]: http://Convert to snippet once released.
+{% endhighlight %}
 
 ### Custom formats
 
@@ -749,14 +658,13 @@ The `creek-kafka-serde-test` jar contains a test utility that will test a serial
 [clientPropOverrides]: https://javadoc.io/doc/org.creekservice/creek-kafka-client-extension/latest/creek.kafka.clients.extension/org/creekservice/api/kafka/extension/KafkaClientsExtensionOptions.Builder.html#withKafkaPropertiesOverrides(org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides)
 [streamPropOverrides]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-extension/latest/creek.kafka.streams.extension/org/creekservice/api/kafka/streams/extension/KafkaStreamsExtensionOptions.Builder.html#withKafkaPropertiesOverrides(org.creekservice.api.kafka.extension.config.KafkaPropertyOverrides)
 [serdeProvider]: https://javadoc.io/doc/org.creekservice/creek-kafka-serde/latest/creek.kafka.serde/org/creekservice/api/kafka/serde/provider/KafkaSerdeProvider.html
+[systemTestSerdeProvider]: https://javadoc.io/doc/org.creekservice/creek-kafka-serde/latest/creek.kafka.serde/org/creekservice/api/kafka/serde/provider/KafkaSystemTestSerdeProvider.html
+[serdeTestExtensionInitializer]: https://javadoc.io/doc/org.creekservice/creek-kafka-serde/latest/creek.kafka.serde/org/creekservice/api/kafka/serde/provider/KafkaSerdeTestExtensionInitializer.html
 [serdes]: https://javadoc.io/doc/org.apache.kafka/kafka-clients/latest/org/apache/kafka/common/serialization/Serdes.html
-[topicPartFormatMethod]: https://javadoc.io/static/org.creekservice/creek-kafka-metadata/0.4.0/creek.kafka.metadata/org/creekservice/api/kafka/metadata/KafkaTopicDescriptor.PartDescriptor.html#format()
+[topicPartFormatMethod]: https://javadoc.io/static/org.creekservice/creek-kafka-metadata/latest/creek.kafka.metadata/org/creekservice/api/kafka/metadata/KafkaTopicDescriptor.PartDescriptor.html#format()
 [topicDescriptors]: https://github.com/creek-service/creek-kafka/blob/bb79516b4fba0fbda6d17cb9b82a3a6773913fe5/test-service/src/main/java/org/creekservice/internal/kafka/test/service/TopicDescriptors.java
-[testKsExtOpt]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestKafkaStreamsExtensionOptions.html
-[testTopics]: https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test/latest/creek.kafka.streams.test/org/creekservice/api/kafka/streams/test/TestTopics.html
 [ksTest]: https://kafka.apache.org/documentation/streams/developer-guide/testing.html
 [systemTest]: https://github.com/creek-service/creek-system-test
 [gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
 [anyOf]:https://json-schema.org/understanding-json-schema/reference/combining.html#anyof
 [serviceLoader]: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ServiceLoader.html
-[todo]: http://update links above once doccs migrated to creekservice.org
