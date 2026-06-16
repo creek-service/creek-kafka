@@ -23,7 +23,7 @@ aptly named [Basic Kafka Streams Tutorial][basicDemo].
 
 The extensions themselves are compiled with the latest versions of the Kafka clients and Kafka streams libraries.
 However, they are compatible with older versions, as set out in the table below.
-The `tested version` column details the exact version of Kafka libraries testing covers.
+The `tested versions` column details the exact version of Kafka libraries testing covers.
 
 | Kafka version | Tested versions                                                      | Notes                                           |
 |---------------|----------------------------------------------------------------------|-------------------------------------------------|
@@ -41,7 +41,7 @@ In Kotlin, this looks like:
 
 ## Metadata types
 
-The `creek-kafka-metadata.jar` contains metadata types that can be used in aggregate and service descriptor to define
+The `creek-kafka-metadata.jar` contains metadata types that can be used in aggregate and service descriptors to define
 Kafka resources the component uses or exposes.
 
 To use the metadata, simply add the `creek-kafka-metadata.jar` as a dependency to the `api` or `services` module.
@@ -68,7 +68,7 @@ Internal topics are things like changelog topics for internal state stores and r
 
 ### Output types
 
-Output topics are topics that a service/aggregate produce to:
+Output topics are topics that a service/aggregate produces to:
 
 * `OwnedKafkaTopicOutput`: an output topic that is conceptually owned by the component.
 * `KafkaTopicOutput`: an output topic that is not conceptually owned by the component, i.e. it is an owned input topic of another service.
@@ -137,7 +137,7 @@ of a service, or services. Of course, unit testing still has its place.
 {: .notice--info}
 
 Creek-kafka can be configured to not require an actual Kafka cluster during unit testing.
-This is most commonly achieved by configuring creek with the options built from `KafkaClientsExtensionOptions.testBuilder()`:
+This is most commonly achieved by configuring Creek with the options built from `KafkaClientsExtensionOptions.testBuilder()`:
 
 {% highlight java %}
 {% include_snippet all from ../docs-examples/src/test/java/com/acme/examples/client/ClientTest.java %}
@@ -213,7 +213,7 @@ This behaviour is customizable. See [`KafkaStreamsExtensionOptions.Builder.withK
 of a service, or services. Of course, unit testing still has its place.
 {: .notice--info}
 
-The standard Kafka Streams `TopologyTestDriver` can be used to unit test the KafkaSteams topology, and Creek integrates with it easily.
+The standard Kafka Streams `TopologyTestDriver` can be used to unit test the KafkaStreams topology, and Creek integrates with it easily.
 
 Use [`KafkaStreamsExtensionOptions.testBuilder()`][streamsOptions] to configure the [streams extension](#kafka-streams-extension) for unit testing.
 Test topic helpers for creating input and output topics with a [`TopologyTestDriver`][ksTest] can be created locally in your test source set.
@@ -262,7 +262,7 @@ seed Kafka clusters with test data, produce inputs to Kafka topics, and assert e
 
 The test extension can be added to any module that runs system tests.
 How this is done will depend on the build plugin being used to run system tests.
-For the [gradle plugin][gradle-system-test-plugin] the test extension can be added using the `systemTestExtension`
+For the [gradle plugin][gradle-system-test-plugin], the test extension can be added using the `systemTestExtension`
 dependency configuration:
 
 {% highlight kotlin %}
@@ -334,7 +334,7 @@ Each `TopicRecord` supports the following properties:
 | cluster       | String        | (Optional) The cluster to produce the record to. If not set, the file level default `cluster` will be used. If neither are set the `default` cluster will be used.      |
 | key           | Any           | (Optional) The key of the record to produce. The type can be any type supported by the topic's key serde. If not set, the produced record will have a `null` key.       |
 | value         | Any           | (Optional) The value of the record to produce. The type can be any type supported by the topic's value serde. If not set, the produced record will have a `null` value. |
-| notes         | String        | (Optional) An optional notes field. Ignored by the system tests. Can be used to document intent.                                                                        |
+| notes         | String        | (Optional) A notes field. Ignored by the system tests. Can be used to document intent.                                                                                  |
 
 For example, the following defines an input that will produce two records to an `input` topic on the `default` cluster:
 
@@ -362,7 +362,7 @@ It supports the following properties:
 | topic         | String                  | (Optional) A default topic name that will be used for any `records` that do not define their own. If not set, any records without a topic set will result in an error. |
 | cluster       | String                  | (Optional) A default cluster name that will be used for any `records` that do not define their own. If not set, any records will default to the default cluster name.  |
 | notes         | String                  | (Optional) A notes field. Ignored by the system tests. Can be used to document intent.                                                                                 |
-| records       | Array of `TopicRecord`s | (Required) The records to produce to Kafka.                                                                                                                            |
+| records       | Array of `TopicRecord`s | (Required) The expected records in Kafka.                                                                                                                              |
 
 Each `TopicRecord` supports the following properties:
 
@@ -372,14 +372,14 @@ Each `TopicRecord` supports the following properties:
 | cluster       | String        | (Optional) The cluster to consume the record from. If not set, the file level default `cluster` will be used. If neither are set the `default` cluster will be used. |
 | key           | Any           | (Optional) The expected key of the record. If not set, the consumed record's key will be ignored.                                                                    |
 | value         | Any           | (Optional) The expected value of the record. If not set, the consumed record's value will be ignored.                                                                |
-| notes         | String        | (Optional) An optional notes field. Ignored by the system tests. Can be used to document intent.                                                                     |
+| notes         | String        | (Optional) A notes field. Ignored by the system tests. Can be used to document intent.                                                                               |
 
 For example, the following defines an expectation that two records will be produced to the `output` topic on the `primary` cluster:
 
 ```yaml
 ---
 !creek/kafka-topic@1
-topic: input
+topic: output
 cluster: primary
 records:
   - notes: this record expectation does not define any value, meaning the value is ignored, i.e. it can hold any value.
@@ -401,7 +401,7 @@ at runtime, on the class-path or module-path.
 
 Integration with the Creek system tests framework can be achieved by implementing a suitable
 [`KafkaSystemTestSerdeProvider`][systemTestSerdeProvider] to handle (de)serialization and normalisation.
-Implementing a suitable [`KafkaSerdeTestExtensionInitializer`][serdeTestExtensionInitializer] allows the formats options to be configured
+Implementing a suitable [`KafkaSerdeTestExtensionInitializer`][serdeTestExtensionInitializer] allows the format's options to be configured
 appropriate for system tests.
 
 Currently supported serialization formats:
@@ -482,7 +482,7 @@ This is because the schema id is not needed, as there are checks to ensure all c
 with producing schemas, i.e. all consumers can consume all data produced by producers.
 
 Why did we choose to not use the Confluent JSON schema serde? 
-In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) the current Confluent's
+In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) Confluent's
 current JSON schema serde is not fit for purpose. Hence, coming up with our own.
 
 Let's look at the pros and cons between the two:
@@ -506,12 +506,12 @@ Let's look at each of these in more detail:
 3. Publishing schemas on first use has a few downsides, especially on a topic that doesn't see much traffic.
    1. Schema changes that break evolvability rules are not detected on startup.
       In contrast, publishing & validating schemas on service startup ensures services fail eagerly if there are issues.
-   2. The set of schema versions for a topic become less deterministic across environments, 
-      as service needs to have started _and_ produced messages.
+   2. The set of schema versions for a topic becomes less deterministic across environments,
+      as a service needs to have started _and_ produced messages.
       In contrast, publishing on start-up allows the schema versions in an environment to be derived from the versions of the services deployed. 
-4. Per-record schemas is, in our opinion, hard to manage in organisations and doesn't lend itself to have self-service data-products in Kafka.
+4. Per-record schemas is, in our opinion, hard to manage in organisations and doesn't lend itself to having self-service data-products in Kafka.
    Publishing a new record schema to a topic isn't a compatible change and can break downstream consumers if things aren't managed correctly.
-   Yet, with per-record schemas its very easy to publish a message with a new schema.
+   Yet, with per-record schemas it's very easy to publish a message with a new schema.
    For these reasons, we see per-record schemas as an anti-pattern, and therefore only support per-topic schemas.
    Defining the explicit type or types that can be found in a topic defines a clear _contract_ with users.
    Multiple types can be better supported and polymorphism can be achieved via subtyping and JSON schema's [`anyOf`][anyOf].
@@ -520,7 +520,7 @@ Let's look at each of these in more detail:
    prefixed with the schema id, and balks if that's not the case.
    Personally, we prefer the payload being actual JSON, though we've a [planned enhancement](https://github.com/creek-service/creek-kafka/issues/455)
    to support Confluent's format to allow interoperability.
-6. One of the implications of prefixing the payload with the schema id, as Confluent's serde do, is that its 
+6. One of the implications of prefixing the payload with the schema id, as Confluent's serde do, is that it's
    impossible to evolve the schema of a topic's key, unless using a custom partitioning strategy. 
    This is because the schema id forms part of the binary key. Evolving the schema means a new schema id,
    which changes the serialised form of a specific key, meaning it may be produced to a different partition.
@@ -529,7 +529,7 @@ Let's look at each of these in more detail:
 
 #### Dependencies
 
-The `creek-kafka-json-serde.jar` module has dependencies on Confluent's own Jars, which are not stored in maven central.
+The `creek-kafka-json-serde.jar` module has dependencies on Confluent's own jars, which are not stored in maven central.
 To use the module, add Confluent's repository to your build scripts.
 
 For example, in Gradle `build.gradle.kts`:
@@ -614,7 +614,7 @@ Serialization formats are discovered from the class-path and module-path using t
 
 How to make a serialization format discoverable by Creek will depend on whether it is on the JVM's class or module path.
 
-**ProTip:** We suggest registering component descriptors for use on both the class-path _and_ module-path, 
+**ProTip:** We suggest registering serialization formats for use on both the class-path _and_ module-path, 
 ensuring they work today and tomorrow.
 {: .notice--info}
 
