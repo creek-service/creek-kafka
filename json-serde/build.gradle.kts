@@ -47,7 +47,7 @@ dependencies {
     // they are explicitly required. These are needed by automatic modules above
     // (e.g. kafka-json-schema-provider needs org.json, commons-validator needs commons-beanutils,
     //  kafka-json-schema-provider → json-sKema needs kotlin.stdlib).
-    implementation("org.json:json:20250107")
+    implementation("org.json:json:20260522")
     implementation("commons-beanutils:commons-beanutils:1.11.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("com.github.luben:zstd-jni:1.5.6-10")
