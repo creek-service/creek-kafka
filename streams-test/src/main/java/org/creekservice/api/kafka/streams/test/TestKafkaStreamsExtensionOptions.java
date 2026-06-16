@@ -39,7 +39,10 @@ import org.creekservice.api.test.util.Temp;
  *     }
  * }
  * </pre>
+ *
+ * @deprecated use {@link KafkaStreamsExtensionOptions#testBuilder()} instead.
  */
+@Deprecated(forRemoval = true, since = "0.4.5")
 public final class TestKafkaStreamsExtensionOptions {
 
     private TestKafkaStreamsExtensionOptions() {}
