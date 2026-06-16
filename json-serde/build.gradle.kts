@@ -50,7 +50,7 @@ dependencies {
     implementation("org.json:json:20260522")
     implementation("commons-beanutils:commons-beanutils:1.11.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("com.github.luben:zstd-jni:1.5.6-10")
+    implementation("com.github.luben:zstd-jni:1.5.7-11")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 
