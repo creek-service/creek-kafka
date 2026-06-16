@@ -16,7 +16,7 @@
 
 plugins {
     java
-    id("org.creekservice.system.test") version "0.4.4"
+    id("org.creekservice.system.test") version "0.4.5-SNAPSHOT"
 
 // begin-snippet: module-plugin
     id("org.javamodularity.moduleplugin") version "2.0.1"
@@ -24,29 +24,51 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
+
+    maven {
+        url = uri("https://maven.pkg.github.com/creek-service/*")
+        credentials {
+            username = "Creek-Bot-Token"
+            password = "\u0067hp_LtyvXrQZen3WlKenUhv21Mg6NG38jn0AO2YH"
+        }
+    }
+
+    // begin-snippet: confluent-repo
+    maven {
+        url = uri("https://packages.confluent.io/maven/")
+        // Optionally limit the scope artefacts:
+        mavenContent {
+            includeGroup("io.confluent")
+        }
+      }
+    // end-snippet
 }
 
 // begin-snippet: deps
 dependencies {
 // end-snippet
     implementation("log4j:log4j:1.2.17")
+    implementation("io.confluent:kafka-schema-registry-client:8.2.1")
+    implementation("io.confluent:kafka-json-schema-provider:8.2.1")
 // begin-snippet: meta
-    implementation("org.creekservice:creek-kafka-metadata:0.4.4")
+    implementation("org.creekservice:creek-kafka-metadata:0.4.5-SNAPSHOT")
 // end-snippet
-    implementation("org.creekservice:creek-service-context:0.4.4")
+    implementation("org.creekservice:creek-service-context:0.4.5-SNAPSHOT")
 // begin-snippet: client-ext
-    implementation("org.creekservice:creek-kafka-client-extension:0.4.4")
+    implementation("org.creekservice:creek-kafka-client-extension:0.4.5-SNAPSHOT")
 // end-snippet
 // begin-snippet: streams-ext
-    implementation("org.creekservice:creek-kafka-streams-extension:0.4.4")
+    implementation("org.creekservice:creek-kafka-streams-extension:0.4.5-SNAPSHOT")
+// end-snippet
+// begin-snippet: json-serde
+    implementation("org.creekservice:creek-kafka-json-serde:0.4.5-SNAPSHOT")
 // end-snippet
 // begin-snippet: test-ext
-    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.4")
+    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.5-SNAPSHOT")
 // end-snippet
-// begin-snippet: streams-test
-    testImplementation("org.creekservice:creek-kafka-streams-test:0.4.4")
-// end-snippet
+    testImplementation("org.apache.kafka:kafka-streams-test-utils")
     testImplementation("org.hamcrest:hamcrest-core:3.0")
     testImplementation(platform("org.junit:junit-bom:6.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -58,7 +80,7 @@ dependencies {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.kafka") {
-            useVersion("2.8.2")
+            useVersion("4.3.0")
         }
     }
 }
@@ -66,7 +88,7 @@ configurations.all {
 
 // begin-snippet: patch-module
 // Patch Kafka Streams test jar into main Kafka Streams module to avoid split packages:
-modularity.patchModule("kafka.streams", "kafka-streams-test-utils-2.8.2.jar")
+modularity.patchModule("kafka.streams", "kafka-streams-test-utils-4.3.0.jar")
 // end-snippet
 
 tasks.test {
