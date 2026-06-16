@@ -9,7 +9,7 @@ import org.creekservice.api.service.context.CreekServices;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "unused"})
 // begin-snippet: all
 class CustomClientTest {
 

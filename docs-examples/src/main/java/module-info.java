@@ -25,7 +25,6 @@ module custom.serde.format {
     requires creek.kafka.serde;
 // end-snippet
 
-    // Todo: Add to docs
     requires creek.kafka.serde.json.schema;
 
     requires creek.service.context;

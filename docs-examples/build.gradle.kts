@@ -46,7 +46,6 @@ repositories {
     // end-snippet
 }
 
-// Todo: Snapshot
 // begin-snippet: deps
 dependencies {
 // end-snippet
@@ -63,7 +62,7 @@ dependencies {
 // begin-snippet: streams-ext
     implementation("org.creekservice:creek-kafka-streams-extension:0.4.5-SNAPSHOT")
 // end-snippet
-// begin-snippet: josn-serde
+// begin-snippet: json-serde
     implementation("org.creekservice:creek-kafka-json-serde:0.4.5-SNAPSHOT")
 // end-snippet
 // begin-snippet: test-ext

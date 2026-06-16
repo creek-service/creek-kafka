@@ -6,6 +6,7 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class CustomSchemaClient implements JsonSchemaStoreClient {
     public CustomSchemaClient(final String schemaRegistryName, final SchemaRegistryClient client) {
     }

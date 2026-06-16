@@ -6,6 +6,7 @@ import org.creekservice.api.kafka.metadata.topic.CreatableKafkaTopic;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class CustomTopicClient implements  TopicClient {
     public CustomTopicClient(final String cluster, final Map<String, Object> properties) {
 

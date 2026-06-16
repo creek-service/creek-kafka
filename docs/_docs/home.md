@@ -19,9 +19,9 @@ The source code is available on GitHub: [<i class="fab fa-fw fa-github"/>&nbsp; 
 An example of how to write Kafka Streams based microservices using this Creek extension can be found in the
 aptly named [Basic Kafka Streams Tutorial][basicDemo].
 
-## Kafka client compatability
+## Kafka client compatibility
 
-The extentions themselves are compiled with the latest versions of the Kafka clients and Kafka streams libraries.
+The extensions themselves are compiled with the latest versions of the Kafka clients and Kafka streams libraries.
 However, they are compatible with older versions, as set out in the table below.
 The `tested version` column details the exact version of Kafka libraries testing covers.
 
@@ -103,7 +103,7 @@ To use the extension, simply add the `creek-kafka-extension.jar` as a dependency
 ##### Extension options
 
 **Note:** It's common to use [System environment variables](#system-environment-variables) to configure
-Kafka for settings such as `boostrap.servers` and authentication information.
+Kafka for settings such as `bootstrap.servers` and authentication information.
 {: .notice--warning}
 
 The extension can be configured by passing an instance of [`KafkaClientsExtensionOptions`][clientOptions] when creating
@@ -181,7 +181,7 @@ To use the extension, simply add the `creek-kafka-streams-extension.jar` as a de
 ##### Extension options
 
 **Note:** It's common to use [System environment variables](#system-environment-variables-1) to configure
-Kafka for settings such as `boostrap.servers` and authentication information.
+Kafka for settings such as `bootstrap.servers` and authentication information.
 {: .notice--warning}
 
 The extension can be configured by passing an instance of [`KafkaStreamsExtensionOptions`][streamsOptions] when creating
@@ -262,7 +262,7 @@ seed Kafka clusters with test data, produce inputs to Kafka topics, and assert e
 
 The test extension can be added to any module that runs system tests.
 How this is done will depend on the build plugin being used to run system tests.
-For the [gradle plugin][gradle-system-test-plugin] the text extension can be added using the `systemTestExtension`
+For the [gradle plugin][gradle-system-test-plugin] the test extension can be added using the `systemTestExtension`
 dependency configuration:
 
 {% highlight kotlin %}
@@ -281,7 +281,7 @@ The extension registers the following model subtypes to support system testing o
 
 #### Option model extensions
 
-The behaviour of the Kafka test extension can be controlled via the `creek/kafka-option@1` option type.  
+The behaviour of the Kafka test extension can be controlled via the `creek/kafka-options@1` option type.  
 This option type defines the following:
 
 | Property name     | Property type            | Description                                                                                                                                                                                                                                                                         |
@@ -289,7 +289,7 @@ This option type defines the following:
 | outputOrdering    | Enum (`NONE`, `BY_KEY`)  | (Optional) Controls the ordering requirements for the expected output records on the same topic. Valid values are:<br>`None`: records can be in any order.<br>`BY_KEY`: record expectations that share the same key must be received in the order defined.<br>**Default**: `BY_KEY` |
 | verifierTimeout   | Duration (String/Number) | (Optional) Overrides the global verifier timeout. Can be set to number of seconds, e.g. `60` or a string that can be parsed by Java `Duration` type, e.g. `PT2M`.                                                                                                                   |
 | extraTimeout      | Duration (String/Number) | (Optional) Sets the time the tests will wait for extra, unexpected, records to be produced. Can be set to number of seconds, e.g. `60` or a string that can be parsed by Java `Duration` type, e.g. `PT2M`. **Default**: 1 second.                                                  |
-| kafkaDockerImage  | String                   | (Optional) Override the default docker image used for the Kafka server in the tests. **Default**: `confluentinc/cp-kafka:7.3.1`.                                                                                                                                                    |
+| kafkaDockerImage  | String                   | (Optional) Override the default docker image used for the Kafka server in the tests. **Default**: `confluentinc/cp-kafka:8.2.1`.                                                                                                                                                    |
 | notes             | String                   | (Optional) A notes field. Ignored by the system tests. Can be used to document intent.                                                                                                                                                                                              |
 
 For example, the following defines a suite that turns off ordering requirements for expectation records:
@@ -464,14 +464,14 @@ It is recommended that schemas are generated from Java classes using the [Creek 
 This plugin will, by default, create the closed content model JSON schemas that this serde requires.
 (Creek internally handles converting the closed content model the producer registers to an open content model the consumer needs)
 
-#### Confluent compatability
+#### Confluent compatibility
 
 Note, the JSON serde is not currently compatible with Confluent's own JSON serde, as Confluent's serde prefixes
 the serialized JSON with the schema-id.  This is not necessary with Creek's JSON format.
-However, there is a task to track [optionally enabling Confluent JSON serde compatability](https://github.com/creek-service/creek-kafka/issues/455)
+However, there is a task to track [optionally enabling Confluent JSON serde compatibility](https://github.com/creek-service/creek-kafka/issues/455)
 {: .notice--warning}
 
-Note, this serde does not use the standard JSON Schema compatability checks defined in the Confluent Schema Registry.
+Note, this serde does not use the standard JSON Schema compatibility checks defined in the Confluent Schema Registry.
 We think [Confluent's checks are not fit for purpose](https://github.com/confluentinc/schema-registry/issues/2927).
 See [this article series](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) to understand why,
 and how Creek implements schema compatibility checks for JSON.
@@ -479,7 +479,7 @@ and how Creek implements schema compatibility checks for JSON.
 
 In its current form, the JSON serde does not persist the schema id used to serialize the key or value in the Kafka record.
 This is because the schema id is not needed, as there are checks to ensure all consuming schemas are backwards compatible
-with producing schemas, i.e. all consumers can consume all date produced by producers.
+with producing schemas, i.e. all consumers can consume all data produced by producers.
 
 Why did we choose to not use the Confluent JSON schema serde? 
 In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) the current Confluent's
@@ -498,7 +498,7 @@ Let's look at the pros and cons between the two:
 
 Let's look at each of these in more detail:
 
-1. Probably the biggest difference is how the two serde handle schema compatability.
+1. Probably the biggest difference is how the two serde handle schema compatibility.
    In [our view](https://www.creekservice.org/articles/2024/01/08/json-schema-evolution-part-1.html) Confluent's
    current model just doesn't work, and we think ours is better.
 2. Generating schemas at compile-time reduces service startup times,
@@ -540,7 +540,7 @@ repositories {
 }
 
 dependencies { 
-{% include_snippet josn-serde from ../docs-examples/build.gradle.kts %}
+{% include_snippet json-serde from ../docs-examples/build.gradle.kts %}
 }
 {% endhighlight %}
 
