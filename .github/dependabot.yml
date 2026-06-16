@@ -45,8 +45,4 @@ updates:
     directory: /test-service-native
     schedule:
       interval: monthly
-  - package-ecosystem: docker
-    directory: /test-service-json
-    schedule:
-      interval: monthly
 # triggered: 2026-04-21

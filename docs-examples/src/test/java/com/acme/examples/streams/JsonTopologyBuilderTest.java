@@ -17,10 +17,15 @@
 package com.acme.examples.streams;
 
 import com.acme.examples.service.MyServiceDescriptor;
+import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
+import org.creekservice.api.kafka.serde.json.JsonSerdeExtensionOptions;
+import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.MockEndpointsLoader;
+import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtensionOptions;
 import org.creekservice.api.service.context.CreekContext;
@@ -30,6 +35,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
+
+import java.util.List;
 
 import static com.acme.examples.service.MyServiceDescriptor.InputTopic;
 import static com.acme.examples.service.MyServiceDescriptor.OutputTopic;
@@ -38,23 +46,36 @@ import static org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor.DEF
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-// begin-snippet: topology-builder-test
-class TopologyBuilderTest {
+// begin-snippet: class-setup
+class JsonTopologyBuilderTest {
 
     private static CreekContext ctx;
-
-    private TopologyTestDriver testDriver;
-    private TestInputTopic<Long, String> inputTopic;
-    private TestOutputTopic<Long, String> outputTopic;
-    private KafkaStreamsExtension ext;
 
     @BeforeAll
     public static void classSetup() {
         ctx = CreekServices.builder(new MyServiceDescriptor())
                 // Configure Creek to work without an actual Kafka cluster or Schema Registry:
                 .with(KafkaStreamsExtensionOptions.testBuilder().build())
+                .with(JsonSerdeExtensionOptions.builder()
+                    // Install custom client:
+                    .withTypeOverride(
+                            JsonSchemaStoreClient.Factory.class,
+                            (schemaRegistryName, endpoints) ->
+                                    new CustomSchemaClient(
+                                            schemaRegistryName,
+                                            new MockSchemaRegistryClient(
+                                                    List.of(new JsonSchemaProvider()))))
+                    // Install custom endpoint loader:
+                    .withTypeOverride(SchemaStoreEndpoints.Loader.class, new MockEndpointsLoader() {})
+                    .build())
                 .build();
     }
+// end-snippet
+
+    private TopologyTestDriver testDriver;
+    private TestInputTopic<Long, String> inputTopic;
+    private TestOutputTopic<Long, String> outputTopic;
+    private KafkaStreamsExtension ext;
 
     @AfterAll
     static void afterAll() {
@@ -90,4 +111,3 @@ class TopologyBuilderTest {
         assertThat(outputTopic.readKeyValuesToList(), contains(pair(1L, "a")));
     }
 }
-// end-snippet

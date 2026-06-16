@@ -25,6 +25,8 @@ module custom.serde.format {
     requires creek.kafka.serde;
 // end-snippet
 
+    requires creek.kafka.serde.json.schema;
+
     requires creek.service.context;
     requires creek.kafka.streams.extension;
 
