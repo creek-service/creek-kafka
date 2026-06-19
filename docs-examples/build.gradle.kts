@@ -50,8 +50,8 @@ repositories {
 dependencies {
 // end-snippet
     implementation("log4j:log4j:1.2.17")
-    implementation("io.confluent:kafka-schema-registry-client:8.2.1")
-    implementation("io.confluent:kafka-json-schema-provider:8.2.1")
+    implementation("io.confluent:kafka-schema-registry-client:8.3.0")
+    implementation("io.confluent:kafka-json-schema-provider:8.3.0")
 // begin-snippet: meta
     implementation("org.creekservice:creek-kafka-metadata:0.4.5-SNAPSHOT")
 // end-snippet
