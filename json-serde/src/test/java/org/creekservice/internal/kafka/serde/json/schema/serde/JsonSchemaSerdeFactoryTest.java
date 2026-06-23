@@ -237,9 +237,7 @@ class JsonSchemaSerdeFactoryTest {
 
         // Then:
         assertThat(e.getMessage(), is("Validation failed. topic: t, part: value"));
-        assertThat(
-                e.getCause().getMessage(),
-                containsString("does not have a value in the enumeration"));
+        assertThat(e.getCause().getMessage(), containsString("must be the constant value"));
     }
 
     @Test
