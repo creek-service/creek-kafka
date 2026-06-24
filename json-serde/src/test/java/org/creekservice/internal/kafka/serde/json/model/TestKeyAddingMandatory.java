@@ -18,8 +18,7 @@ package org.creekservice.internal.kafka.serde.json.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInt;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.creekservice.api.base.annotation.schema.GeneratesSchema;
 
 /** Incompatible as it adds a {@code newMandatory} property. */
@@ -37,7 +36,7 @@ public class TestKeyAddingMandatory {
     }
 
     @JsonGetter("id")
-    @JsonSchemaInject(ints = @JsonSchemaInt(path = "minimum", value = 0))
+    @Schema(minimum = "0")
     public int id() {
         return id;
     }

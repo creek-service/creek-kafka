@@ -20,8 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInt;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.base.annotation.schema.GeneratesSchema;
@@ -48,7 +47,7 @@ public class TestKeyV1 {
     }
 
     @JsonGetter("id")
-    @JsonSchemaInject(ints = @JsonSchemaInt(path = "minimum", value = 0))
+    @Schema(minimum = "0")
     public int id() {
         return id;
     }
