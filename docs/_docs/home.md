@@ -80,10 +80,10 @@ Output topics are topics that a service/aggregate produces to:
 Provides an extension to Creek to allow it to work with Kafka resources using standard Kafka Clients, e.g. 
 producers, consumers and the admin client.
 
-By default, if the `creek-kafka-extension.jar` is on the class or module path, Creek will load the
+By default, if the `creek-kafka-client-extension.jar` is on the class or module path, Creek will load the
 extension and use it to handle any topic resources.
 
-To use the extension, simply add the `creek-kafka-extension.jar` as a dependency to a service.
+To use the extension, simply add the `creek-kafka-client-extension.jar` as a dependency to a service.
 
 {% highlight kotlin %}
 {% include_snippet deps from ../docs-examples/build.gradle.kts %}
@@ -589,7 +589,10 @@ This is most commonly achieved using the `testBuilder` method on the options cla
 {% endhighlight %}
 
 ...alternatively, a custom schema client can be installed. The `CustomSchemaClient` type used below can implement
-`MockJsonSchemaStoreClient` or `JsonSchemaStoreClient`:
+`MockJsonSchemaStoreClient` or `JsonSchemaStoreClient`.
+
+**Note:** Custom schema client setup requires `creek-kafka-schema-store` on the classpath for `SchemaStoreEndpoints` and `MockEndpointsLoader`.
+{: .notice--info}
 
 {% highlight java %}
 {% include_snippet class-setup from ../docs-examples/src/test/java/com/acme/examples/streams/JsonTopologyBuilderTest.java %}
@@ -662,7 +665,7 @@ The `creek-kafka-serde-test` jar contains a test utility that will test a serial
 [serdeTestExtensionInitializer]: https://javadoc.io/doc/org.creekservice/creek-kafka-serde/latest/creek.kafka.serde/org/creekservice/api/kafka/serde/provider/KafkaSerdeTestExtensionInitializer.html
 [serdes]: https://javadoc.io/doc/org.apache.kafka/kafka-clients/latest/org/apache/kafka/common/serialization/Serdes.html
 [topicPartFormatMethod]: https://javadoc.io/static/org.creekservice/creek-kafka-metadata/latest/creek.kafka.metadata/org/creekservice/api/kafka/metadata/KafkaTopicDescriptor.PartDescriptor.html#format()
-[topicDescriptors]: https://github.com/creek-service/creek-kafka/blob/bb79516b4fba0fbda6d17cb9b82a3a6773913fe5/test-service/src/main/java/org/creekservice/internal/kafka/test/service/TopicDescriptors.java
+[topicDescriptors]: https://github.com/creek-service/creek-kafka/blob/main/docs-examples/src/main/java/com/acme/examples/service/TopicDescriptors.java
 [ksTest]: https://kafka.apache.org/documentation/streams/developer-guide/testing.html
 [systemTest]: https://github.com/creek-service/creek-system-test
 [gradle-system-test-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
