@@ -37,7 +37,7 @@ application {
     mainClass.set("org.creekservice.internal.kafka.test.service.inbuilt.ServiceMain")
 }
 
-val buildAppImage = tasks.create("buildAppImage", DockerBuildImage::class) {
+val buildAppImage = tasks.register<DockerBuildImage>("buildAppImage") {
     dependsOn("prepareDocker")
     buildArgs.put("APP_NAME", project.name)
     buildArgs.put("APP_VERSION", "${project.version}")
@@ -58,5 +58,5 @@ tasks.register<Copy>("prepareDocker") {
         layout.projectDirectory.dir("include"),
     )
 
-    into(buildAppImage.inputDir)
+    into(buildAppImage.flatMap { it.inputDir })
 }
