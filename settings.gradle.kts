@@ -34,7 +34,6 @@ include(
     "metadata",
     "client-extension",
     "streams-extension",
-    "streams-test",
     "schema-store",
     "serde",
     "serde-test",
