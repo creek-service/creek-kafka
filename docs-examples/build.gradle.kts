@@ -70,7 +70,7 @@ dependencies {
 // end-snippet
     testImplementation("org.apache.kafka:kafka-streams-test-utils")
     testImplementation("org.hamcrest:hamcrest-core:3.0")
-    testImplementation(platform("org.junit:junit-bom:6.1.1"))
+    testImplementation(platform("org.junit:junit-bom:6.1.2"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
