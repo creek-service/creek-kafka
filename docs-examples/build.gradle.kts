@@ -27,7 +27,6 @@ repositories {
     mavenLocal()
     mavenCentral()
 
-    // Creek publishes SNAPSHOTs to this public, unauthenticated repo on every push to main:
     maven {
         url = uri("https://central.sonatype.com/repository/maven-snapshots/")
     }
