@@ -19,8 +19,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonAnnotationsVersion : String by extra
-val log4jVersion : String by extra
+val jacksonAnnotationsVersion : String by project
+val log4jVersion : String by project
 
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")

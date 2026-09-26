@@ -20,10 +20,10 @@ plugins {
 }
 
 val creekVersion : String by extra
-val kafkaVersion : String by extra
-val confluentVersion : String by extra
-val jacksonVersion : String by extra
-val testContainersVersion : String by extra
+val kafkaVersion : String by project
+val confluentVersion : String by project
+val jacksonVersion : String by project
+val testContainersVersion : String by project
 
 dependencies {
     api(project(":serde"))
