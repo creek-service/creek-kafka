@@ -64,21 +64,36 @@ class ResourceRegistryTest {
     }
 
     @Test
-    void shouldThrowOnDuplicateRegistration() {
+    void shouldBeIdempotentOnReRegistrationOfSameResource() {
+        // Given:
+        // register() can legitimately be called more than once for the same resource, e.g. once
+        // by InitializeResourcesListener and again by PrepareResourcesListener, so must be
+        // idempotent.
+        registry.register(topicA);
+
+        // When:
+        registry.register(topicA);
+
+        // Then (did not throw):
+        assertThat(registry.topic(topicDefA), is(topicA));
+    }
+
+    @Test
+    void shouldThrowOnConflictingReRegistration() {
         // Given:
         final String sameName = topicDefA.name();
         when(topicDefB.name()).thenReturn(sameName);
 
+        final Exception validationFailure = new RuntimeException("boom");
+        doThrow(validationFailure).when(validator).validateGroup(List.of(topicDefA, topicDefB));
+
         registry.register(topicA);
 
         // When:
-        final Exception e =
-                assertThrows(IllegalStateException.class, () -> registry.register(topicB));
+        final Exception e = assertThrows(RuntimeException.class, () -> registry.register(topicB));
 
         // Then:
-        assertThat(
-                e.getMessage(),
-                is("Resource already registered with id=kafka-topic://default/topic-A"));
+        assertThat(e, is(sameInstance(validationFailure)));
     }
 
     @Test
