@@ -75,7 +75,7 @@ subprojects {
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.apache.kafka") {
-                // Force use of apache Kafka libs, not Confluent's own:
+                // Force use of Apache Kafka libs, not Confluent's own:
                 val kafkaVersion : String by project
                 useVersion(kafkaVersion)
             }
