@@ -63,22 +63,7 @@ subprojects {
         }
     }
 
-    extra.apply {
-        set("creekVersion", project.version)
-        set("spotBugsVersion", "4.10.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.22.1")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-        set("jacksonAnnotationsVersion", "2.22") // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-        set("slf4jVersion", "2.0.18")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-        set("log4jVersion", "2.26.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-        set("guavaVersion", "33.6.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
-        set("junitVersion", "6.1.2")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-        set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-        // Update kafka_version in `.github/workflows/build.yml` when updating this version
-        set("kafkaVersion", "4.3.1")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("confluentVersion", "8.2.1")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
-        set("testContainersVersion", "2.0.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    }
+    extra.apply { set("creekVersion", project.version) }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
     if (kafkaVersionOverride != null && kafkaVersionOverride.isNotEmpty()) {
@@ -91,20 +76,20 @@ subprojects {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.apache.kafka") {
                 // Force use of apache Kafka libs, not Confluent's own:
-                val kafkaVersion : String by extra
+                val kafkaVersion : String by project
                 useVersion(kafkaVersion)
             }
         }
     }
 
     val creekVersion : String by extra
-    val guavaVersion : String by extra
-    val log4jVersion : String by extra
-    val jacksonVersion : String by extra
-    val junitVersion: String by extra
-    val junitPioneerVersion: String by extra
-    val mockitoVersion: String by extra
-    val confluentVersion : String by extra
+    val guavaVersion : String by project
+    val log4jVersion : String by project
+    val jacksonVersion : String by project
+    val junitVersion: String by project
+    val junitPioneerVersion: String by project
+    val mockitoVersion: String by project
+    val confluentVersion : String by project
 
     dependencies {
         constraints {

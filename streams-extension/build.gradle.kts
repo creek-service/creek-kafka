@@ -18,9 +18,9 @@ plugins {
     `java-library`
 }
 
-val kafkaVersion : String by extra
+val kafkaVersion : String by project
 val creekVersion : String by extra
-val spotBugsVersion : String by extra
+val spotBugsVersion : String by project
 
 dependencies {
     api(project(":client-extension"))

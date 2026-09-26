@@ -19,9 +19,9 @@ plugins {
 }
 
 val creekVersion : String by extra
-val testContainersVersion : String by extra
-val kafkaVersion : String by extra
-val slf4jVersion : String by extra
+val testContainersVersion : String by project
+val kafkaVersion : String by project
+val slf4jVersion : String by project
 
 dependencies {
     api(project(":metadata"))

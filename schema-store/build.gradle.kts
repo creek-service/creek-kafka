@@ -19,8 +19,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val confluentVersion : String by extra
-val testContainersVersion : String by extra
+val confluentVersion : String by project
+val testContainersVersion : String by project
 
 dependencies {
     api("org.creekservice:creek-base-annotation:$creekVersion")

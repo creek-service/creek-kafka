@@ -22,7 +22,7 @@ plugins {
 }
 
 val creekVersion : String by extra
-val log4jVersion : String by extra
+val log4jVersion : String by project
 
 dependencies {
     implementation("org.creekservice:creek-service-context:$creekVersion")

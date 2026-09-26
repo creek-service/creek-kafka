@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val testContainersVersion : String by extra
+val testContainersVersion : String by project
 
 dependencies {
     api(project(":serde"))
