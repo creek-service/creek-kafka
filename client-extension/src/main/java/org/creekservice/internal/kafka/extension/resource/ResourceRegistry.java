@@ -44,13 +44,13 @@ public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
 
     @Override
     public void register(final KafkaTopic<?, ?> topic) {
-        topics.compute(
+        topics.merge(
                 topic.descriptor().id(),
-                (id, existing) -> {
-                    if (existing != null) {
-                        throw new ResourceAlreadyRegistered(id);
-                    }
-                    return topic;
+                topic,
+                (existing, replacement) -> {
+                    validator.validateGroup(
+                            List.of(existing.descriptor(), replacement.descriptor()));
+                    return existing;
                 });
     }
 
@@ -90,12 +90,6 @@ public final class ResourceRegistry implements TopicRegistrar, TopicRegistry {
             throw new UnknownTopicException(id);
         }
         return found;
-    }
-
-    private static final class ResourceAlreadyRegistered extends IllegalStateException {
-        ResourceAlreadyRegistered(final URI id) {
-            super("Resource already registered with id=" + id);
-        }
     }
 
     private static final class UnknownTopicException extends IllegalArgumentException {
