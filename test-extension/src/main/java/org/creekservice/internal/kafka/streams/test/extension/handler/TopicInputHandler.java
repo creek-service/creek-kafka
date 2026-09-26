@@ -18,11 +18,14 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
@@ -53,6 +56,13 @@ public final class TopicInputHandler implements InputHandler<TopicInput> {
     @Override
     public void process(final TopicInput input, final InputOptions options) {
         input.records().forEach(this::process);
+    }
+
+    @Override
+    public Set<URI> resourceIds(final TopicInput input) {
+        return input.records().stream()
+                .map(r -> KafkaTopicDescriptor.resourceId(r.clusterName(), r.topicName()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
