@@ -19,7 +19,6 @@ plugins {
 }
 
 val creekVersion : String by extra
-val kafkaVersion = project.property("kafkaVersion") as String
 val testContainersVersion = project.property("testContainersVersion") as String
 val confluentVersion = project.property("confluentVersion") as String
 
@@ -27,7 +26,7 @@ dependencies {
     api(project(":metadata"))
     api(project(":serde"))
     api("org.creekservice:creek-service-extension:$creekVersion")
-    api("org.apache.kafka:kafka-clients:$kafkaVersion")
+    api("org.apache.kafka:kafka-clients:${property("kafkaVersion")}")
 
     implementation("org.creekservice:creek-observability-logging:$creekVersion")
     implementation("org.creekservice:creek-base-type:$creekVersion")

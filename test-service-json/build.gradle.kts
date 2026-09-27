@@ -19,14 +19,12 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonAnnotationsVersion = project.property("jacksonAnnotationsVersion") as String
-val log4jVersion = project.property("log4jVersion") as String
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
     implementation("org.creekservice:creek-base-annotation:$creekVersion")
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:${property("log4jVersion")}")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 }

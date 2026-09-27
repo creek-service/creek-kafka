@@ -83,12 +83,7 @@ subprojects {
     }
 
     val creekVersion : String by extra
-    val guavaVersion = project.property("guavaVersion") as String
-    val log4jVersion = project.property("log4jVersion") as String
-    val jacksonVersion = project.property("jacksonVersion") as String
     val junitVersion = project.property("junitVersion") as String
-    val junitPioneerVersion = project.property("junitPioneerVersion") as String
-    val mockitoVersion = project.property("mockitoVersion") as String
     val confluentVersion = project.property("confluentVersion") as String
 
     dependencies {
@@ -98,17 +93,17 @@ subprojects {
             }
         }
 
-        implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
+        implementation(platform("com.fasterxml.jackson:jackson-bom:${property("jacksonVersion")}"))
 
         testImplementation("org.creekservice:creek-test-util:$creekVersion")
         testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")
         testImplementation("org.creekservice:creek-test-conformity:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-        testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
-        testImplementation("org.mockito:mockito-junit-jupiter:$mockitoVersion")
-        testImplementation("com.google.guava:guava-testlib:$guavaVersion")
-        testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+        testImplementation("org.junit-pioneer:junit-pioneer:${property("junitPioneerVersion")}")
+        testImplementation("org.mockito:mockito-junit-jupiter:${property("mockitoVersion")}")
+        testImplementation("com.google.guava:guava-testlib:${property("guavaVersion")}")
+        testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:${property("log4jVersion")}")
         testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }
 

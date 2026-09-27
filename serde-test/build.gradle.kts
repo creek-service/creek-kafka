@@ -20,12 +20,11 @@ plugins {
 
 val creekVersion : String by extra
 val kafkaVersion = project.property("kafkaVersion") as String
-val spotBugsVersion = project.property("spotBugsVersion") as String
 val testContainersVersion = project.property("testContainersVersion") as String
 
 dependencies {
     api(project(":serde"))
-    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    api("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
 
     implementation(project(":client-extension"))
     implementation("org.creekservice:creek-service-context:$creekVersion")

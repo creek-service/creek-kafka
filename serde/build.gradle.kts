@@ -19,15 +19,13 @@ plugins {
 }
 
 val creekVersion : String by extra
-val kafkaVersion = project.property("kafkaVersion") as String
-val testContainersVersion = project.property("testContainersVersion") as String
 
 dependencies {
     api(project(":metadata"))
     api("org.creekservice:creek-base-annotation:$creekVersion")
     api("org.creekservice:creek-service-api:$creekVersion")
 
-    api("org.apache.kafka:kafka-clients:$kafkaVersion")
+    api("org.apache.kafka:kafka-clients:${property("kafkaVersion")}")
 
     implementation("org.creekservice:creek-base-type:$creekVersion")
 
@@ -36,4 +34,4 @@ dependencies {
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
 // Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
-modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
+modularity.patchModule("testcontainers", "testcontainers-kafka-${property("testContainersVersion")}.jar")

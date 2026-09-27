@@ -18,18 +18,16 @@ plugins {
     `java-library`
 }
 
-val kafkaVersion = project.property("kafkaVersion") as String
 val creekVersion : String by extra
-val spotBugsVersion = project.property("spotBugsVersion") as String
 
 dependencies {
     api(project(":client-extension"))
-    api("org.apache.kafka:kafka-streams:$kafkaVersion")
+    api("org.apache.kafka:kafka-streams:${property("kafkaVersion")}")
 
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("org.creekservice:creek-observability-logging:$creekVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
 
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 }
