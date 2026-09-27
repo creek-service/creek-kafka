@@ -19,9 +19,9 @@ plugins {
 }
 
 val creekVersion : String by extra
-val kafkaVersion : String by project
-val spotBugsVersion : String by project
-val testContainersVersion : String by project
+val kafkaVersion = project.property("kafkaVersion") as String
+val spotBugsVersion = project.property("spotBugsVersion") as String
+val testContainersVersion = project.property("testContainersVersion") as String
 
 dependencies {
     api(project(":serde"))

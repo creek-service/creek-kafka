@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val testContainersVersion : String by project
+val testContainersVersion = project.property("testContainersVersion") as String
 
 dependencies {
     api(project(":serde"))
