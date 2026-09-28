@@ -19,7 +19,7 @@ plugins {
     id("org.creekservice.schema.json")
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 val kafkaVersion = property("kafkaVersion") as String
 val confluentVersion = property("confluentVersion") as String
 val jacksonVersion = property("jacksonVersion") as String

@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 val kafkaVersion = property("kafkaVersion") as String
 
 dependencies {

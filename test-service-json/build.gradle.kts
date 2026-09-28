@@ -18,7 +18,7 @@ plugins {
     id("org.creekservice.schema.json")
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")

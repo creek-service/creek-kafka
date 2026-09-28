@@ -82,7 +82,7 @@ subprojects {
         }
     }
 
-    val creekVersion : String by extra
+    val creekVersion = property("creekVersion") as String
     val junitVersion = property("junitVersion") as String
     val confluentVersion = property("confluentVersion") as String
 

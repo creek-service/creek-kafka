@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 val testContainersVersion = property("testContainersVersion") as String
 val confluentVersion = property("confluentVersion") as String
 
