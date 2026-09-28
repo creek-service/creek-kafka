@@ -43,13 +43,13 @@ allprojects {
 subprojects {
     project.version = project.parent?.version!!
 
-    apply(plugin = "creek-common-convention")
-    apply(plugin = "creek-module-convention")
+    pluginManager.apply("creek-common-convention")
+    pluginManager.apply("creek-module-convention")
 
     val shouldPublish = !name.startsWith("test-") || name == "test-extension"
     if (shouldPublish) {
-        apply(plugin = "creek-publishing-convention")
-        apply(plugin = "jacoco")
+        pluginManager.apply("creek-publishing-convention")
+        pluginManager.apply("jacoco")
     } else {
         tasks.javadoc { onlyIf { false } }
     }
