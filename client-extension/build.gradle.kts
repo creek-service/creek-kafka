@@ -19,8 +19,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val testContainersVersion = project.property("testContainersVersion") as String
-val confluentVersion = project.property("confluentVersion") as String
+val testContainersVersion = property("testContainersVersion") as String
+val confluentVersion = property("confluentVersion") as String
 
 dependencies {
     api(project(":metadata"))

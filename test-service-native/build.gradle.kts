@@ -22,7 +22,7 @@ plugins {
 }
 
 val creekVersion : String by extra
-val log4jVersion = project.property("log4jVersion") as String
+val log4jVersion = property("log4jVersion") as String
 
 dependencies {
     implementation("org.creekservice:creek-service-context:$creekVersion")

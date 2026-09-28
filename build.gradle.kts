@@ -76,15 +76,15 @@ subprojects {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.apache.kafka") {
                 // Force use of Apache Kafka libs, not Confluent's own:
-                val kafkaVersion = project.property("kafkaVersion") as String
+                val kafkaVersion = property("kafkaVersion") as String
                 useVersion(kafkaVersion)
             }
         }
     }
 
     val creekVersion : String by extra
-    val junitVersion = project.property("junitVersion") as String
-    val confluentVersion = project.property("confluentVersion") as String
+    val junitVersion = property("junitVersion") as String
+    val confluentVersion = property("confluentVersion") as String
 
     dependencies {
         constraints {
