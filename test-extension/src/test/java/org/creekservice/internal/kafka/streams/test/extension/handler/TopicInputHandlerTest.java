@@ -31,9 +31,11 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.kafka.metadata.topic.KafkaTopicDescriptor;
 import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicInput;
@@ -75,6 +77,8 @@ class TopicInputHandlerTest {
     private KafkaTopic<Integer, String> topicB;
 
     @Mock private TopicValidator topicValidator;
+    @Mock private KafkaTopicDescriptor<?, ?> descriptorA;
+    @Mock private KafkaTopicDescriptor<?, ?> descriptorB;
 
     private TopicInputHandler handler;
 
@@ -113,6 +117,25 @@ class TopicInputHandlerTest {
         when(testTopicB.serializeKey(123L)).thenReturn(SERIALIZED_KEY_B);
         when(testTopicA.serializeValue(0)).thenReturn(SERIALIZED_VALUE_A);
         when(testTopicB.serializeValue("1")).thenReturn(SERIALIZED_VALUE_B);
+
+        doReturn(descriptorA).when(testTopicA).descriptor();
+        doReturn(descriptorB).when(testTopicB).descriptor();
+        when(descriptorA.id()).thenReturn(URI.create("kafka-topic://cluster-a/topic-a"));
+        when(descriptorB.id()).thenReturn(URI.create("kafka-topic://cluster-b/topic-b"));
+    }
+
+    @Test
+    void shouldReturnResourceIds() {
+        // When:
+        final Set<URI> ids = handler.resourceIds(input);
+
+        // Then:
+        assertThat(
+                ids,
+                is(
+                        Set.of(
+                                URI.create("kafka-topic://cluster-a/topic-a"),
+                                URI.create("kafka-topic://cluster-b/topic-b"))));
     }
 
     @Test
