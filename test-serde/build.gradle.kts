@@ -18,8 +18,6 @@ plugins {
     `java-library`
 }
 
-val testContainersVersion : String by extra
-
 dependencies {
     api(project(":serde"))
 
@@ -28,4 +26,4 @@ dependencies {
 
 // Patch Kafka Testcontainers jar into main test containers module to avoid split packages:
 // Needed until https://github.com/testcontainers/testcontainers-java/issues/11716 is resolved.
-modularity.patchModule("testcontainers", "testcontainers-kafka-$testContainersVersion.jar")
+modularity.patchModule("testcontainers", "testcontainers-kafka-${property("testContainersVersion")}.jar")

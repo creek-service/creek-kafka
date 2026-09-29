@@ -18,14 +18,13 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
-val kafkaVersion : String by extra
-val spotBugsVersion : String by extra
-val testContainersVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val kafkaVersion = property("kafkaVersion") as String
+val testContainersVersion = property("testContainersVersion") as String
 
 dependencies {
     api(project(":serde"))
-    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    api("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
 
     implementation(project(":client-extension"))
     implementation("org.creekservice:creek-service-context:$creekVersion")

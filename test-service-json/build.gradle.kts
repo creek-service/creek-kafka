@@ -18,15 +18,13 @@ plugins {
     id("org.creekservice.schema.json")
 }
 
-val creekVersion : String by extra
-val jacksonAnnotationsVersion : String by extra
-val log4jVersion : String by extra
+val creekVersion = property("creekVersion") as String
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
     implementation("org.creekservice:creek-base-annotation:$creekVersion")
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:${property("log4jVersion")}")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 }

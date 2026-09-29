@@ -43,13 +43,13 @@ allprojects {
 subprojects {
     project.version = project.parent?.version!!
 
-    apply(plugin = "creek-common-convention")
-    apply(plugin = "creek-module-convention")
+    pluginManager.apply("creek-common-convention")
+    pluginManager.apply("creek-module-convention")
 
     val shouldPublish = !name.startsWith("test-") || name == "test-extension"
     if (shouldPublish) {
-        apply(plugin = "creek-publishing-convention")
-        apply(plugin = "jacoco")
+        pluginManager.apply("creek-publishing-convention")
+        pluginManager.apply("jacoco")
     } else {
         tasks.javadoc { onlyIf { false } }
     }
@@ -63,22 +63,7 @@ subprojects {
         }
     }
 
-    extra.apply {
-        set("creekVersion", project.version)
-        set("spotBugsVersion", "4.10.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.22.3")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-        set("jacksonAnnotationsVersion", "2.22") // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-        set("slf4jVersion", "2.0.18")            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-        set("log4jVersion", "2.26.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-        set("guavaVersion", "33.6.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
-        set("junitVersion", "6.1.2")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-        set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-        // Update kafka_version in `.github/workflows/build.yml` when updating this version
-        set("kafkaVersion", "4.3.1")            // https://mvnrepository.com/artifact/org.apache.kafka
-        set("confluentVersion", "8.3.2")        // https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client
-        set("testContainersVersion", "2.0.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    }
+    extra.apply { set("creekVersion", project.version) }
 
     val kafkaVersionOverride = System.getenv("CREEK_KAFKA_VERSION")
     if (kafkaVersionOverride != null && kafkaVersionOverride.isNotEmpty()) {
@@ -90,21 +75,16 @@ subprojects {
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.apache.kafka") {
-                // Force use of apache Kafka libs, not Confluent's own:
-                val kafkaVersion : String by extra
+                // Force use of Apache Kafka libs, not Confluent's own:
+                val kafkaVersion = property("kafkaVersion") as String
                 useVersion(kafkaVersion)
             }
         }
     }
 
-    val creekVersion : String by extra
-    val guavaVersion : String by extra
-    val log4jVersion : String by extra
-    val jacksonVersion : String by extra
-    val junitVersion: String by extra
-    val junitPioneerVersion: String by extra
-    val mockitoVersion: String by extra
-    val confluentVersion : String by extra
+    val creekVersion = property("creekVersion") as String
+    val junitVersion = property("junitVersion") as String
+    val confluentVersion = property("confluentVersion") as String
 
     dependencies {
         constraints {
@@ -113,17 +93,17 @@ subprojects {
             }
         }
 
-        implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
+        implementation(platform("com.fasterxml.jackson:jackson-bom:${property("jacksonVersion")}"))
 
         testImplementation("org.creekservice:creek-test-util:$creekVersion")
         testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")
         testImplementation("org.creekservice:creek-test-conformity:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-        testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
-        testImplementation("org.mockito:mockito-junit-jupiter:$mockitoVersion")
-        testImplementation("com.google.guava:guava-testlib:$guavaVersion")
-        testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+        testImplementation("org.junit-pioneer:junit-pioneer:${property("junitPioneerVersion")}")
+        testImplementation("org.mockito:mockito-junit-jupiter:${property("mockitoVersion")}")
+        testImplementation("com.google.guava:guava-testlib:${property("guavaVersion")}")
+        testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:${property("log4jVersion")}")
         testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }
 
