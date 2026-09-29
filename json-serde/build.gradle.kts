@@ -61,7 +61,7 @@ dependencies {
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 
     constraints {
-        implementation("commons-validator:commons-validator:1.10.1") {
+        implementation("commons-validator:commons-validator:1.11.0") {
             because("Moves commons-beanutils:commons-beanutils past version suffering from CVE-2025-48734 / GHSA-wxr5-93ph-8wr9")
         }
     }
