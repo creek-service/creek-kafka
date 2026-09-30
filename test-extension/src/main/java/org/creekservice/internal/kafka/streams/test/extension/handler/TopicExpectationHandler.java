@@ -256,7 +256,8 @@ public final class TopicExpectationHandler
                 SeekOffsetOverrides seekOverrides);
     }
 
-    private static final class SeedOffsetOverrides implements SeekOffsetOverrides {
+    @VisibleForTesting
+    static final class SeedOffsetOverrides implements SeekOffsetOverrides {
 
         private final Map<String, Map<TopicPartition, Long>> offsets = new HashMap<>();
 
@@ -264,11 +265,11 @@ public final class TopicExpectationHandler
             if (seekOffsets.isEmpty()) {
                 throw new IllegalArgumentException("Topic has no overrides: " + expectationTopic);
             }
-            offsets.put(expectationTopic, seekOffsets);
+            doPut(expectationTopic, seekOffsets);
         }
 
         void putZeroOffsets(final String expectationTopic) {
-            offsets.put(expectationTopic, Map.of());
+            doPut(expectationTopic, Map.of());
         }
 
         @Override
@@ -286,14 +287,19 @@ public final class TopicExpectationHandler
             return override.isEmpty() ? buildZeroOffset(topic, size) : override;
         }
 
+        private void doPut(
+                final String expectationTopic, final Map<TopicPartition, Long> seekOffsets) {
+            final Map<TopicPartition, Long> existing = offsets.put(expectationTopic, seekOffsets);
+            if (existing != null) {
+                throw new IllegalArgumentException(
+                        "Topic already had overrides: " + expectationTopic);
+            }
+        }
+
         private Map<TopicPartition, Long> buildZeroOffset(final String topic, final int size) {
             return IntStream.range(0, size)
                     .mapToObj(idx -> new TopicPartition(topic, idx))
                     .collect(toMap(Function.identity(), tp -> 0L));
-        }
-
-        void clear() {
-            offsets.clear();
         }
     }
 }

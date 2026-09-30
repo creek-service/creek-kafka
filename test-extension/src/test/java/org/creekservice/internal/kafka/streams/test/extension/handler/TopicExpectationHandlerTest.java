@@ -19,6 +19,7 @@ package org.creekservice.internal.kafka.streams.test.extension.handler;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -44,11 +45,13 @@ import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
+import org.creekservice.internal.kafka.streams.test.extension.handler.TopicExpectationHandler.SeedOffsetOverrides;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 import org.creekservice.internal.kafka.streams.test.extension.util.Optional3;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -62,6 +65,41 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TopicExpectationHandlerTest {
+
+    @Nested
+    class SeedOffsetOverridesTest {
+
+        private final SeedOffsetOverrides overrides = new SeedOffsetOverrides();
+
+        @Test
+        void shouldThrowOnPutWithEmptyMap() {
+            assertThrows(IllegalArgumentException.class, () -> overrides.put("topic", Map.of()));
+        }
+
+        @Test
+        void shouldThrowOnPutWithDuplicateTopic() {
+            // Given:
+            overrides.put("topic", Map.of(mock(), 1L));
+
+            // Then:
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> overrides.put("topic", Map.of(mock(), 1L)));
+        }
+
+        @Test
+        void shouldThrowOnPutZerosForDuplicateTopic() {
+            // Given:
+            overrides.put("topic", Map.of(mock(), 1L));
+
+            assertThrows(IllegalArgumentException.class, () -> overrides.putZeroOffsets("topic"));
+        }
+
+        @Test
+        void shouldThrowOnGetForUnknownTopic() {
+            assertThrows(IllegalArgumentException.class, () -> overrides.get("unknown-topic", 1));
+        }
+    }
 
     private static final String CLUSTER_1 = "default";
     private static final String CLUSTER_2 = "other-cluster";
