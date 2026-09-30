@@ -20,60 +20,105 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.kafka.extension.resource.KafkaTopic;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
+import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 import org.creekservice.internal.kafka.extension.ClientsExtension;
 import org.creekservice.internal.kafka.streams.test.extension.model.KafkaOptions;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicExpectation;
 import org.creekservice.internal.kafka.streams.test.extension.model.TopicRecord;
 
 /** {@link ExpectationHandler} for {@link TopicExpectation} */
-public final class TopicExpectationHandler implements ExpectationHandler<TopicExpectation> {
+public final class TopicExpectationHandler
+        implements ExpectationHandler<TopicExpectation>, TestEnvironmentListener {
 
     private final ClientsExtension clientsExt;
     private final SystemTestSerdeProviders testSerdeProviders;
     private final RecordNormaliser recordNormaliser = new RecordNormaliser();
     private final TopicValidator topicValidator;
+    private final TopicConsumersFactory topicConsumersFactory;
+    private final Map<String, SeedOffsetOverrides> clusterToSeedOffsets = new HashMap<>();
 
     /**
-     * @param clientsExt client test extension
-     * @param testSerdeProviders the system test serde providers.
-     * @param topicValidator topic validator
+     * @param clientsExt Kafka clients extension
+     * @param testSerdeProviders system-test serde providers
+     * @param topicValidator validates expected topics
      */
     public TopicExpectationHandler(
             final ClientsExtension clientsExt,
             final SystemTestSerdeProviders testSerdeProviders,
             final TopicValidator topicValidator) {
+        this(clientsExt, testSerdeProviders, topicValidator, TopicConsumers::new);
+    }
+
+    @VisibleForTesting
+    TopicExpectationHandler(
+            final ClientsExtension clientsExt,
+            final SystemTestSerdeProviders testSerdeProviders,
+            final TopicValidator topicValidator,
+            final TopicConsumersFactory topicConsumersFactory) {
         this.clientsExt = requireNonNull(clientsExt, "clientsExt");
         this.testSerdeProviders = requireNonNull(testSerdeProviders, "testSerdeProviders");
         this.topicValidator = requireNonNull(topicValidator, "topicValidator");
+        this.topicConsumersFactory = requireNonNull(topicConsumersFactory, "topicConsumersFactory");
+    }
+
+    @Override
+    public void afterSeeding(final CreekTestSuite suite) {
+        if (suite.seedData().isEmpty() || suite.tests().isEmpty()) {
+            return;
+        }
+
+        final CreekTestCase test = suite.tests().get(0);
+
+        final Map<String, Set<String>> topicsWithExpectationsByCluster =
+                byClusterThenTopic(
+                        test.expectations().stream()
+                                .filter(TopicExpectation.class::isInstance)
+                                .map(TopicExpectation.class::cast),
+                        Collectors.mapping(TopicRecord::topicName, toSet()));
+
+        topicsWithExpectationsByCluster.forEach(this::captureOffsets);
+    }
+
+    @Override
+    public void afterTest(final CreekTestCase test, final TestCaseResult result) {
+        clusterToSeedOffsets.clear();
     }
 
     @Override
     public Verifier prepare(
             final Collection<? extends TopicExpectation> expectations,
             final ExpectationOptions options) {
-        final Map<String, Map<String, List<TopicRecord>>> byClusterThenTopic =
-                expectations.stream()
-                        .map(TopicExpectation::records)
-                        .flatMap(List::stream)
-                        .collect(
-                                groupingBy(
-                                        TopicRecord::clusterName,
-                                        LinkedHashMap::new,
-                                        groupingBy(
-                                                TopicRecord::topicName,
-                                                LinkedHashMap::new,
-                                                toList())));
+
+        final Map<String, Map<String, List<TopicRecord>>> topicsWithExpectationsByCluster =
+                byClusterThenTopic(
+                        expectations.stream(),
+                        groupingBy(TopicRecord::topicName, LinkedHashMap::new, toList()));
 
         final List<Verifier> clusterVerifiers =
-                byClusterThenTopic.entrySet().stream()
+                topicsWithExpectationsByCluster.entrySet().stream()
                         .map(e -> prepare(e.getKey(), e.getValue(), options))
                         .toList();
 
@@ -105,7 +150,10 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                                         e -> testSerdeProviders.get(e.getValue().descriptor())));
 
         final TopicConsumers topicConsumers =
-                new TopicConsumers(testTopics, clientsExt.consumer(cluster));
+                topicConsumersFactory.create(
+                        testTopics,
+                        clientsExt.consumer(cluster),
+                        clusterToSeedOffsets.getOrDefault(cluster, new SeedOffsetOverrides()));
 
         final List<? extends Verifier> topicVerifiers =
                 byTopic.entrySet().stream()
@@ -156,6 +204,96 @@ public final class TopicExpectationHandler implements ExpectationHandler<TopicEx
                             + ", location: "
                             + location,
                     e);
+        }
+    }
+
+    private void captureOffsets(final String cluster, final Set<String> expectationTopics) {
+        final SeedOffsetOverrides overrides = new SeedOffsetOverrides();
+        final Consumer<byte[], byte[]> consumer = clientsExt.consumer(cluster);
+        final Map<String, List<PartitionInfo>> existingTopics = consumer.listTopics();
+
+        expectationTopics.forEach(
+                expectationTopic -> {
+                    final List<PartitionInfo> pis = existingTopics.get(expectationTopic);
+                    if (pis == null) {
+                        overrides.putZeroOffsets(expectationTopic);
+                    } else {
+                        overrides.put(
+                                expectationTopic, endOffsets(consumer, expectationTopic, pis));
+                    }
+                });
+
+        clusterToSeedOffsets.put(cluster, overrides);
+    }
+
+    private Map<TopicPartition, Long> endOffsets(
+            final Consumer<byte[], byte[]> consumer,
+            final String expectationTopic,
+            final List<PartitionInfo> pis) {
+        final Set<TopicPartition> partitions =
+                pis.stream()
+                        .map(p -> new TopicPartition(expectationTopic, p.partition()))
+                        .collect(toSet());
+
+        return consumer.endOffsets(partitions);
+    }
+
+    private static <T> Map<String, T> byClusterThenTopic(
+            final Stream<? extends TopicExpectation> expectations,
+            final Collector<TopicRecord, ?, T> downstream) {
+        return expectations
+                .map(TopicExpectation::records)
+                .flatMap(List::stream)
+                .collect(groupingBy(TopicRecord::clusterName, LinkedHashMap::new, downstream));
+    }
+
+    @VisibleForTesting
+    interface TopicConsumersFactory {
+
+        TopicConsumers create(
+                Map<String, TestKafkaTopic> topics,
+                Consumer<byte[], byte[]> consumer,
+                SeekOffsetOverrides seekOverrides);
+    }
+
+    private static final class SeedOffsetOverrides implements SeekOffsetOverrides {
+
+        private final Map<String, Map<TopicPartition, Long>> offsets = new HashMap<>();
+
+        void put(final String expectationTopic, final Map<TopicPartition, Long> seekOffsets) {
+            if (seekOffsets.isEmpty()) {
+                throw new IllegalArgumentException("Topic has no overrides: " + expectationTopic);
+            }
+            offsets.put(expectationTopic, seekOffsets);
+        }
+
+        void putZeroOffsets(final String expectationTopic) {
+            offsets.put(expectationTopic, Map.of());
+        }
+
+        @Override
+        public boolean hasOverrides(final String topic) {
+            return offsets.containsKey(topic);
+        }
+
+        @Override
+        public Map<TopicPartition, Long> get(final String topic, final int size) {
+            final Map<TopicPartition, Long> override = offsets.get(topic);
+            if (override == null) {
+                throw new IllegalArgumentException("Topic has no overrides: " + topic);
+            }
+
+            return override.isEmpty() ? buildZeroOffset(topic, size) : override;
+        }
+
+        private Map<TopicPartition, Long> buildZeroOffset(final String topic, final int size) {
+            return IntStream.range(0, size)
+                    .mapToObj(idx -> new TopicPartition(topic, idx))
+                    .collect(toMap(Function.identity(), tp -> 0L));
+        }
+
+        void clear() {
+            offsets.clear();
         }
     }
 }

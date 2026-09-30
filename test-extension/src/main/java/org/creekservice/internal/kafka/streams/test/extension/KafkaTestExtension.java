@@ -80,10 +80,14 @@ public final class KafkaTestExtension implements CreekTestExtension {
         final TopicValidatingListener topicValidator = new TopicValidatingListener(api);
         testListeners.append(topicValidator);
 
+        final TopicExpectationHandler expectationHandler =
+                new TopicExpectationHandler(clientsExt, testSerdeProviders, topicValidator);
+        testListeners.append(expectationHandler);
+
         initializeModel(
                 api.tests().model(),
                 new TopicInputHandler(clientsExt, testSerdeProviders, topicValidator),
-                new TopicExpectationHandler(clientsExt, testSerdeProviders, topicValidator));
+                expectationHandler);
     }
 
     /**

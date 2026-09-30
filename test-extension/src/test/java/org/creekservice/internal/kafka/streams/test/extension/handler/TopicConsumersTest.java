@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +54,8 @@ class TopicConsumersTest {
     @Mock private TestKafkaTopic topicB;
     @Mock private Consumer<byte[], byte[]> kafkaConsumer;
     @Mock private TopicConsumers.TopicConsumerFactory consumerFactory;
+    @Mock private TopicConsumer topicConsumer;
+    @Mock private SeekOffsetOverrides seekOverrides;
 
     private TopicConsumers consumers;
 
@@ -68,7 +71,12 @@ class TopicConsumersTest {
 
         consumers =
                 new TopicConsumers(
-                        topics(TOPIC_A, topicA, TOPIC_B, topicB), kafkaConsumer, consumerFactory);
+                        topics(TOPIC_A, topicA, TOPIC_B, topicB),
+                        kafkaConsumer,
+                        seekOverrides,
+                        consumerFactory);
+
+        lenient().when(consumerFactory.create(any(), any())).thenReturn(topicConsumer);
     }
 
     @Test
@@ -88,7 +96,10 @@ class TopicConsumersTest {
                         RuntimeException.class,
                         () ->
                                 new TopicConsumers(
-                                        topics(TOPIC_A, topicA), kafkaConsumer, consumerFactory));
+                                        topics(TOPIC_A, topicA),
+                                        kafkaConsumer,
+                                        seekOverrides,
+                                        consumerFactory));
 
         // Then:
         assertThat(e.getMessage(), is("Unknown topic: " + TOPIC_A));
@@ -101,16 +112,50 @@ class TopicConsumersTest {
 
     @Test
     void shouldGetTopicConsumerAndSeek() {
-        // Given:
-        final TopicConsumer expected = mock(TopicConsumer.class);
-        when(consumerFactory.create(any(), any())).thenReturn(expected);
-
         // When:
-        final TopicConsumer topicConsumer = consumers.get(TOPIC_A);
+        final TopicConsumer result = consumers.get(TOPIC_A);
 
         // Then:
-        assertThat(topicConsumer, is(expected));
+        assertThat(result, is(topicConsumer));
         verify(consumerFactory).create(topicA, kafkaConsumer);
+        verify(result).assignAndSeek(Map.of(TP_A_0, 10L, TP_A_1, 11L));
+    }
+
+    @Test
+    void shouldSeekToOffsetOverridesIfProvided() {
+        // Given:
+        when(seekOverrides.hasOverrides(TOPIC_A)).thenReturn(true);
+        when(seekOverrides.get(TOPIC_A, 2)).thenReturn(Map.of(TP_A_0, 3L, TP_A_1, 1L));
+
+        consumers =
+                new TopicConsumers(
+                        topics(TOPIC_A, topicA), kafkaConsumer, seekOverrides, consumerFactory);
+
+        // When:
+        consumers.get(TOPIC_A);
+
+        // Then:
+        verify(topicConsumer).assignAndSeek(Map.of(TP_A_0, 3L, TP_A_1, 1L));
+    }
+
+    @Test
+    void shouldNotSeekToOffsetOverridesForOtherTopics() {
+        // Given:
+        when(seekOverrides.hasOverrides(any()))
+                .thenAnswer(inv -> TOPIC_B.equals(inv.getArgument(0)));
+        when(seekOverrides.get(TOPIC_B, 1)).thenReturn(Map.of(TP_B_0, 3L));
+
+        consumers =
+                new TopicConsumers(
+                        topics(TOPIC_A, topicA, TOPIC_B, topicB),
+                        kafkaConsumer,
+                        seekOverrides,
+                        consumerFactory);
+
+        // When:
+        consumers.get(TOPIC_A);
+
+        // Then:
         verify(topicConsumer).assignAndSeek(Map.of(TP_A_0, 10L, TP_A_1, 11L));
     }
 
