@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.net.URL;
 import java.nio.file.Path;
 import org.creekservice.api.kafka.serde.json.schema.ProducerSchema;
-import org.creekservice.api.kafka.test.service.json.model.OutputValue;
 import org.creekservice.api.test.util.TestPaths;
+import org.creekservice.internal.kafka.serde.json.model.TestKeyV0;
 import org.junit.jupiter.api.Test;
 
 class LocalSchemaLoaderTest {
@@ -73,12 +73,12 @@ class LocalSchemaLoaderTest {
     }
 
     @Test
-    void shouldBeAbleToLoadSchemaForAnotherModule() {
+    void shouldLoadGeneratedSchemaFromClasspath() {
         // Given:
-        final ProducerSchema schema = LocalSchemaLoader.loadFromClasspath(OutputValue.class);
+        final ProducerSchema schema = LocalSchemaLoader.loadFromClasspath(TestKeyV0.class);
 
         // Then:
-        assertThat(schema.toString(), containsString("title: Output Value"));
+        assertThat(schema.toString(), containsString("title: Test Key V0"));
     }
 
     private static final class TestModel {}

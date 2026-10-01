@@ -25,9 +25,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
+import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.test.util.TestPaths;
@@ -53,10 +55,39 @@ class KafkaTestExtensionFunctionalTest {
         // Then:
         assertThat(result.toString(), result.passed(), is(true));
         assertThat(resultsPath.resolve("TEST-passing_suite.xml"), is(regularFile()));
+        assertPassingCases(result, "passing suite", "test 1");
+        assertPassingCases(result, "order by key", "should verify key ordering");
+    }
+
+    @Test
+    void shouldRunProducerOwnedPipeline() {
+        assertPipeline("producer_owned_pipeline", "producer owns intermediate");
+    }
+
+    @Test
+    void shouldRunConsumerOwnedPipeline() {
+        assertPipeline("consumer_owned_pipeline", "consumer owns intermediate");
+    }
+
+    @Test
+    void shouldSeedOwnedInputBeforeNormalInput() {
+        final TestExecutionResult result =
+                SystemTestExecutor.run(executorOptions("seeded_owned_input"));
+        assertThat(result.toString(), result.passed(), is(true));
+        assertPassingCases(result, "seeded owned input", "normal input after owned seed");
+    }
+
+    @Test
+    void shouldSeedUnownedInputBeforeNormalInput() {
+        final TestExecutionResult result =
+                SystemTestExecutor.run(executorOptions("seeded_unowned_input"));
+        assertThat(result.toString(), result.passed(), is(true));
+        assertPassingCases(result, "seeded unowned input", "normal input after unowned seed");
     }
 
     @Test
     void shouldDetectExpectationFailures() {
+        // Given:
         final ExecutorOptions options = executorOptions("expectation_failure");
 
         // When:
@@ -157,6 +188,38 @@ class KafkaTestExtensionFunctionalTest {
                 containsString(
                         "Tests can not consume from topic kafka-topic://default/input "
                                 + "as the services-under-test do not produce to it"));
+    }
+
+    private void assertPipeline(final String directory, final String suite) {
+        final TestExecutionResult result = SystemTestExecutor.run(executorOptions(directory));
+        assertThat(result.toString(), result.passed(), is(true));
+        assertPassingCases(
+                result,
+                suite,
+                "entry seed traverses both services",
+                "intermediate seed intentionally bypasses A");
+    }
+
+    private void assertPassingCases(
+            final TestExecutionResult result, final String suiteName, final String... caseNames) {
+        final TestSuiteResult suite =
+                result.results().stream()
+                        .filter(r -> r.testSuite().name().equals(suiteName))
+                        .findFirst()
+                        .orElseThrow(() -> new AssertionError("Missing suite: " + suiteName));
+        assertThat(suite.toString(), suite.error(), is(Optional.empty()));
+        assertThat(suite.toString(), suite.testResults(), hasSize(caseNames.length));
+        assertThat(
+                resultsPath.resolve("TEST-" + suiteName.replace(' ', '_') + ".xml"),
+                is(regularFile()));
+        final List<? extends TestCaseResult> cases = suite.testResults();
+        for (int i = 0; i < caseNames.length; i++) {
+            final TestCaseResult test = cases.get(i);
+            assertThat(test.toString(), test.testCase().name(), is(caseNames[i]));
+            assertThat(test.toString(), test.skipped(), is(false));
+            assertThat(test.toString(), test.failure(), is(Optional.empty()));
+            assertThat(test.toString(), test.error(), is(Optional.empty()));
+        }
     }
 
     private static String failureMessage(

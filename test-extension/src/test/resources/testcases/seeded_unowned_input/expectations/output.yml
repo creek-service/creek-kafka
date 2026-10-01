@@ -1,0 +1,8 @@
+---
+!creek/kafka-topic@1
+topic: output
+records:
+  - key: 1
+    value: seed-only
+  - key: 9
+    value: unowned

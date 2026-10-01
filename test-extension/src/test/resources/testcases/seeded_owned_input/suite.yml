@@ -1,0 +1,13 @@
+---
+name: seeded owned input
+# A owns topic-a, the seed/input target. B consumes A's owned topic-b output.
+# Compare with producer_owned_pipeline, which has normal inputs but no seed directory.
+services:
+  - owned-a-to-owned-b-service
+  - unowned-b-to-owned-c-service
+tests:
+  - name: normal input after owned seed
+    inputs:
+      - entry
+    expectations:
+      - output

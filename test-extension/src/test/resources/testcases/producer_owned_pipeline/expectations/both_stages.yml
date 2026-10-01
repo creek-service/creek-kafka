@@ -1,0 +1,6 @@
+---
+!creek/kafka-topic@1
+topic: topic-c
+records:
+  - key: entry
+    value: initial-A-B

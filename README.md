@@ -29,6 +29,7 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
 * **[test-extension](test-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-test-extension)]: Creek system-test extension to allow system testing of Kafka based microservices.
 
 ### Internal / Non-published:
+* **[test-functional-json](test-functional-json)**: containerized JSON-schema system tests for the Kafka test extension.
 * **[test-java-eight](test-java-eight)**: functional tests *without* Java 9's modularity.
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.
@@ -77,4 +78,3 @@ configurations.all {
 ```
 
 [1]: https://www.creekservice.org/basic-kafka-streams-demo/
-

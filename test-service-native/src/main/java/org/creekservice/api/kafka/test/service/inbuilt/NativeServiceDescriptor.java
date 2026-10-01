@@ -19,28 +19,22 @@ package org.creekservice.api.kafka.test.service.inbuilt;
 import static org.creekservice.internal.kafka.test.service.inbuilt.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.creekservice.internal.kafka.test.service.inbuilt.TopicDescriptors.outputTopic;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.creekservice.api.kafka.metadata.topic.KafkaTopicInput;
 import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
 import org.creekservice.api.platform.metadata.ComponentInput;
-import org.creekservice.api.platform.metadata.ComponentInternal;
 import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
 /** Service descriptor that makes use of native Kafka serde. */
 public final class NativeServiceDescriptor implements ServiceDescriptor {
 
-    private static final List<ComponentInput> INPUTS = new ArrayList<>();
-    private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
-    private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
-
     public static final KafkaTopicInput<String, Long> InputTopic =
-            register(UpstreamAggregateDescriptor.Output.toInput());
+            UpstreamAggregateDescriptor.Output.toInput();
 
     public static final OwnedKafkaTopicOutput<Long, String> OutputTopic =
-            register(outputTopic("output", Long.class, String.class, withPartitions(1)));
+            outputTopic("output", Long.class, String.class, withPartitions(1));
 
     public NativeServiceDescriptor() {}
 
@@ -51,26 +45,11 @@ public final class NativeServiceDescriptor implements ServiceDescriptor {
 
     @Override
     public Collection<ComponentInput> inputs() {
-        return List.copyOf(INPUTS);
-    }
-
-    @Override
-    public Collection<ComponentInternal> internals() {
-        return List.copyOf(INTERNALS);
+        return List.of(InputTopic);
     }
 
     @Override
     public Collection<ComponentOutput> outputs() {
-        return List.copyOf(OUTPUTS);
-    }
-
-    private static <T extends ComponentInput> T register(final T input) {
-        INPUTS.add(input);
-        return input;
-    }
-
-    private static <T extends ComponentOutput> T register(final T output) {
-        OUTPUTS.add(output);
-        return output;
+        return List.of(OutputTopic);
     }
 }
