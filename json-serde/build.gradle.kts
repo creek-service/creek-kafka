@@ -50,7 +50,8 @@ dependencies {
     implementation("org.json:json:20260814")
     implementation("commons-beanutils:commons-beanutils:1.11.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("com.github.luben:zstd-jni:1.5.7-20")
+    // 1.5.7-18 and later have an invalid module descriptor on Java 17 (META-INF.versions.22).
+    implementation("com.github.luben:zstd-jni:1.5.7-17")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 
