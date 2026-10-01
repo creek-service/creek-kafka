@@ -1,0 +1,18 @@
+---
+name: consumer owns intermediate
+# A owns the entry input, but its intermediate output is unowned. B owns
+# the intermediate input and the final output; B provisions topic-b.
+services:
+  - owned-a-to-unowned-b-service
+  - owned-b-to-owned-c-service
+tests:
+  - name: entry seed traverses both services
+    inputs:
+      - entry
+    expectations:
+      - both_stages
+  - name: intermediate seed intentionally bypasses A
+    inputs:
+      - intermediate
+    expectations:
+      - second_stage

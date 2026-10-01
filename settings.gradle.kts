@@ -36,6 +36,7 @@ include(
     "serde-test",
     "json-serde",
     "test-extension",
+    "test-functional-json",
     "test-java-eight",
     "test-java-nine",
     "test-serde",

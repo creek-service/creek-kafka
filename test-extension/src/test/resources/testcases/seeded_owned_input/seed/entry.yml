@@ -1,0 +1,6 @@
+---
+!creek/kafka-topic@1
+topic: topic-a
+records:
+  - key: seed-only
+    value: primed

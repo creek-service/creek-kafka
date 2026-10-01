@@ -15,6 +15,10 @@
  */
 
 import org.creekservice.api.kafka.test.service.inbuilt.NativeServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedAToOwnedBServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedAToUnownedBServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedBToOwnedCServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.UnownedBToOwnedCServiceDescriptor;
 import org.creekservice.api.kafka.test.service.inbuilt.UpstreamAggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 
@@ -25,8 +29,14 @@ module creek.kafka.test.service.inbuilt {
     requires org.apache.logging.log4j;
 
     exports org.creekservice.api.kafka.test.service.inbuilt;
+    exports org.creekservice.internal.kafka.test.service.inbuilt to
+            creek.kafka.test.service.json;
 
     provides ComponentDescriptor with
             NativeServiceDescriptor,
-            UpstreamAggregateDescriptor;
+            UpstreamAggregateDescriptor,
+            OwnedAToOwnedBServiceDescriptor,
+            UnownedBToOwnedCServiceDescriptor,
+            OwnedAToUnownedBServiceDescriptor,
+            OwnedBToOwnedCServiceDescriptor;
 }

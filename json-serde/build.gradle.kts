@@ -56,7 +56,6 @@ dependencies {
 
     testImplementation(project(":client-extension"))
     testImplementation(project(":serde-test"))
-    testImplementation(project(":test-service-json"))
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 

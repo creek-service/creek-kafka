@@ -16,21 +16,46 @@
 
 package org.creekservice.internal.kafka.test.service.inbuilt;
 
+import java.util.Map;
 import org.creekservice.api.kafka.streams.extension.KafkaStreamsExtension;
 import org.creekservice.api.kafka.test.service.inbuilt.NativeServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedAToOwnedBServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedAToUnownedBServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.OwnedBToOwnedCServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.PipelineServiceDescriptor;
+import org.creekservice.api.kafka.test.service.inbuilt.UnownedBToOwnedCServiceDescriptor;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.service.context.CreekContext;
 import org.creekservice.api.service.context.CreekServices;
+import org.creekservice.internal.kafka.test.service.inbuilt.kafka.streams.PipelineTopology;
 import org.creekservice.internal.kafka.test.service.inbuilt.kafka.streams.TopologyBuilder;
 
 public final class ServiceMain {
 
+    private static final Map<String, ServiceDescriptor> SERVICE_DESCRIPTORS =
+            Map.of(
+                    "native-service", new NativeServiceDescriptor(),
+                    "owned-a-to-owned-b-service", new OwnedAToOwnedBServiceDescriptor(),
+                    "unowned-b-to-owned-c-service", new UnownedBToOwnedCServiceDescriptor(),
+                    "owned-a-to-unowned-b-service", new OwnedAToUnownedBServiceDescriptor(),
+                    "owned-b-to-owned-c-service", new OwnedBToOwnedCServiceDescriptor());
+
     private ServiceMain() {}
 
     public static void main(final String... args) {
-        try (CreekContext context = CreekServices.context(new NativeServiceDescriptor())) {
+        final String name =
+                System.getenv().getOrDefault("KAFKA_DEFAULT_APPLICATION_ID", "native-service");
+        final ServiceDescriptor descriptor = SERVICE_DESCRIPTORS.get(name);
+        if (descriptor == null) {
+            throw new IllegalArgumentException("Unknown fixture service: " + name);
+        }
+        try (CreekContext context = CreekServices.context(descriptor)) {
             final KafkaStreamsExtension ext = context.extension(KafkaStreamsExtension.class);
-
-            ext.execute(new TopologyBuilder(ext).build());
+            if (descriptor instanceof PipelineServiceDescriptor pipeline) {
+                ext.execute(PipelineTopology.build(ext, pipeline));
+            } else {
+                ext.execute(new TopologyBuilder(ext).build());
+            }
         }
     }
 }

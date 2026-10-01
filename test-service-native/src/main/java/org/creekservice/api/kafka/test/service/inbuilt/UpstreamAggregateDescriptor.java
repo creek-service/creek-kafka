@@ -19,7 +19,6 @@ package org.creekservice.api.kafka.test.service.inbuilt;
 import static org.creekservice.internal.kafka.test.service.inbuilt.TopicDescriptors.TopicConfigBuilder.withPartitions;
 import static org.creekservice.internal.kafka.test.service.inbuilt.TopicDescriptors.outputTopic;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.creekservice.api.kafka.metadata.topic.OwnedKafkaTopicOutput;
@@ -29,20 +28,13 @@ import org.creekservice.api.platform.metadata.ComponentOutput;
 /** Would normally be in a different jar, but for this test service we'll just have it here. */
 public final class UpstreamAggregateDescriptor implements AggregateDescriptor {
 
-    private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
-
     public static final OwnedKafkaTopicOutput<String, Long> Output =
-            register(outputTopic("input", String.class, long.class, withPartitions(3)));
+            outputTopic("input", String.class, long.class, withPartitions(3));
 
     public UpstreamAggregateDescriptor() {}
 
     @Override
     public Collection<ComponentOutput> outputs() {
-        return List.copyOf(OUTPUTS);
-    }
-
-    private static <T extends ComponentOutput> T register(final T output) {
-        OUTPUTS.add(output);
-        return output;
+        return List.of(Output);
     }
 }

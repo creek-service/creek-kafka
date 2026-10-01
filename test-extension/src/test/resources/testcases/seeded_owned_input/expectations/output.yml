@@ -1,0 +1,8 @@
+---
+!creek/kafka-topic@1
+topic: topic-c
+records:
+  - key: seed-only
+    value: primed-A-B
+  - key: owned
+    value: live-A-B

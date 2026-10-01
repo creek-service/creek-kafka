@@ -1,0 +1,13 @@
+---
+name: seeded unowned input
+# Native service consumes input unowned. UpstreamAggregateDescriptor owns it
+# outside this suite; the system test must provision it before seeding.
+# Compare with passing, which has normal inputs but no seed directory.
+services:
+  - native-service
+tests:
+  - name: normal input after unowned seed
+    inputs:
+      - input
+    expectations:
+      - output

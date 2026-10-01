@@ -1,0 +1,10 @@
+---
+name: json schema round trip
+services:
+  - json-service
+tests:
+  - name: schema backed input and output
+    inputs:
+      - json_input
+    expectations:
+      - json_output
