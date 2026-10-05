@@ -88,8 +88,8 @@ subprojects {
 
     dependencies {
         constraints {
-            implementation("org.apache.commons:commons-compress:1.28.0") {
-                because("earlier versions have a security vulnerabilities")
+            implementation("at.yawk.lz4:lz4-java:1.11.1") {
+                because("earlier versions have a security vulnerability (GHSA-xx22-p4ch-683r)")
             }
         }
 
