@@ -91,6 +91,15 @@ subprojects {
             implementation("org.apache.commons:commons-compress:1.28.0") {
                 because("earlier versions have a security vulnerabilities")
             }
+            implementation("at.yawk.lz4:lz4-java:1.11.1") {
+                because("earlier versions have a security vulnerability (GHSA-xx22-p4ch-683r), pulled in transitively via kafka-clients")
+            }
+            implementation("tools.jackson.core:jackson-core:3.2.3") {
+                because("earlier versions have security vulnerabilities (GHSA-7hhh-6rmp-j9qf), pulled in transitively via creek-json-schema-validator")
+            }
+            implementation("tools.jackson.core:jackson-databind:3.2.3") {
+                because("earlier versions have security vulnerabilities (GHSA-cxp5-3px4-pw24, GHSA-wv8q-qhhj-9h54), pulled in transitively via creek-json-schema-validator")
+            }
         }
 
         implementation(platform("com.fasterxml.jackson:jackson-bom:${property("jacksonVersion")}"))
