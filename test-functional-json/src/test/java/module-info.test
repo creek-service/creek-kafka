@@ -1,0 +1,5 @@
+--add-modules
+  org.hamcrest,creek.test.util,creek.test.hamcrest,creek.system.test.extension,creek.system.test.executor,creek.system.test.test.util,creek.kafka.test.service.json
+
+--add-reads
+  creek.kafka.test.functional.json=org.hamcrest,creek.test.util,creek.test.hamcrest,creek.system.test.extension,creek.system.test.executor,creek.system.test.test.util,creek.kafka.test.service.json

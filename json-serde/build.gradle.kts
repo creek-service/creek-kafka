@@ -19,11 +19,11 @@ plugins {
     id("org.creekservice.schema.json")
 }
 
-val creekVersion : String by extra
-val kafkaVersion : String by extra
-val confluentVersion : String by extra
-val jacksonVersion : String by extra
-val testContainersVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val kafkaVersion = property("kafkaVersion") as String
+val confluentVersion = property("confluentVersion") as String
+val jacksonVersion = property("jacksonVersion") as String
+val testContainersVersion = property("testContainersVersion") as String
 
 dependencies {
     api(project(":serde"))
@@ -47,24 +47,20 @@ dependencies {
     // they are explicitly required. These are needed by automatic modules above
     // (e.g. kafka-json-schema-provider needs org.json, commons-validator needs commons-beanutils,
     //  kafka-json-schema-provider → json-sKema needs kotlin.stdlib).
-    implementation("org.json:json:20250107")
+    implementation("org.json:json:20260814")
     implementation("commons-beanutils:commons-beanutils:1.11.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("com.github.luben:zstd-jni:1.5.6-10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.10")
+    implementation("com.github.luben:zstd-jni:1.5.7-17")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 
     testImplementation(project(":client-extension"))
     testImplementation(project(":serde-test"))
-    testImplementation(project(":test-service-json"))
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
     testImplementation("org.creekservice:creek-observability-logging-fixtures:$creekVersion")
 
     constraints {
-        implementation("org.scala-lang:scala-library:3.8.3") {
-            because("lower versions have security vulnerabilities")
-        }
-        implementation("commons-validator:commons-validator:1.10.1") {
+        implementation("commons-validator:commons-validator:1.11.0") {
             because("Moves commons-beanutils:commons-beanutils past version suffering from CVE-2025-48734 / GHSA-wxr5-93ph-8wr9")
         }
     }

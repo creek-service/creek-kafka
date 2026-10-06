@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
+    application
+    id("com.bmuschko.docker-remote-api")
     id("org.creekservice.schema.json")
 }
 
-val creekVersion : String by extra
-val jacksonAnnotationsVersion : String by extra
-val log4jVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val log4jVersion = property("log4jVersion") as String
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
     implementation("org.creekservice:creek-base-annotation:$creekVersion")
+    implementation(project(":test-service-native"))
+    implementation(project(":json-serde"))
+    implementation(project(":streams-extension"))
+    implementation("org.creekservice:creek-service-context:$creekVersion")
+    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 
@@ -32,6 +39,30 @@ dependencies {
 }
 
 creek.schema.json {
-    typeScanning.moduleWhiteList(moduleName)
-    subTypeScanning.moduleWhiteList(moduleName)
+    // The service runtime includes automatic modules; generate schemas on the classpath.
+    typeScanning.packageWhiteList("org.creekservice.api.kafka.test.service.json.model")
+    subTypeScanning.packageWhiteList("org.creekservice.api.kafka.test.service.json.model")
+}
+
+application {
+    mainModule.set("creek.kafka.test.service.json")
+    mainClass.set("org.creekservice.internal.kafka.test.service.json.ServiceMain")
+}
+
+val buildAppImage = tasks.register<DockerBuildImage>("buildAppImage") {
+    dependsOn("prepareDocker")
+    buildArgs.put("APP_NAME", project.name)
+    buildArgs.put("APP_VERSION", "${project.version}")
+    images.add("ghcr.io/creek-service/${rootProject.name}-${project.name}:latest")
+    onlyIf { !System.getProperty("os.name").lowercase().contains("win") }
+}
+
+tasks.register<Copy>("prepareDocker") {
+    dependsOn("distTar")
+    from(
+        layout.projectDirectory.file("Dockerfile"),
+        tarTree(layout.buildDirectory.file("distributions/${project.name}-${project.version}.tar")),
+        layout.projectDirectory.dir("include"),
+    )
+    into(buildAppImage.flatMap { it.inputDir })
 }

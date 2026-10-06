@@ -1,0 +1,19 @@
+---
+name: producer owns intermediate
+# A owns the entry input and intermediate output; B consumes the unowned
+# intermediate and owns the final output. All three topics are provisioned
+# by the services under test, not by Kafka auto-creation.
+services:
+  - owned-a-to-owned-b-service
+  - unowned-b-to-owned-c-service
+tests:
+  - name: entry seed traverses both services
+    inputs:
+      - entry
+    expectations:
+      - both_stages
+  - name: intermediate seed intentionally bypasses A
+    inputs:
+      - intermediate
+    expectations:
+      - second_stage

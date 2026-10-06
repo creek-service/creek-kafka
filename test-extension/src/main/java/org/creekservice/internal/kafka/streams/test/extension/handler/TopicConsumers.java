@@ -24,7 +24,8 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
@@ -38,31 +39,36 @@ final class TopicConsumers {
     private final TopicConsumerFactory consumerFactory;
 
     TopicConsumers(
-            final Map<String, TestKafkaTopic> topics, final Consumer<byte[], byte[]> consumer) {
-        this(topics, consumer, TopicConsumer::new);
+            final Map<String, TestKafkaTopic> topics,
+            final Consumer<byte[], byte[]> consumer,
+            final SeekOffsetOverrides seekOverrides) {
+        this(topics, consumer, seekOverrides, TopicConsumer::new);
     }
 
     @VisibleForTesting
     TopicConsumers(
             final Map<String, TestKafkaTopic> topics,
             final Consumer<byte[], byte[]> consumer,
+            final SeekOffsetOverrides seekOverrides,
             final TopicConsumerFactory consumerFactory) {
         this.consumer = requireNonNull(consumer, "consumer");
-        this.topics = buildTopics(topics, consumer);
+        this.topics = buildTopics(topics, consumer, seekOverrides);
         this.consumerFactory = requireNonNull(consumerFactory, "consumerFactory");
     }
 
     public TopicConsumer get(final String topicName) {
         final TopicInfo topicInfo = topics.get(topicName);
-        final TopicConsumer consumer = consumerFactory.create(topicInfo.topic, this.consumer);
-        consumer.assignAndSeek(topicInfo.endOffsets);
-        return consumer;
+        final TopicConsumer topicConsumer = consumerFactory.create(topicInfo.topic, consumer);
+        topicConsumer.assignAndSeek(topicInfo.seekOffsets);
+        return topicConsumer;
     }
 
     private static Map<String, TopicInfo> buildTopics(
-            final Map<String, TestKafkaTopic> topics, final Consumer<byte[], byte[]> consumer) {
+            final Map<String, TestKafkaTopic> topics,
+            final Consumer<byte[], byte[]> consumer,
+            final SeekOffsetOverrides seekOverrides) {
         final Map<String, Map<TopicPartition, Long>> endOffsets =
-                endOffsets(consumer, topics.keySet());
+                seekOffsets(consumer, topics.keySet(), seekOverrides);
 
         return topics.entrySet().stream()
                 .collect(
@@ -71,31 +77,68 @@ final class TopicConsumers {
                                 e -> new TopicInfo(e.getValue(), endOffsets.get(e.getKey()))));
     }
 
+    private static Map<String, Map<TopicPartition, Long>> seekOffsets(
+            final Consumer<byte[], byte[]> consumer,
+            final Set<String> topicNames,
+            final SeekOffsetOverrides seekOverrides) {
+
+        final Map<Boolean, List<String>> partitioned =
+                topicNames.stream().collect(Collectors.partitioningBy(seekOverrides::hasOverrides));
+
+        final List<String> topicsWithOverrides = partitioned.getOrDefault(true, List.of());
+        final List<String> topicsWithoutOverrides = partitioned.getOrDefault(false, List.of());
+
+        final Map<String, Map<TopicPartition, Long>> offsets =
+                endOffsets(consumer, topicsWithoutOverrides);
+
+        final Map<String, Map<TopicPartition, Long>> overriddenOffsets =
+                topicsWithOverrides.stream()
+                        .collect(
+                                toMap(
+                                        Function.identity(),
+                                        topic ->
+                                                overriddenOffsets(topic, seekOverrides, consumer)));
+
+        offsets.putAll(overriddenOffsets);
+
+        return offsets;
+    }
+
     private static Map<String, Map<TopicPartition, Long>> endOffsets(
-            final Consumer<byte[], byte[]> consumer, final Set<String> topicNames) {
+            final Consumer<byte[], byte[]> consumer, final List<String> topicsWithOverrides) {
+        final List<TopicPartition> endOffsetPartitions =
+                topicsWithOverrides.stream()
+                        .map(topic -> partitionsFor(topic, consumer))
+                        .flatMap(List::stream)
+                        .map(pi -> new TopicPartition(pi.topic(), pi.partition()))
+                        .toList();
 
-        final List<TopicPartition> partitions =
-                topicNames.stream().flatMap(topic -> partitionsFor(topic, consumer)).toList();
-
-        return consumer.endOffsets(partitions).entrySet().stream()
+        return consumer.endOffsets(endOffsetPartitions).entrySet().stream()
                 .collect(
                         groupingBy(
                                 e -> e.getKey().topic(),
                                 toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    private static Stream<TopicPartition> partitionsFor(
+    private static Map<TopicPartition, Long> overriddenOffsets(
+            final String topic,
+            final SeekOffsetOverrides seekOverrides,
+            final Consumer<byte[], byte[]> consumer) {
+        return seekOverrides.get(topic, partitionsFor(topic, consumer).size());
+    }
+
+    private static List<PartitionInfo> partitionsFor(
             final String topic, final Consumer<?, ?> consumer) {
         final List<PartitionInfo> pis = consumer.partitionsFor(topic);
         if (pis == null) {
             throw new UnknownTopicOrPartitionException("Unknown topic: " + topic);
         }
-        return pis.stream().map(pi -> new TopicPartition(pi.topic(), pi.partition()));
+        return pis;
     }
 
-    private record TopicInfo(TestKafkaTopic topic, Map<TopicPartition, Long> endOffsets) {
+    private record TopicInfo(TestKafkaTopic topic, Map<TopicPartition, Long> seekOffsets) {
         private TopicInfo {
-            endOffsets = Map.copyOf(requireNonNull(endOffsets, "endOffsets"));
+            seekOffsets = Map.copyOf(requireNonNull(seekOffsets, "seekOffsets"));
         }
     }
 

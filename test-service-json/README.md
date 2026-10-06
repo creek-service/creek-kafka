@@ -1,3 +1,5 @@
-# Creek Kafka - Test Service
+# Creek Kafka - JSON Test Service
 
-A module that will soon define a test microservice used by this repo for testing.
+Test-only microservice that uses JSON-schema-backed Kafka topics. It provides the
+`OutputValue` model and generated schema, and a Docker image exercised by the JSON
+system test.

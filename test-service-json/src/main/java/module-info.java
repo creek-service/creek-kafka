@@ -17,8 +17,17 @@
 module creek.kafka.test.service.json {
     requires transitive com.fasterxml.jackson.annotation;
     requires transitive creek.base.annotation;
+    requires creek.kafka.test.service.inbuilt;
+    requires transitive creek.kafka.metadata;
+    requires creek.kafka.streams.extension;
+    requires creek.service.context;
+    requires org.apache.logging.log4j;
 
+    exports org.creekservice.api.kafka.test.service.json;
     exports org.creekservice.api.kafka.test.service.json.model;
 
     opens org.creekservice.api.kafka.test.service.json.model;
+
+    provides org.creekservice.api.platform.metadata.ComponentDescriptor with
+            org.creekservice.api.kafka.test.service.json.JsonServiceDescriptor;
 }

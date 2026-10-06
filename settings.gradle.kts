@@ -19,11 +19,7 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         maven {
-            url = uri("https://maven.pkg.github.com/creek-service/*")
-            credentials {
-                username = "Creek-Bot-Token"
-                password = "\u0067hp_LtyvXrQZen3WlKenUhv21Mg6NG38jn0AO2YH"
-            }
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         }
     }
 }
@@ -39,6 +35,7 @@ include(
     "serde-test",
     "json-serde",
     "test-extension",
+    "test-functional-json",
     "test-java-eight",
     "test-java-nine",
     "test-serde",

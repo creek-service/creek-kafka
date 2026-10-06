@@ -25,10 +25,10 @@ See [CreekService.org](https://www.creekservice.org/creek-kafka) for more info o
   and a `kafka` serialization format which uses the standard Kafka client serde.
 * **[serde-test](serde-test)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-serde-test)]: Test utils for testing serde 
 * **[json-serde](json-serde)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-json-serde)]: provides JSON serde implementations. 
-* **[streams-test](streams-test)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-streams-test)]: Helpers for writing tests for Kafka streams based microservices.
 * **[test-extension](test-extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-kafka-test-extension)]: Creek system-test extension to allow system testing of Kafka based microservices.
 
 ### Internal / Non-published:
+* **[test-functional-json](test-functional-json)**: containerized JSON-schema system tests for the Kafka test extension.
 * **[test-java-eight](test-java-eight)**: functional tests *without* Java 9's modularity.
 * **[test-java-nine](test-java-nine)**: functional tests *with* Java 9's modularity.
 * **[test-serde](test-serde)**: test-only serde extension implementation.
@@ -77,4 +77,3 @@ configurations.all {
 ```
 
 [1]: https://www.creekservice.org/basic-kafka-streams-demo/
-

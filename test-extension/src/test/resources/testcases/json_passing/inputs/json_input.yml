@@ -1,0 +1,8 @@
+---
+!creek/kafka-topic@1
+topic: json-input
+records:
+  - key: first
+    value:
+      key: payload
+      value: 41

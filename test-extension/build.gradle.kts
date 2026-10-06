@@ -18,10 +18,7 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
-val testContainersVersion : String by extra
-val kafkaVersion : String by extra
-val slf4jVersion : String by extra
+val creekVersion = property("creekVersion") as String
 
 dependencies {
     api(project(":metadata"))
@@ -33,14 +30,14 @@ dependencies {
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-api:${property("slf4jVersion")}")
 
     testImplementation(project(":json-serde"))
     testImplementation(project(":test-service-native"))
     testImplementation("org.creekservice:creek-system-test-executor:$creekVersion")
     testImplementation("org.creekservice:creek-system-test-test-util:$creekVersion")
-    testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
-    testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    testImplementation("org.testcontainers:testcontainers:${property("testContainersVersion")}")
+    testImplementation("org.apache.kafka:kafka-clients:${property("kafkaVersion")}")
 }
 
 tasks.test {

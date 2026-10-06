@@ -21,8 +21,8 @@ plugins {
     id("com.bmuschko.docker-remote-api")
 }
 
-val creekVersion : String by extra
-val log4jVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val log4jVersion = property("log4jVersion") as String
 
 dependencies {
     implementation("org.creekservice:creek-service-context:$creekVersion")
@@ -37,7 +37,7 @@ application {
     mainClass.set("org.creekservice.internal.kafka.test.service.inbuilt.ServiceMain")
 }
 
-val buildAppImage = tasks.create("buildAppImage", DockerBuildImage::class) {
+val buildAppImage = tasks.register<DockerBuildImage>("buildAppImage") {
     dependsOn("prepareDocker")
     buildArgs.put("APP_NAME", project.name)
     buildArgs.put("APP_VERSION", "${project.version}")
@@ -58,5 +58,5 @@ tasks.register<Copy>("prepareDocker") {
         layout.projectDirectory.dir("include"),
     )
 
-    into(buildAppImage.inputDir)
+    into(buildAppImage.flatMap { it.inputDir })
 }
