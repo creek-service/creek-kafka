@@ -16,7 +16,7 @@
 
 plugins {
     java
-    id("org.creekservice.system.test") version "0.4.5-SNAPSHOT"
+    id("org.creekservice.system.test") version "0.5.0"
 
 // begin-snippet: module-plugin
     id("org.javamodularity.moduleplugin") version "2.1.0"
@@ -24,12 +24,7 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
-
-    maven {
-        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
-    }
 
     // begin-snippet: confluent-repo
     maven {
@@ -49,20 +44,20 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry-client:8.3.0")
     implementation("io.confluent:kafka-json-schema-provider:8.3.0")
 // begin-snippet: meta
-    implementation("org.creekservice:creek-kafka-metadata:0.4.5-SNAPSHOT")
+    implementation("org.creekservice:creek-kafka-metadata:0.5.0")
 // end-snippet
-    implementation("org.creekservice:creek-service-context:0.4.5-SNAPSHOT")
+    implementation("org.creekservice:creek-service-context:0.5.0")
 // begin-snippet: client-ext
-    implementation("org.creekservice:creek-kafka-client-extension:0.4.5-SNAPSHOT")
+    implementation("org.creekservice:creek-kafka-client-extension:0.5.0")
 // end-snippet
 // begin-snippet: streams-ext
-    implementation("org.creekservice:creek-kafka-streams-extension:0.4.5-SNAPSHOT")
+    implementation("org.creekservice:creek-kafka-streams-extension:0.5.0")
 // end-snippet
 // begin-snippet: json-serde
-    implementation("org.creekservice:creek-kafka-json-serde:0.4.5-SNAPSHOT")
+    implementation("org.creekservice:creek-kafka-json-serde:0.5.0")
 // end-snippet
 // begin-snippet: test-ext
-    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.4.5-SNAPSHOT")
+    systemTestExtension("org.creekservice:creek-kafka-test-extension:0.5.0")
 // end-snippet
     testImplementation("org.apache.kafka:kafka-streams-test-utils")
     testImplementation("org.hamcrest:hamcrest-core:3.0")
