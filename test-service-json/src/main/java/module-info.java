@@ -19,6 +19,7 @@ module creek.kafka.test.service.json {
     requires transitive creek.base.annotation;
     requires creek.kafka.test.service.inbuilt;
     requires transitive creek.kafka.metadata;
+    requires creek.kafka.serde.json.schema;
     requires creek.kafka.streams.extension;
     requires creek.service.context;
     requires org.apache.logging.log4j;

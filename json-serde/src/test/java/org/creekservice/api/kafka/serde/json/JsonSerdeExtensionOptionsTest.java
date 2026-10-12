@@ -23,9 +23,11 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.client.MockJsonSchemaStoreClient;
 import org.creekservice.api.kafka.serde.schema.store.endpoint.MockEndpointsLoader;
 import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,7 +112,10 @@ class JsonSerdeExtensionOptionsTest {
                 options.typeOverride(JsonSchemaStoreClient.Factory.class);
         assertThat(factory, is(not(Optional.empty())));
         final JsonSchemaStoreClient client = factory.orElseThrow().create("bob", null);
+        assertThat(client, is(instanceOf(MockJsonSchemaStoreClient.class)));
         client.disableCompatability("test");
+        assertThat(client.registeredId("unowned.value", null), is(1));
+        assertThat(client.allVersions("unowned.value"), is(List.of()));
     }
 
     @Test
