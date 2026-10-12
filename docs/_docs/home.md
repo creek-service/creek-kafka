@@ -447,10 +447,6 @@ or the [basic Kafka Streams tutorial][basicDemo].
 
 ### `json-schema` format
 
-This serialization format is still under development.
-See [issue #25](https://github.com/creek-service/creek-kafka/issues/25) for remaining tasks.
-{: .notice--danger}
-
 The `creek-kafka-json-serde.jar` provides a `json-schema` serialization format.
 This format supports serializing Java types as JSON, where the JSON payload is validated against a schema.
 
