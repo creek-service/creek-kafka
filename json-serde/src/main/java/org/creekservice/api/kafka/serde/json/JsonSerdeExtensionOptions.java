@@ -18,19 +18,16 @@ package org.creekservice.api.kafka.serde.json;
 
 import static java.util.Objects.requireNonNull;
 
-import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.kafka.serde.json.schema.store.client.JsonSchemaStoreClient;
+import org.creekservice.api.kafka.serde.json.schema.store.client.MockJsonSchemaStoreClient;
 import org.creekservice.api.kafka.serde.schema.store.endpoint.MockEndpointsLoader;
 import org.creekservice.api.kafka.serde.schema.store.endpoint.SchemaStoreEndpoints;
 import org.creekservice.api.service.extension.CreekExtensionOptions;
-import org.creekservice.internal.kafka.serde.json.schema.store.client.DefaultJsonSchemaRegistryClient;
 
 /**
  * Options class to customise how the JSON serde operate.
@@ -61,8 +58,10 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
      *    .build();
      * </pre>
      *
-     * <p>The options come preconfigured with a mock Schema Registry client, hence the serde do not
-     * need an actual Schema Registry instance to connect to.
+     * <p>The options use a permissive mock schema store client, so locally generated schemas can be
+     * loaded for unowned topics without registering them in a Schema Registry. Serialization and
+     * deserialization still validate against those local schemas. Use a stateful registry client to
+     * test registration and compatibility separately.
      *
      * @return an options builder pre-configured to allow disconnected unit testing.
      */
@@ -70,11 +69,7 @@ public final class JsonSerdeExtensionOptions implements CreekExtensionOptions {
         return builder()
                 .withTypeOverride(
                         JsonSchemaStoreClient.Factory.class,
-                        (schemaRegistryName, endpoints) ->
-                                new DefaultJsonSchemaRegistryClient(
-                                        schemaRegistryName,
-                                        new MockSchemaRegistryClient(
-                                                List.of(new JsonSchemaProvider()))))
+                        (schemaRegistryName, endpoints) -> new MockJsonSchemaStoreClient() {})
                 .withTypeOverride(SchemaStoreEndpoints.Loader.class, new MockEndpointsLoader() {});
     }
 

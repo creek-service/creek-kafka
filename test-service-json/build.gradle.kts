@@ -34,8 +34,6 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
-
-    jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
 }
 
 creek.schema.json {
