@@ -553,8 +553,8 @@ i.e. when a base type is annotated with `@JsonTypeInfo`, but not with `@JsonSubT
 ```java
 public final class ServiceMain {
 
-    public static void main(String... args) {
-        CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
+    static void main(String... args) {
+        try (CreekContext ctx = CreekServices.builder(new MyServiceDescriptor())
                 .with(
                         JsonSerdeExtensionOptions.builder()
                                 // Register subtypes:
@@ -565,9 +565,13 @@ public final class ServiceMain {
                                 .withSubtype(SubType3.class, "type-3")
                                 .build()                        
                 )
-                .build();
-
-        new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
+                .build()) {
+            new ServiceMain(ctx.extension(KafkaClientsExtension.class)).run();
+        }
+    }
+    
+    void run(KafkaClientsExtension ext) {
+        // ...
     }
 }
 ```
