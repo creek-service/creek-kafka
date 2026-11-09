@@ -49,7 +49,7 @@ dependencies {
     //  kafka-json-schema-provider → json-sKema needs kotlin.stdlib).
     implementation("org.json:json:20260814")
     implementation("commons-beanutils:commons-beanutils:1.11.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.21")
     implementation("com.github.luben:zstd-jni:1.5.7-25")
 
     jsonSchemaGenerator("org.creekservice:creek-json-schema-generator:$creekVersion")
