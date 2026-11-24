@@ -91,6 +91,12 @@ subprojects {
             implementation("at.yawk.lz4:lz4-java:1.12.1") {
                 because("earlier versions have a security vulnerability (GHSA-xx22-p4ch-683r)")
             }
+            implementation("com.google.guava:guava:${property("guavaVersion")}") {
+                because("earlier versions have security vulnerabilities (CVE-2026-102554)")
+            }
+            implementation("org.xerial.snappy:snappy-java:1.1.10.12") {
+                because("earlier versions have security vulnerabilities (CVE-2026-93451, CVE-2026-116590, CVE-2026-108106)")
+            }
         }
 
         implementation(platform("com.fasterxml.jackson:jackson-bom:${property("jacksonVersion")}"))

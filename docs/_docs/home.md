@@ -29,8 +29,8 @@ The `tested versions` column details the exact version of Kafka libraries testin
 |---------------|----------------------------------------------------------------------|-------------------------------------------------|
 | < 3.1.0       | 3.1.0                                                                | Not compatible due to API changes in Streams    |
 | 3.+           | 3.1.0, 3.1.2, 3.2.3, 3.3.2, 3.4.1, 3.5.2, 3.6.2, 3.7.2, 3.8.1, 3.9.2 | Supported & tested                              |
-| 4.+           | 4.0.2, 4.1.2, 4.2.0, 4.3.0                                            | Supported & tested                              |
-| > 4.3.0       |                                                                      | Not currently tested / released. Should work... |
+| 4.+           | 4.0.2, 4.1.2, 4.2.0, 4.3.2, 4.4.0                                    | Supported & tested                              |
+| > 4.4.0       |                                                                      | Not currently tested / released. Should work... |
 
 In Gradle, it is possible to force the use of an older Kafka client, if you wish, using a resolution strategy.
 In Kotlin, this looks like:
