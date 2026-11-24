@@ -88,7 +88,7 @@ subprojects {
 
     dependencies {
         constraints {
-            implementation("at.yawk.lz4:lz4-java:1.12.1") {
+            implementation("at.yawk.lz4:lz4-java:1.14.1") {
                 because("earlier versions have a security vulnerability (GHSA-xx22-p4ch-683r)")
             }
             implementation("com.google.guava:guava:${property("guavaVersion")}") {
