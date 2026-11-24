@@ -33,6 +33,7 @@ module creek.kafka.serde.json.schema {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires creek.json.schema.validator;
     requires kafka.schema.registry.client;
+    requires com.google.common;
     requires kafka.json.schema.provider;
     requires kotlin.stdlib;
     requires org.json;
