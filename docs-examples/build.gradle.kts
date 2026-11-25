@@ -71,7 +71,7 @@ dependencies {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.kafka") {
-            useVersion("4.3.0")
+            useVersion("4.4.0")
         }
     }
 }
@@ -79,7 +79,7 @@ configurations.all {
 
 // begin-snippet: patch-module
 // Patch Kafka Streams test jar into main Kafka Streams module to avoid split packages:
-modularity.patchModule("kafka.streams", "kafka-streams-test-utils-4.3.0.jar")
+modularity.patchModule("kafka.streams", "kafka-streams-test-utils-4.4.0.jar")
 // end-snippet
 
 tasks.test {
